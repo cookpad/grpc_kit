@@ -31,6 +31,7 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
+  spec.add_dependency 'ds9', '~> 1.1.1'
   spec.add_dependency 'google-protobuf', '~> 3.6.1'
   spec.add_dependency 'googleapis-common-protos-types', '~> 1.0.2'
 
@@ -38,4 +39,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rake', '~> 10.0'
   spec.add_development_dependency 'rspec', '~> 3.0'
   spec.add_development_dependency 'rubocop'
+  spec.add_development_dependency 'pry-byebug'
 end

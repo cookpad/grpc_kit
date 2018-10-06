@@ -7,10 +7,10 @@ require 'google/protobuf'
 
 Google::Protobuf::DescriptorPool.generated_pool.build do
   add_message 'helloworld.HelloRequest' do
-    optional :request, :string, 1
+    optional :msg, :string, 1
   end
   add_message 'helloworld.HelloReply' do
-    optional :resply, :string, 1
+    optional :msg, :string, 1
   end
 end
 

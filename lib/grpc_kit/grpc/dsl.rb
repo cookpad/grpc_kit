@@ -11,29 +11,34 @@ module GrpcKit
 
       attr_writer :marshal_class_method, :unmarshal_class_method
 
-      def rpc(name, marshal, unmarshal)
+      def inherited(subclass)
+        subclass.rpc_descs.merge!(rpc_descs)
+        subclass.service_name = service_name
+      end
+
+      def rpc(name, input, output)
         if rpc_descs.key?(name)
           raise "rpc (#{name}) is already defined"
         end
 
-        unless marshal.respond_to?(@marshal_class_method)
+        unless input.respond_to?(@marshal_class_method)
           raise "#{marshal} must implement #{marshal}.#{@marshal_class_method}"
         end
 
-        unless unmarshal.respond_to?(@unmarshal_class_method)
+        unless output.respond_to?(@unmarshal_class_method)
           raise "#{unmarshal} must implement #{unmarshal}.#{@unmarshal_class_method}"
         end
 
         # create StreamDesc?
         rpc_descs[name] = GrpcKit::RpcDesc.new(
           name: name,
-          marshal: marshal,
-          unmarshal: unmarshal,
+          input: input,
+          output: output,
           marshal_method: @marshal_class_method,
           unmarshal_method: @unmarshal_class_method,
         )
 
-        define_method(to_underscore(name).to_sym) do |_, _|
+        define_method(rpc_descs[name].ruby_style_name) do |_, _|
           raise GrpcKit::Errors::Unimplemented, name.to_s
         end
       end
@@ -46,19 +51,8 @@ module GrpcKit
         # TODO
       end
 
-      private
-
-      def to_underscore(val)
-        val
-          .to_s
-          .gsub(/([A-Z]+)([A-Z][a-z])/, '\1_\2')
-          .gsub(/([a-z\d])([A-Z])/, '\1_\2')
-          .tr('-', '_')
-          .downcase
-      end
-
       def rpc_descs
-        @rpc_decs ||= {}
+        @rpc_descs ||= {}
       end
     end
   end
