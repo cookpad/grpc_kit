@@ -40,6 +40,7 @@ module GrpcKit
       session = GrpcKit::Session::Server.new(io.new(conn, conn), self) # TODO: change self to proper object
       @sessions << session
 
+      session.submit_settings([])
       session.start # blocking
     end
 

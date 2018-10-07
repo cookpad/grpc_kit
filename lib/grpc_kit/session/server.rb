@@ -17,8 +17,6 @@ module GrpcKit
       end
 
       def start
-        submit_settings([])
-
         @io.wait_readable
         until @stop && (want_read? || want_write?)
           if want_write?
