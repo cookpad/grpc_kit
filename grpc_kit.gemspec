@@ -10,19 +10,10 @@ Gem::Specification.new do |spec|
   spec.authors       = ['ganmacs']
   spec.email         = ['ganmacs@gmail.com']
 
-  spec.summary       = '...'
-  spec.description   = '...'
+  spec.summary       = 'A kit for creating gRPC server/client'
+  spec.description   = 'A kit for creating gRPC server/client'
   spec.homepage      = 'https://github.com/ganmacs/grpc_kit'
   spec.license       = 'MIT'
-
-  # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
-  # to allow pushing to a single host or delete this section to allow pushing to any host.
-  if spec.respond_to?(:metadata)
-    spec.metadata['allowed_push_host'] = "TODO: Set to 'http://mygemserver.com'"
-  else
-    raise 'RubyGems 2.0 or newer is required to protect against ' \
-      'public gem pushes.'
-  end
 
   spec.files = `git ls-files -z`.split("\x0").reject do |f|
     f.match(%r{^(test|spec|features)/})
@@ -35,9 +26,10 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'google-protobuf', '~> 3.6.1'
   spec.add_dependency 'googleapis-common-protos-types', '~> 1.0.2'
 
-  spec.add_development_dependency 'bundler', '~> 1.16'
+  spec.add_development_dependency 'bundler'
+  spec.add_development_dependency 'grpc-tools'
   spec.add_development_dependency 'pry-byebug'
-  spec.add_development_dependency 'rake', '~> 10.0'
-  spec.add_development_dependency 'rspec', '~> 3.0'
+  spec.add_development_dependency 'rake'
+  spec.add_development_dependency 'rspec'
   spec.add_development_dependency 'rubocop'
 end
