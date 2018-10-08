@@ -1,62 +1,105 @@
 # frozen_string_literal: true
 
+require 'grpc_kit/rpcs'
+require 'grpc_kit/protobuffer'
+
 module GrpcKit
   class RpcDesc
-    def initialize(name:, input:, output:, marshal_method:, unmarshal_method:)
+    def initialize(name:, marshal:, unmarshal:, marshal_method:, unmarshal_method:, service_name:)
       @name = name
-      @input = input
-      @output = output
+      @marshal = marshal
+      @unmarshal = unmarshal
       @marshal_method = marshal_method
       @unmarshal_method = unmarshal_method
+      @service_name = service_name
     end
 
-    def server_encode(val)
-      @output.send(@marshal_method, val)
+    def build_server(handler)
+      server.new(
+        handler: handler,
+        method_name: ruby_style_name,
+        protobuf: server_protobuf,
+      )
     end
 
-    def server_decode(val)
-      @input.send(@unmarshal_method, val)
-    end
-
-    def client_encode(val)
-      @input.send(@marshal_method, val)
-    end
-
-    def client_decode(val)
-      @output.send(@unmarshal_method, val)
-    end
-
-    def invoke(rpc, val)
-      args = server_decode(val)
-      ret = rpc.send(to_underscore(@name), args, nil) # nil is GRPC::Call object
-      server_encode(ret)
+    def build_client(authority, opts = {})
+      @build_client ||= client.new(
+        path: path.to_s,
+        authority: authority,
+        protobuf: client_protobuf,
+        opts: opts,
+      )
     end
 
     def ruby_style_name
       @ruby_style_name ||= to_underscore(@name).to_sym
     end
 
-    def path(service_name)
-      "/#{service_name}/#{@name}".to_sym
+    def path
+      @path ||= "/#{@service_name}/#{@name}".to_sym
     end
 
     def request_response?
-      !@input.is_a?(GrpcKit::GRPC::Stream) && !@output.is_a?(GrpcKit::GRPC::Stream)
+      !@marshal.is_a?(GrpcKit::GRPC::Stream) && !@unmarshal.is_a?(GrpcKit::GRPC::Stream)
     end
 
     def client_streamer?
-      @input.is_a?(GrpcKit::GRPC::Stream) && !@output.is_a?(GrpcKit::GRPC::Stream)
+      @marshal.is_a?(GrpcKit::GRPC::Stream) && !@unmarshal.is_a?(GrpcKit::GRPC::Stream)
     end
 
     def server_streamer?
-      !@input.is_a?(GrpcKit::GRPC::Stream) && @output.is_a?(GrpcKit::GRPC::Stream)
+      !@marshal.is_a?(GrpcKit::GRPC::Stream) && @unmarshal.is_a?(GrpcKit::GRPC::Stream)
     end
 
     def bidi_streamer?
-      @input.is_a?(GrpcKit::GRPC::Stream) && @output.is_a?(GrpcKit::GRPC::Stream)
+      @marshal.is_a?(GrpcKit::GRPC::Stream) && @unmarshal.is_a?(GrpcKit::GRPC::Stream)
     end
 
     private
+
+    def server
+      @server ||=
+        if request_response?
+          GrpcKit::Rpcs::Server::RequestResponse
+        elsif client_streamer?
+          GrpcKit::Rpcs::Server::ClientStreamer
+        elsif server_streamer?
+          GrpcKit::Rpcs::Server::ServerStreamer
+        elsif bidi_streamer?
+          GrpcKit::Rpcs::Server::BidiStreamer
+        end
+    end
+
+    def client
+      @client ||=
+        if request_response?
+          GrpcKit::Rpcs::Client::RequestResponse
+        elsif client_streamer?
+          GrpcKit::Rpcs::Client::ClientStreamer
+        elsif server_streamer?
+          GrpcKit::Rpcs::Client::ServerStreamer
+        elsif bidi_streamer?
+          GrpcKit::Rpcs::Client::BidiStreamer
+        end
+    end
+
+    def server_protobuf
+      @server_protobuf ||= ProtoBuffer.new(
+        encoder: @unmarshal,
+        decoder: @marshal,
+        encode_method: @marshal_method,
+        decode_method: @unmarshal_method,
+      )
+    end
+
+    def client_protobuf
+      @client_protobuf ||= ProtoBuffer.new(
+        encoder: @marshal,
+        decoder: @unmarshal,
+        encode_method: @marshal_method,
+        decode_method: @unmarshal_method,
+      )
+    end
 
     def to_underscore(val)
       val

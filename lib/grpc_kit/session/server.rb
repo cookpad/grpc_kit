@@ -8,7 +8,7 @@ module GrpcKit
     class Server < DS9::Server
       # @io [GrpcKit::IO::XXX]
       def initialize(io, handler)
-        super() # initialize DS9::Server
+        super() # initialize DS9::Session
 
         @io = io
         @streams = {}
@@ -18,7 +18,7 @@ module GrpcKit
 
       def start
         @io.wait_readable
-        until @stop && (want_read? || want_write?)
+        while !@stop && (want_read? || want_write?)
           if want_write?
             send
           end
@@ -40,10 +40,11 @@ module GrpcKit
       def on_data_source_read(stream_id, length)
         GrpcKit.logger.debug("on_data_source_read #{stream_id}, lenght=#{length}")
 
-        data = @streams[stream_id].read(length)
-        if data.nil?
+        stream = @streams[stream_id]
+        data = @streams[stream_id].consume_write_data(length)
+        if data.empty? && stream.end_write?
           submit_trailer(stream_id, 'grpc-status' => '0')
-          false # nil mean END_STREAM
+          false # means EOF and END_STREAM
         else
           data
         end
@@ -71,17 +72,7 @@ module GrpcKit
         when DS9::Frames::Data
           # need to port NGHTTP2_FLAG_END_STREAM to check frame.flag has it
           stream = @streams[frame.stream_id]
-          sent = @handler.on_frame_data_recv(stream)
-          unless sent
-            return # TODO
-          end
-
-          submit_response(
-            frame.stream_id,
-            ':status' => '200',
-            'content-type' => 'application/grpc',
-            'accept-encoding' => 'identity,gzip',
-          )
+          @handler.on_frame_data_recv(stream)
         # when DS9::Frames::Headers
         # need to port NGHTTP2_FLAG_END_STREAM to check frame.flag has it
         # when DS9::Frames::Goaway
@@ -114,7 +105,7 @@ module GrpcKit
           raise "#{stream_id} is already existed"
         end
 
-        @streams[stream_id] = GrpcKit::Session::Stream.new(stream_id: stream_id)
+        @streams[stream_id] = GrpcKit::Session::Stream.new(stream_id: stream_id, session: self)
       end
 
       # for nghttp2_session_callbacks_set_on_header_callback
@@ -137,12 +128,15 @@ module GrpcKit
       # for nghttp2_session_callbacks_set_on_stream_close_callback
       def on_stream_close(stream_id, error_code)
         GrpcKit.logger.debug("on_stream_close stream_id=#{stream_id}, error_code=#{error_code}")
-        @streams.delete(stream_id)
+        stream = @streams.delete(stream_id)
+        return unless stream
+
+        stream.end_stream
       end
 
       # for nghttp2_session_callbacks_set_on_data_chunk_recv_callback
       def on_data_chunk_recv(stream_id, data, _flags)
-        @handler.on_data_chunk_recv(@streams[stream_id], data)
+        @streams[stream_id].recv(data)
       end
 
       # nghttp2_session_callbacks_set_before_frame_send_callback

@@ -2,6 +2,7 @@
 
 require 'socket'
 require 'grpc_kit/session/client'
+require 'grpc_kit/rpcs'
 
 module GrpcKit
   class Client
@@ -12,95 +13,25 @@ module GrpcKit
       @io = io
     end
 
-    # @params handler [object]
-    def handle(handler)
-      klass = handler.class
-
-      klass.rpc_descs.values.each do |rpc_desc|
-        path = rpc_desc.path(klass.service_name)
-        if @rpc_descs[path]
-          raise "Duplicated method registered #{key}, class: #{handler}"
-        end
-
-        @rpc_descs[path] = [rpc_desc, handler]
-      end
-    end
-
-    class RequestResponse
-      attr_writer :session
-
-      def initialize(path, opts = {})
-        @path = path
-        @opts = opts
-        @session = nil
-        @data = ''
-      end
-
-      def invoke(data)
-        @session.submit_settings([])
-
-        stream_id = submit_request(data)
-        @session.start(stream_id)
-        @data
-      end
-
-      def on_data_chunk_recv(stream, data)
-        compressed, length, buf = data.unpack('CNa*')
-        if compressed == 0 # TODO: not
-          if length != buf.size
-            raise 'recived data inconsistent'
-          end
-
-          @data << buf
-          stream.recv2(buf)
-        else
-          raise 'not supported'
-        end
-      end
-
-      private
-
-      def submit_request(data)
-        @session.submit_request(
-          {
-            ':method' => 'POST',
-            ':scheme' => 'http',
-            ':authority' => @opts[:authority],
-            ':path' => @path.to_s,
-            'te' => 'trailers',
-            'content-type' => 'application/grpc',
-            'user-agent' => "grpc-ruby/#{GrpcKit::VERSION} (grpc_kit)",
-            'grpc-accept-encoding' => 'identity,deflate,gzip',
-          },
-          data,
-        )
-      end
-    end
-
-    def request_response(path, request, rpc_desc, opts = {})
+    def request_response(rpc_desc, request, opts = {})
       GrpcKit.logger.info('Calling request_respose')
       sock = TCPSocket.new(@host, @port)
 
-      rr = RequestResponse.new(path, { authority: @authority }.merge(opts))
-      session = GrpcKit::Session::Client.new(@io.new(sock, sock), rr)
-      rr.session = session
-
-      req = rpc_desc.client_encode(request)
-      data = [0, req.length, req].pack('CNa*')
-
-      resp = rr.invoke(data)
-      rpc_desc.client_decode(resp)
+      cli = rpc_desc.build_client(opts.delete(:authority) || @authority, opts)
+      session = GrpcKit::Session::Client.new(@io.new(sock, sock), cli)
+      cli.session = session
+      cli.invoke(request)
     end
 
-    def client_streamer(path, requests, rpc, opts = {})
+    def client_streamer(rpc_desc, requests, opts = {})
       GrpcKit.logger.info('Calling client_streamer')
     end
 
-    def server_streamer(path, request, metadata, opts = {})
+    def server_streamer(rpc_desc, request, metadata, opts = {})
       GrpcKit.logger.info('Calling server_streamer')
     end
 
-    def bidi_streamer(path, requests, metadata, opts = {})
+    def bidi_streamer(rpc_desc, requests, metadata, opts = {})
       GrpcKit.logger.info('Calling bidi_streamer')
     end
   end

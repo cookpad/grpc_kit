@@ -7,8 +7,8 @@ module GrpcKit
     module GenericService
       def self.included(obj)
         obj.extend(GrpcKit::GRPC::Dsl)
-        return unless obj.service_name.nil?
 
+        # return unless obj.service_name.nil?
         # if obj.name.nil?
         #   obj.service_name = 'GenericService'
         # else

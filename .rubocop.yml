@@ -49,6 +49,12 @@ Style/SignalException:
 Style/SingleLineBlockParams:
   Enabled: false
 
+Style/NumericLiterals:
+  Enabled: false
+
+Metrics/ParameterLists:
+  CountKeywordArgs: false
+
 Lint/UnderscorePrefixedVariableName:
   Enabled: false
 
@@ -64,7 +70,7 @@ Metrics/LineLength:
   Max: 160
 
 Metrics/MethodLength:
-  Max: 20
+  Max: 30
 
 Metrics/PerceivedComplexity:
   Max: 8

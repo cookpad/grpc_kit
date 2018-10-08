@@ -16,21 +16,19 @@ module GrpcKit
       end
 
       def start(stream_id)
-        stream = GrpcKit::Session::Stream.new(stream_id: stream_id)
+        stream = GrpcKit::Session::Stream.new(stream_id: stream_id, session: self)
         @streams[stream_id] = stream
 
-        while want_read? || want_write?
-          if stream.closed?
-            break
-          elsif !stream.exist_data?
+        while !stream.end_stream? && (want_read? || want_write?)
+          if want_read?
             receive
+          end
 
+          if want_write?
             send
-          else
-            break
-            # GrpcKit.logger.info("unknown #{stream}")
           end
         end
+
         # invalid if receive and send are not called
       end
 
@@ -50,7 +48,8 @@ module GrpcKit
 
       # for nghttp2_session_callbacks_set_on_data_chunk_recv_callback
       def on_data_chunk_recv(stream_id, data, flags)
-        @handler.on_data_chunk_recv(@streams[stream_id], data)
+        @streams[stream_id].recv(data)
+        # @handler.on_data_chunk_recv(@streams[stream_id], data)
       end
 
       # provider for nghttp2_submit_response
@@ -58,9 +57,23 @@ module GrpcKit
       # end
 
       # for nghttp2_session_callbacks_set_on_frame_send_callback
-      # def on_frame_recv(frame)
-      #   GrpcKit.logger.debug("on_frame_recv #{frame}")
-      # end
+      def on_frame_recv(frame)
+        GrpcKit.logger.debug("on_frame_recv #{frame}")
+        case frame
+        when DS9::Frames::Data
+          # need to port NGHTTP2_FLAG_END_STREAM to check frame.flag has it
+          stream = @streams[frame.stream_id]
+          @handler.on_frame_data_recv(stream)
+        # when DS9::Frames::Headers
+        # need to port NGHTTP2_FLAG_END_STREAM to check frame.flag has it
+        # when DS9::Frames::Goaway
+        # when DS9::Frames::RstStream
+        else
+          GrpcKit.logger.info("unsupport frame #{frame}")
+        end
+
+        true
+      end
 
       # # for nghttp2_session_callbacks_set_on_frame_not_send_callback
       # def on_frame_not_send(frame, reason)
@@ -90,9 +103,9 @@ module GrpcKit
       def on_stream_close(stream_id, error_code)
         GrpcKit.logger.debug("on_stream_close stream_id=#{stream_id}, error_code=#{error_code}")
         stream = @streams.delete(stream_id)
-        if stream
-          stream.close
-        end
+        return unless stream
+
+        stream.end_stream
       end
 
       # # for nghttp2_session_callbacks_set_on_data_chunk_recv_callback

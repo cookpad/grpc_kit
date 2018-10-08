@@ -8,38 +8,37 @@ require 'grpc_kit/grpc/stream'
 module GrpcKit
   module GRPC
     module Dsl
-      attr_accessor :service_name
-
-      attr_writer :marshal_class_method, :unmarshal_class_method
+      attr_writer :service_name, :marshal_class_method, :unmarshal_class_method
 
       def inherited(subclass)
         subclass.rpc_descs.merge!(rpc_descs)
-        subclass.service_name = service_name
+        subclass.service_name = @service_name
       end
 
-      def rpc(name, input, output)
+      def rpc(name, marshal, unmarshal)
         if rpc_descs.key?(name)
           raise "rpc (#{name}) is already defined"
         end
 
-        unless input.respond_to?(@marshal_class_method)
+        unless marshal.respond_to?(@marshal_class_method)
           raise "#{marshal} must implement #{marshal}.#{@marshal_class_method}"
         end
 
-        unless output.respond_to?(@unmarshal_class_method)
+        unless unmarshal.respond_to?(@unmarshal_class_method)
           raise "#{unmarshal} must implement #{unmarshal}.#{@unmarshal_class_method}"
         end
 
-        # create StreamDesc?
-        rpc_descs[name] = GrpcKit::RpcDesc.new(
+        rpc_desc = GrpcKit::RpcDesc.new(
           name: name,
-          input: input,
-          output: output,
+          marshal: marshal,
+          unmarshal: unmarshal,
           marshal_method: @marshal_class_method,
           unmarshal_method: @unmarshal_class_method,
+          service_name: @service_name,
         )
+        rpc_descs[rpc_desc.path] = rpc_desc
 
-        define_method(rpc_descs[name].ruby_style_name) do |_, _|
+        define_method(rpc_desc.ruby_style_name) do |_, _|
           raise GrpcKit::Errors::Unimplemented, name.to_s
         end
       end
@@ -50,27 +49,25 @@ module GrpcKit
 
       def rpc_stub_class
         rpc_descs_ = rpc_descs
-        service_name_ = service_name
         Class.new(GrpcKit::Client) do
-          rpc_descs_.each_pair do |_, rpc_desc|
+          rpc_descs_.each do |_, rpc_desc|
             method_name = rpc_desc.ruby_style_name
-            path = rpc_desc.path(service_name_)
 
             if rpc_desc.request_response?
               define_method(method_name) do |request, opts = {}|
-                request_response(path, request, rpc_desc, opts)
+                request_response(rpc_desc, request, opts)
               end
             elsif rpc_desc.client_streamer?
               define_method(method_name) do |requests, opts = {}|
-                client_streamer(path, requests, rpc_desc, opts)
+                client_streamer(rpc_desc, requests, opts)
               end
             elsif rpc_desc.server_streamer?
               define_method(method_name) do |request, opts = {}, &blk|
-                server_streamer(path, request, rpc_desc, opts, &blk)
+                server_streamer(rpc_desc, request, opts, &blk)
               end
             elsif rpc_desc.bidi_streamer?
               define_method(method_name) do |requests, opts = {}, &blk|
-                bidi_streamer(path, requests, rpc_desc, opts, &blk)
+                bidi_streamer(rpc_desc, requests, opts, &blk)
               end
             else
               raise "unknown #{rpc_desc}"
