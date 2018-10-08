@@ -4,6 +4,7 @@ require 'logger'
 
 require 'grpc_kit/version'
 require 'grpc_kit/server'
+require 'grpc_kit/client'
 
 module GrpcKit
   def self.logger

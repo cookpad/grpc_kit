@@ -12,10 +12,23 @@ module GrpcKit
         @stream_id = stream_id
         @end_read_stream = end_read_stream
         @end_write_stream = end_write_stream
+        @end_stream = false
         @headers = {}
 
         @data = ''
         @write_data = StringIO.new
+      end
+
+      def close
+        @end_stream = true
+      end
+
+      def closed?
+        @end_stream
+      end
+
+      def eq?(stream_id)
+        @stream_id == stream_id
       end
 
       def exist_data?
@@ -24,6 +37,11 @@ module GrpcKit
 
       def recv(data)
         @data = data            # XXX
+      end
+
+      # TODO
+      def recv2(data)
+        @data << data
       end
 
       # TODO: name

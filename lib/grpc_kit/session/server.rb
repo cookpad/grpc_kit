@@ -73,7 +73,7 @@ module GrpcKit
           stream = @streams[frame.stream_id]
           resp = @handler.on_frame_data_recv(stream)
           unless resp
-            raise "on_frame_recv #{resp}"
+            return              # TODO
           end
 
           submit_response(

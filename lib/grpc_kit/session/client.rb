@@ -1,30 +1,65 @@
 # frozen_string_literal: true
 
 require 'ds9'
+require 'grpc_kit/session/stream'
 
 module GrpcKit
   module Session
-    class Client < DS9::Server
-      # def initialize
-      # end
+    class Client < DS9::Client
+      # @io [GrpcKit::IO::XXX]
+      def initialize(io, handler)
+        super() # initialize DS9::Session
 
-      # private
+        @io = io
+        @streams = {}
+        @handler = handler
+      end
 
-      # # provider for nghttp2_submit_response
+      def start(stream_id)
+        stream = GrpcKit::Session::Stream.new(stream_id: stream_id)
+        @streams[stream_id] = stream
+
+        while want_read? || want_write?
+          if stream.closed?
+            break
+          elsif !stream.exist_data?
+            receive
+
+            send
+          else
+            break
+            # GrpcKit.logger.info("unknown #{stream}")
+          end
+        end
+        # invalid if receive and send are not called
+      end
+
+      private
+
+      # for nghttp2_session_callbacks_set_send_callback
+      # override
+      def send_event(string)
+        @io.write(string)
+      end
+
+      # for nghttp2_session_callbacks_set_recv_callback
+      # override
+      def recv_event(length)
+        @io.read(length)
+      end
+
+      # for nghttp2_session_callbacks_set_on_data_chunk_recv_callback
+      def on_data_chunk_recv(stream_id, data, flags)
+        @handler.on_data_chunk_recv(@streams[stream_id], data)
+      end
+
+      # provider for nghttp2_submit_response
       # def on_data_source_read(stream_id, length)
       # end
 
-      # # for nghttp2_session_callbacks_set_send_callback
-      # def send_event(string)
-      # end
-
-      # # for nghttp2_session_callbacks_set_recv_callback
-      # def recv_event(length)
-      # end
-
-      # # for nghttp2_session_callbacks_set_on_frame_send_callback
+      # for nghttp2_session_callbacks_set_on_frame_send_callback
       # def on_frame_recv(frame)
-      #   true
+      #   GrpcKit.logger.debug("on_frame_recv #{frame}")
       # end
 
       # # for nghttp2_session_callbacks_set_on_frame_not_send_callback
@@ -51,9 +86,14 @@ module GrpcKit
       # def on_invalid_frame_recv(frame, error_code)
       # end
 
-      # # for nghttp2_session_callbacks_set_on_stream_close_callback
-      # def on_stream_close(id, error_code)
-      # end
+      # for nghttp2_session_callbacks_set_on_stream_close_callback
+      def on_stream_close(stream_id, error_code)
+        GrpcKit.logger.debug("on_stream_close stream_id=#{stream_id}, error_code=#{error_code}")
+        stream = @streams.delete(stream_id)
+        if stream
+          stream.close
+        end
+      end
 
       # # for nghttp2_session_callbacks_set_on_data_chunk_recv_callback
       # def on_data_chunk_recv(id, data, flags)
