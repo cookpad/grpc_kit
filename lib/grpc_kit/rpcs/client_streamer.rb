@@ -9,6 +9,8 @@ module GrpcKit
 
     module Server
       class ClientStreamer
+        def initialize(handler:, method_name:, protobuf:)
+        end
       end
     end
   end

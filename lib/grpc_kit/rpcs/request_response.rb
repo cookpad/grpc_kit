@@ -18,7 +18,6 @@ module GrpcKit
         end
 
         def invoke(data)
-          @session.submit_settings([])
           req = @protobuf.encode(data)
 
           stream_id = @session.submit_request(
@@ -40,7 +39,7 @@ module GrpcKit
         end
 
         def on_frame_data_recv(stream)
-          bufs = ''
+          bufs = +''
           while (data = stream.consume_read_data)
             compressed, size, buf = unpack(data)
 
@@ -72,7 +71,7 @@ module GrpcKit
         end
 
         def invoke(stream)
-          bufs = ''
+          bufs = +''
           while (data = stream.consume_read_data)
             compressed, size, buf = unpack(data)
 

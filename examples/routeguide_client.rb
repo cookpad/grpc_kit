@@ -20,4 +20,17 @@ def get_feature(stub)
   end
 end
 
-get_feature(stub)
+def list_features(stub)
+  rect = Routeguide::Rectangle.new(
+    lo: Routeguide::Point.new(latitude: 400_000_000, longitude: -750_000_000),
+    hi: Routeguide::Point.new(latitude: 420_000_000, longitude: -730_000_000),
+  )
+
+  resps = stub.list_features(rect)
+  resps.each do |r|
+    p "list_features #{r.name} at #{r.location.inspect}"
+  end
+end
+
+# get_feature(stub)
+list_features(stub)

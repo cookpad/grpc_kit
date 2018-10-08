@@ -20,6 +20,8 @@ module GrpcKit
       cli = rpc_desc.build_client(opts.delete(:authority) || @authority, opts)
       session = GrpcKit::Session::Client.new(@io.new(sock, sock), cli)
       cli.session = session
+
+      session.submit_settings([])
       cli.invoke(request)
     end
 
@@ -27,11 +29,20 @@ module GrpcKit
       GrpcKit.logger.info('Calling client_streamer')
     end
 
-    def server_streamer(rpc_desc, request, metadata, opts = {})
+    def server_streamer(rpc_desc, request, opts = {})
       GrpcKit.logger.info('Calling server_streamer')
+
+      sock = TCPSocket.new(@host, @port)
+
+      cli = rpc_desc.build_client(opts.delete(:authority) || @authority, opts)
+      session = GrpcKit::Session::Client.new(@io.new(sock, sock), cli)
+      cli.session = session
+
+      session.submit_settings([])
+      cli.invoke(request)
     end
 
-    def bidi_streamer(rpc_desc, requests, metadata, opts = {})
+    def bidi_streamer(rpc_desc, requests, opts = {})
       GrpcKit.logger.info('Calling bidi_streamer')
     end
   end
