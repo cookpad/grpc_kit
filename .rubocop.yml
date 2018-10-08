@@ -1,6 +1,6 @@
 AllCops:
   Exclude:
-    - '**/**/*.pb.rb'
+    - '**/**/*_pb.rb' # auto-generated
     - "vendor/**/*"
   DisplayCopNames: true
   TargetRubyVersion: 2.5

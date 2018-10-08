@@ -7,6 +7,6 @@ require 'socket'
 require 'pry'
 require 'helloworld_services_pb'
 
-stub = Helloworld::Greeter::Stub.new('localhost', 3000)
-message = stub.say_hello(Helloworld::HelloRequest.new(msg: 'ganmacs')).msg
+stub = Helloworld::Greeter::Stub.new('localhost', 50051)
+message = stub.say_hello(Helloworld::HelloRequest.new(name: 'ganmacs')).message
 p message
