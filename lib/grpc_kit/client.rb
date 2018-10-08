@@ -85,11 +85,11 @@ module GrpcKit
       session = GrpcKit::Session::Client.new(@io.new(sock, sock), rr)
       rr.session = session
 
-      req = rpc_desc.encode2(request)
+      req = rpc_desc.client_encode(request)
       data = [0, req.length, req].pack('CNa*')
 
       resp = rr.invoke(data)
-      rpc_desc.decode2(resp)
+      rpc_desc.client_decode(resp)
     end
 
     def client_streamer(path, requests, rpc, opts = {})

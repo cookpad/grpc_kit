@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'grpc_kit/grpc/stream'
-
 module GrpcKit
   class RpcDesc
     def initialize(name:, input:, output:, marshal_method:, unmarshal_method:)
@@ -12,26 +10,26 @@ module GrpcKit
       @unmarshal_method = unmarshal_method
     end
 
-    def encode(val)
+    def server_encode(val)
       @output.send(@marshal_method, val)
     end
 
-    def decode(val)
+    def server_decode(val)
       @input.send(@unmarshal_method, val)
     end
 
-    def encode2(val)
+    def client_encode(val)
       @input.send(@marshal_method, val)
     end
 
-    def decode2(val)
+    def client_decode(val)
       @output.send(@unmarshal_method, val)
     end
 
     def invoke(rpc, val)
-      args = decode(val)
+      args = server_decode(val)
       ret = rpc.send(to_underscore(@name), args, nil) # nil is GRPC::Call object
-      encode(ret)
+      server_encode(ret)
     end
 
     def ruby_style_name

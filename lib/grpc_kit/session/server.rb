@@ -71,8 +71,8 @@ module GrpcKit
         when DS9::Frames::Data
           # need to port NGHTTP2_FLAG_END_STREAM to check frame.flag has it
           stream = @streams[frame.stream_id]
-          resp = @handler.on_frame_data_recv(stream)
-          unless resp
+          sent = @handler.on_frame_data_recv(stream)
+          unless sent
             return # TODO
           end
 
