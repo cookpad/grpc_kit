@@ -46,7 +46,7 @@ module GrpcKit
 
     def on_data_chunk_recv(stream, data)
       compressed, length, buf = data.unpack('CNa*')
-      if compressed == 0      # TODO: not
+      if compressed == 0 # TODO: not
         if length != buf.size
           raise 'recived data inconsistent'
         end

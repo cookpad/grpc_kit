@@ -26,6 +26,14 @@ Style/FormatString:
 Style/IfUnlessModifier:
   Enabled: false
 
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInArguments:
+  EnforcedStyleForMultiline: comma
+
+Style/SafeNavigation:
+  Enabled: false
 
 Style/PredicateName:
   NamePrefixBlacklist:

@@ -43,7 +43,7 @@ module GrpcKit
         data = @streams[stream_id].read(length)
         if data.nil?
           submit_trailer(stream_id, 'grpc-status' => '0')
-          false                 # nil mean END_STREAM
+          false # nil mean END_STREAM
         else
           data
         end
@@ -73,7 +73,7 @@ module GrpcKit
           stream = @streams[frame.stream_id]
           resp = @handler.on_frame_data_recv(stream)
           unless resp
-            return              # TODO
+            return # TODO
           end
 
           submit_response(

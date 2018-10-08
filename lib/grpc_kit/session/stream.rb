@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+# frozen_string_literal: false
 
 require 'ds9'
 
@@ -36,7 +36,7 @@ module GrpcKit
       end
 
       def recv(data)
-        @data = data            # XXX
+        @data = data # XXX
       end
 
       # TODO

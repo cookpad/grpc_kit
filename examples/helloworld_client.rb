@@ -1,3 +1,4 @@
+# frozen_string_literal: false
 
 $LOAD_PATH.unshift File.expand_path('./examples/helloworld')
 
