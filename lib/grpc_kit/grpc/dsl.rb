@@ -58,11 +58,11 @@ module GrpcKit
                 request_response(rpc_desc, request, opts)
               end
             elsif rpc_desc.client_streamer?
-              define_method(method_name) do |requests, opts = {}|
-                client_streamer(rpc_desc, requests, opts)
+              define_method(method_name) do |opts = {}|
+                client_streamer(rpc_desc, opts)
               end
             elsif rpc_desc.server_streamer?
-              define_method(method_name) do |request, opts = {}, &blk|
+              define_method(method_name) do |request, opts = {}|
                 server_streamer(rpc_desc, request, opts, &blk)
               end
             elsif rpc_desc.bidi_streamer?

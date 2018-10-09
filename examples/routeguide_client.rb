@@ -4,9 +4,10 @@ $LOAD_PATH.unshift File.expand_path('./examples/routeguide')
 
 require 'grpc_kit'
 require 'pry'
+require 'json'
 require 'routeguide_services_pb'
 
-stub = Routeguide::RouteGuide::Stub.new('localhost', 50051)
+RESOURCE_PATH = './examples/routeguide/routeguide.json'
 
 def get_feature(stub)
   points = [
@@ -28,9 +29,32 @@ def list_features(stub)
 
   resps = stub.list_features(rect)
   resps.each do |r|
-    p "list_features #{r.name} at #{r.location.inspect}"
+    puts "list_features #{r.name} at #{r.location.inspect}"
   end
 end
 
+def record_route(stub, size)
+  features = File.open(RESOURCE_PATH) do |f|
+    JSON.parse(f.read)
+  end
+
+  stream = stub.record_route({})
+
+  size.times do
+    location = features.sample['location']
+    pt = Routeguide::Point.new(latitude: location['latitude'], longitude: location['longitude'])
+    puts "- next point is #{pt.inspect}"
+    stream.send(pt)
+    sleep(rand(0..1))
+  end
+
+  resp = stream.close_and_recv
+  puts "summary: #{resp.inspect}"
+end
+
+stub = Routeguide::RouteGuide::Stub.new('localhost', 50051)
+
 # get_feature(stub)
-list_features(stub)
+# list_features(stub)
+# record_route(stub, 10)
+record_route(stub, 10)

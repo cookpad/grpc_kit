@@ -16,8 +16,11 @@ module GrpcKit
       end
 
       def start(stream_id)
-        stream = GrpcKit::Session::Stream.new(stream_id: stream_id, session: self)
-        @streams[stream_id] = stream
+        stream = @streams[stream_id]
+        unless stream
+          stream = GrpcKit::Session::Stream.new(stream_id: stream_id, session: self)
+          @streams[stream_id] = stream
+        end
 
         while !stream.end_stream? && (want_read? || want_write?)
           if want_read?
@@ -30,6 +33,26 @@ module GrpcKit
         end
 
         # invalid if receive and send are not called
+      end
+
+      def run_once(stream_id)
+        stream = @streams[stream_id]
+        unless stream
+          stream = GrpcKit::Session::Stream.new(stream_id: stream_id, session: self)
+          @streams[stream_id] = stream
+        end
+
+        if !stream.end_stream? && (want_read? || want_write?)
+          if want_read?
+            receive
+          end
+
+          if want_write?
+            send
+          end
+        end
+
+        stream
       end
 
       private

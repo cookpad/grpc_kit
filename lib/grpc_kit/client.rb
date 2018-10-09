@@ -25,8 +25,17 @@ module GrpcKit
       cli.invoke(request)
     end
 
-    def client_streamer(rpc_desc, requests, opts = {})
+    def client_streamer(rpc_desc, opts = {})
       GrpcKit.logger.info('Calling client_streamer')
+
+      sock = TCPSocket.new(@host, @port)
+
+      cli = rpc_desc.build_client(opts.delete(:authority) || @authority, opts)
+      session = GrpcKit::Session::Client.new(@io.new(sock, sock), cli)
+      cli.session = session
+
+      session.submit_settings([])
+      cli.invoke(nil)
     end
 
     def server_streamer(rpc_desc, request, opts = {})
