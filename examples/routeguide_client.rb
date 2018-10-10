@@ -5,9 +5,12 @@ $LOAD_PATH.unshift File.expand_path('./examples/routeguide')
 require 'grpc_kit'
 require 'pry'
 require 'json'
+require 'logger'
 require 'routeguide_services_pb'
 
 RESOURCE_PATH = './examples/routeguide/routeguide.json'
+
+$logger = Logger.new(STDOUT)
 
 def get_feature(stub)
   points = [
@@ -27,9 +30,11 @@ def list_features(stub)
     hi: Routeguide::Point.new(latitude: 420_000_000, longitude: -730_000_000),
   )
 
-  resps = stub.list_features(rect)
-  resps.each do |r|
-    puts "list_features #{r.name} at #{r.location.inspect}"
+  stream = stub.list_features(rect)
+
+  loop do
+    r = stream.recv
+    $logger.info("list_features #{r.name} at #{r.location.inspect}")
   end
 end
 
@@ -55,6 +60,5 @@ end
 stub = Routeguide::RouteGuide::Stub.new('localhost', 50051)
 
 # get_feature(stub)
-# list_features(stub)
-# record_route(stub, 10)
+list_features(stub)
 record_route(stub, 10)

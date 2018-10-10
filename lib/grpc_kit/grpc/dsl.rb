@@ -63,7 +63,7 @@ module GrpcKit
               end
             elsif rpc_desc.server_streamer?
               define_method(method_name) do |request, opts = {}|
-                server_streamer(rpc_desc, request, opts, &blk)
+                server_streamer(rpc_desc, request, opts)
               end
             elsif rpc_desc.bidi_streamer?
               define_method(method_name) do |requests, opts = {}, &blk|

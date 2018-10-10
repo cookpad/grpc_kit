@@ -35,29 +35,21 @@ module GrpcKit
             },
             pack(req),
           )
-          @session.start(stream_id)
+          s = @session.run_once(stream_id)
 
-          @data
+          @stream = GrpcKit::Rpcs::Stream.new(
+            s,
+            handler: @handler,
+            method_name: @method_name,
+            protobuf: @protobuf,
+            session: @session,
+            output: [],
+            stream_id: stream_id,
+          )
         end
 
         def on_frame_data_recv(stream)
-          bufs = +''
-          while (data = stream.consume_read_data)
-            compressed, size, buf = unpack(data)
-
-            unless size == buf.size
-              raise "inconsistent data: #{buf}"
-            end
-
-            if compressed
-              raise 'compress option is unsupported'
-            end
-
-            bufs << buf
-          end
-          stream.end_stream
-
-          @data << @protobuf.decode(buf)
+          # nothing
         end
       end
     end

@@ -7,7 +7,7 @@ module GrpcKit
     class Stream
       include GrpcKit::Rpcs::Packable
 
-      def initialize(stream, handler:, method_name:, protobuf:, input: nil, output: nil, session: nil, path: nil)
+      def initialize(stream, handler:, method_name:, protobuf:, input: nil, output: nil, session: nil, path: nil, stream_id: nil)
         @stream = stream
         @handler = handler
         @method_name = method_name
@@ -17,6 +17,7 @@ module GrpcKit
         @output = output
         @session = session
         @path = path
+        @stream_id = stream_id
       end
 
       attr_writer :stream, :output
@@ -82,7 +83,7 @@ module GrpcKit
         req = nil
 
         loop do
-          @stream.session.run_once(@stream.stream_id)
+          @session.run_once(@stream_id)
 
           bufs = +''
           while (data = @stream.consume_read_data)

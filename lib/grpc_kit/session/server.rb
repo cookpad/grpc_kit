@@ -84,7 +84,6 @@ module GrpcKit
         GrpcKit.logger.debug("on_frame_recv #{frame}")
         case frame
         when DS9::Frames::Data
-          # need to port NGHTTP2_FLAG_END_STREAM to check frame.flag has it
           stream = @streams[frame.stream_id]
 
           if frame.end_stream?
@@ -95,7 +94,6 @@ module GrpcKit
             @handler.on_frame_data_recv(stream)
           end
         # when DS9::Frames::Headers
-        # need to port NGHTTP2_FLAG_END_STREAM to check frame.flag has it
         # when DS9::Frames::Goaway
         # when DS9::Frames::RstStream
         else
