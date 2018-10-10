@@ -29,6 +29,20 @@ module GrpcKit
         end
       end
 
+      def run_once(stream_id)
+        stream = @streams.fetch(stream_id) # XXX
+
+        if !stream.end_stream? && (want_read? || want_write?)
+          if want_read?
+            receive
+          end
+
+          if want_write?
+            send
+          end
+        end
+      end
+
       def stop
         @stop = true
       end
@@ -72,7 +86,14 @@ module GrpcKit
         when DS9::Frames::Data
           # need to port NGHTTP2_FLAG_END_STREAM to check frame.flag has it
           stream = @streams[frame.stream_id]
-          @handler.on_frame_data_recv(stream)
+
+          if frame.end_stream?
+            stream.end_read
+          end
+          unless stream.handling
+            stream.handling = true
+            @handler.on_frame_data_recv(stream)
+          end
         # when DS9::Frames::Headers
         # need to port NGHTTP2_FLAG_END_STREAM to check frame.flag has it
         # when DS9::Frames::Goaway
@@ -135,8 +156,11 @@ module GrpcKit
       end
 
       # for nghttp2_session_callbacks_set_on_data_chunk_recv_callback
-      def on_data_chunk_recv(stream_id, data, _flags)
-        @streams[stream_id].recv(data)
+      def on_data_chunk_recv(stream_id, data, flags)
+        stream = @streams[stream_id]
+        if stream
+          stream.recv(data)
+        end
       end
 
       # nghttp2_session_callbacks_set_before_frame_send_callback

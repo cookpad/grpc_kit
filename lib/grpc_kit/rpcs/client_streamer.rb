@@ -101,7 +101,34 @@ module GrpcKit
 
     module Server
       class ClientStreamer
+        include GrpcKit::Rpcs::Packable
+
         def initialize(handler:, method_name:, protobuf:)
+          @handler = handler
+          @method_name = method_name
+          @protobuf = protobuf
+        end
+
+        def invoke(stream)
+          s = GrpcKit::Rpcs::Stream.new(
+            stream,
+            handler: @handler,
+            method_name: @method_name,
+            protobuf: @protobuf,
+            session: @session,
+          )
+          ret = @handler.send(@method_name, s)
+          stream.session
+
+          resp = pack(@protobuf.encode(ret))
+          stream.write(resp)
+          stream.end_write
+
+          stream.submit_response(
+            ':status' => '200',
+            'content-type' => 'application/grpc',
+            'accept-encoding' => 'identity,gzip',
+          )
         end
       end
     end

@@ -34,12 +34,57 @@ class Server < Routeguide::RouteGuide::Service
 
       pt = Routeguide::Point.new(location)
       resp = Routeguide::Feature.new(location: pt, name: name)
-      @logger.info(Routeguide::Feature.new(location: pt, name: name))
+      @logger.info(resp)
       stream.send_msg(resp)
     end
   end
 
+  def record_route(stream)
+    @logger.info('===== record_route =====')
+    distance = 0
+    count = 0
+    features = 0
+    start_at = Time.now.to_i
+    last = nil
+
+    loop do
+      point = stream.recv # XXX: raise StopIteration
+      @logger.info("record_route #{point}")
+
+      count += 1
+      name = @features.fetch({ 'longitude' => point.longitude, 'latitude' => point.latitude }, '')
+      unless name == ''
+        features += 1
+      end
+
+      last = point
+      distance += calculate_distance(point, last)
+    end
+
+    Routeguide::RouteSummary.new(
+      point_count: count,
+      feature_count: features,
+      distance: distance,
+      elapsed_time: Time.now.to_i - start_at,
+    )
+  end
+
   private
+
+  COORD_FACTOR = 1e7
+  RADIUS = 637_100
+
+  def calculate_distance(point_a, point_b)
+    lat_a = (point_a.latitude / COORD_FACTOR) * Math::PI / 180
+    lat_b = (point_b.latitude / COORD_FACTOR) * Math::PI / 180
+    lon_a = (point_a.longitude / COORD_FACTOR) * Math::PI / 180
+    lon_b = (point_b.longitude / COORD_FACTOR) * Math::PI / 180
+
+    delta_lat = lat_a - lat_b
+    delta_lon = lon_a - lon_b
+    a = Math.sin(delta_lat / 2)**2 + Math.cos(lat_a) * Math.cos(lat_b) + Math.sin(delta_lon / 2)**2
+    (2 * RADIUS * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))).to_i
+  end
 
   def in_range(point, rect)
     longitudes = [rect.lo.longitude, rect.hi.longitude]

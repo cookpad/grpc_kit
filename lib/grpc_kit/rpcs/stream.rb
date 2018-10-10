@@ -7,7 +7,7 @@ module GrpcKit
     class Stream
       include GrpcKit::Rpcs::Packable
 
-      def initialize(stream, handler:, method_name:, protobuf:, input:, output: nil, session: nil, path: nil)
+      def initialize(stream, handler:, method_name:, protobuf:, input: nil, output: nil, session: nil, path: nil)
         @stream = stream
         @handler = handler
         @method_name = method_name
@@ -75,6 +75,52 @@ module GrpcKit
 
         @session.start(stream_id)
         @output
+      end
+
+      # server of clientstreamer
+      def recv
+        req = nil
+
+        loop do
+          @stream.session.run_once(@stream.stream_id)
+
+          bufs = +''
+          while (data = @stream.consume_read_data)
+            compressed, size, buf = unpack(data)
+
+            unless size == buf.size
+              raise "inconsistent data: #{buf}"
+            end
+
+            if compressed
+              raise 'compress option is unsupported'
+            end
+
+            bufs << buf
+          end
+
+          if bufs == ''
+            if @stream.end_read?
+              break
+            end
+
+            next
+          end
+
+          req = @protobuf.decode(bufs)
+
+          if req
+            return req
+          end
+
+          GrpcKit.logger.error("#{bufs} is invalid")
+        end
+
+        if req.nil?
+          raise StopIteration
+        else
+          req
+        end
       end
 
       # server

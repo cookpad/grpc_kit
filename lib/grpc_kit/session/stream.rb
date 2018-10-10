@@ -5,8 +5,8 @@ require 'ds9'
 module GrpcKit
   module Session
     class Stream
-      attr_reader :headers, :stream_id
-      attr_accessor :data
+      attr_reader :headers, :stream_id, :session
+      attr_accessor :data, :handling
 
       def initialize(stream_id:, session:, end_read_stream: false, end_write_stream: false)
         @stream_id = stream_id
@@ -18,6 +18,7 @@ module GrpcKit
 
         @read_data = Queue.new
         @write_data = ''
+        @handling = false
       end
 
       def submit_response(headers)
