@@ -15,44 +15,37 @@ module GrpcKit
 
     def request_response(rpc_desc, request, opts = {})
       GrpcKit.logger.info('Calling request_respose')
-      sock = TCPSocket.new(@host, @port)
-
-      cli = rpc_desc.build_client(opts.delete(:authority) || @authority, opts)
-      session = GrpcKit::Session::Client.new(@io.new(sock, sock), cli)
-      cli.session = session
-
-      session.submit_settings([])
-      cli.invoke(request)
+      do_request(rpc_desc, request, opts)
     end
 
     def client_streamer(rpc_desc, opts = {})
       GrpcKit.logger.info('Calling client_streamer')
-
-      sock = TCPSocket.new(@host, @port)
-
-      cli = rpc_desc.build_client(opts.delete(:authority) || @authority, opts)
-      session = GrpcKit::Session::Client.new(@io.new(sock, sock), cli)
-      cli.session = session
-
-      session.submit_settings([])
-      cli.invoke(nil)
+      do_request(rpc_desc, nil, opts)
     end
 
     def server_streamer(rpc_desc, request, opts = {})
       GrpcKit.logger.info('Calling server_streamer')
-
-      sock = TCPSocket.new(@host, @port)
-
-      cli = rpc_desc.build_client(opts.delete(:authority) || @authority, opts)
-      session = GrpcKit::Session::Client.new(@io.new(sock, sock), cli)
-      cli.session = session
-
-      session.submit_settings([])
-      cli.invoke(request)
+      do_request(rpc_desc, request, opts)
     end
 
     def bidi_streamer(rpc_desc, requests, opts = {})
       GrpcKit.logger.info('Calling bidi_streamer')
+    end
+
+    private
+
+    def do_request(rpc_desc, request, opts)
+      sock = TCPSocket.new(@host, @port) # XXX
+
+      cli = rpc_desc.build_client(opts)
+      session = GrpcKit::Session::Client.new(
+        @io.new(sock, sock),
+        cli,
+        authority: opts.delete(:authority) || @authority,
+      )
+
+      session.submit_settings([])
+      cli.invoke(session, request)
     end
   end
 end

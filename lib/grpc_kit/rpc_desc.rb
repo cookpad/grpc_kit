@@ -22,10 +22,9 @@ module GrpcKit
       )
     end
 
-    def build_client(authority, opts = {})
+    def build_client(opts = {})
       @build_client ||= client.new(
         path: path.to_s,
-        authority: authority,
         protobuf: client_protobuf,
         opts: opts,
       )

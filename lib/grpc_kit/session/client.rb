@@ -7,12 +7,25 @@ module GrpcKit
   module Session
     class Client < DS9::Client
       # @io [GrpcKit::IO::XXX]
-      def initialize(io, handler)
+      def initialize(io, handler, opts = {})
         super() # initialize DS9::Session
 
         @io = io
         @streams = {}
         @handler = handler
+        @request = {
+          ':method' => 'POST',
+          ':scheme' => 'http',
+          ':authority' => opts[:authority],
+          'te' => 'trailers',
+          'content-type' => 'application/grpc',
+          'user-agent' => "grpc-ruby/#{GrpcKit::VERSION} (grpc_kit)",
+          'grpc-accept-encoding' => 'identity,deflate,gzip',
+        }
+      end
+
+      def submit_request(body, path:, **headers)
+        super(@request.merge(headers.merge(':path' => path)), body)
       end
 
       def start(stream_id)
@@ -35,11 +48,15 @@ module GrpcKit
         # invalid if receive and send are not called
       end
 
-      def run_once(stream_id)
+      def run_once(stream_id, end_write: false)
         stream = @streams[stream_id]
         unless stream
           stream = GrpcKit::Session::Stream.new(stream_id: stream_id, session: self)
           @streams[stream_id] = stream
+        end
+
+        if end_write
+          @streams[stream_id].end_write # XXX
         end
 
         if !stream.end_stream? && (want_read? || want_write?)
@@ -92,8 +109,8 @@ module GrpcKit
 
           unless stream.handling
             stream.handling = true
-            @handler.on_frame_data_recv(stream)
           end
+
         # when DS9::Frames::Headers
         # when DS9::Frames::Goaway
         # when DS9::Frames::RstStream

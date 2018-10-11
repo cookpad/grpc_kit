@@ -1,56 +1,22 @@
 # frozen_string_literal: true
 
-require 'grpc_kit/rpcs/packable'
-require 'grpc_kit/rpcs/stream'
 require 'grpc_kit/server_stream'
+require 'grpc_kit/client_stream'
 
 module GrpcKit
   module Rpcs
     module Client
       class ServerStreamer
-        include GrpcKit::Rpcs::Packable
-
-        attr_writer :session
-
-        def initialize(path:, protobuf:, authority:, opts: {})
+        def initialize(path:, protobuf:, opts: {})
           @path = path
           @protobuf = protobuf
-          @authority = authority
           @opts = opts
-          @data = []
         end
 
-        def invoke(data)
-          req = @protobuf.encode(data)
-
-          stream_id = @session.submit_request(
-            {
-              ':method' => 'POST',
-              ':scheme' => 'http',
-              ':authority' => @authority,
-              ':path' => @path,
-              'te' => 'trailers',
-              'content-type' => 'application/grpc',
-              'user-agent' => "grpc-ruby/#{GrpcKit::VERSION} (grpc_kit)",
-              'grpc-accept-encoding' => 'identity,deflate,gzip',
-            },
-            pack(req),
-          )
-          s = @session.run_once(stream_id)
-
-          @stream = GrpcKit::Rpcs::Stream.new(
-            s,
-            handler: @handler,
-            method_name: @method_name,
-            protobuf: @protobuf,
-            session: @session,
-            output: [],
-            stream_id: stream_id,
-          )
-        end
-
-        def on_frame_data_recv(stream)
-          # nothing
+        def invoke(session, data)
+          cs = GrpcKit::ClientStream.new(path: @path, protobuf: @protobuf, session: session)
+          cs.send(data, end_stream: true)
+          cs
         end
       end
     end

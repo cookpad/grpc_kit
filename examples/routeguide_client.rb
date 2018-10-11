@@ -13,6 +13,7 @@ RESOURCE_PATH = './examples/routeguide/routeguide.json'
 $logger = Logger.new(STDOUT)
 
 def get_feature(stub)
+  $logger.info('===== get_feature =====')
   points = [
     Routeguide::Point.new(latitude:  409_146_138, longitude: -746_188_906),
     Routeguide::Point.new(latitude:  0, longitude: 0)
@@ -25,6 +26,7 @@ def get_feature(stub)
 end
 
 def list_features(stub)
+  $logger.info('===== list_features =====')
   rect = Routeguide::Rectangle.new(
     lo: Routeguide::Point.new(latitude: 400_000_000, longitude: -750_000_000),
     hi: Routeguide::Point.new(latitude: 420_000_000, longitude: -730_000_000),
@@ -60,5 +62,5 @@ end
 stub = Routeguide::RouteGuide::Stub.new('localhost', 50051)
 
 # get_feature(stub)
-list_features(stub)
+# list_features(stub)
 record_route(stub, 10)
