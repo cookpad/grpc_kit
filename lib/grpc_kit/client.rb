@@ -45,7 +45,7 @@ module GrpcKit
       )
 
       session.submit_settings([])
-      cli.invoke(session, request)
+      rpc.invoke(session, request, opts)
     end
   end
 end

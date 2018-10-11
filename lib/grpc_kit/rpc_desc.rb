@@ -15,19 +15,11 @@ module GrpcKit
     end
 
     def build_server(handler)
-      server.new(
-        handler: handler,
-        method_name: ruby_style_name,
-        protobuf: server_protobuf,
-      )
+      server.new(handler, ruby_style_name, server_protobuf)
     end
 
-    def build_client(opts = {})
-      @build_client ||= client.new(
-        path: path.to_s,
-        protobuf: client_protobuf,
-        opts: opts,
-      )
+    def build_client
+      client.new(path.to_s, client_protobuf)
     end
 
     def ruby_style_name

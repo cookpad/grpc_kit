@@ -1,16 +1,18 @@
 # frozen_string_literal: true
 
+require 'grpc_kit/rpcs/base'
+
 module GrpcKit
   module Rpcs
     module Client
-      class BidiStreamer
+      class BidiStreamer < Base
+        def invoke(session, data, opts = {})
+        end
       end
     end
 
     module Server
-      class BidiStreamer
-        def initialize(handler:, method_name:, protobuf:)
-        end
+      class BidiStreamer < Base
       end
     end
   end
