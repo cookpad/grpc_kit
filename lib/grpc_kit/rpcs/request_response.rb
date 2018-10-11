@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'grpc_kit/rpcs/packable'
+require 'grpc_kit/server_stream'
 
 module GrpcKit
   module Rpcs
@@ -62,8 +63,6 @@ module GrpcKit
 
     module Server
       class RequestResponse
-        include GrpcKit::Rpcs::Packable
-
         def initialize(handler:, method_name:, protobuf:)
           @handler = handler
           @method_name = method_name
@@ -71,34 +70,11 @@ module GrpcKit
         end
 
         def invoke(stream)
-          bufs = +''
-          while (data = stream.consume_read_data)
-            compressed, size, buf = unpack(data)
-
-            unless size == buf.size
-              raise "inconsistent data: #{buf}"
-            end
-
-            if compressed
-              raise 'compress option is unsupported'
-            end
-
-            bufs << buf
-          end
-          stream.end_read
-
-          req = @protobuf.decode(bufs)
-          ret = @handler.send(@method_name, req, nil) # nil is GRPC::Call object
-          resp = pack(@protobuf.encode(ret))
-
-          stream.write(resp)
+          ss = GrpcKit::ServerStream.new(stream: stream, protobuf: @protobuf)
+          req = ss.recv
+          resp = @handler.send(@method_name, req, {})
+          ss.send_msg(resp)
           stream.end_write
-
-          stream.submit_response(
-            ':status' => '200',
-            'content-type' => 'application/grpc',
-            'accept-encoding' => 'identity,gzip',
-          )
         end
       end
     end

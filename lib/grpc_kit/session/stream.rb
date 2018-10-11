@@ -21,8 +21,13 @@ module GrpcKit
         @handling = false
       end
 
-      def submit_response(headers)
-        @session.submit_response(@stream_id, headers)
+      def submit_response(status:)
+        @session.submit_response(
+          @stream_id,
+          ':status' => status.to_s,
+          'content-type' => 'application/grpc',
+          'accept-encoding' => 'identity,gzip',
+        )
       end
 
       def recv(data)
@@ -30,6 +35,8 @@ module GrpcKit
       end
 
       def consume_read_data
+        @session.run_once(@stream_id) # XXX
+
         if has_read_data?
           @read_data.pop
         else

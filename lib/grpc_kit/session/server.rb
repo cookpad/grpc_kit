@@ -58,6 +58,7 @@ module GrpcKit
         data = @streams[stream_id].consume_write_data(length)
         if data.empty? && stream.end_write?
           submit_trailer(stream_id, 'grpc-status' => '0')
+
           false # means EOF and END_STREAM
         else
           data

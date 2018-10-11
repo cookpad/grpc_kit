@@ -77,67 +77,6 @@ module GrpcKit
         @session.start(stream_id)
         @output
       end
-
-      # server of clientstreamer
-      def recv
-        req = nil
-
-        loop do
-          @session.run_once(@stream_id)
-
-          bufs = +''
-          while (data = @stream.consume_read_data)
-            compressed, size, buf = unpack(data)
-
-            unless size == buf.size
-              raise "inconsistent data: #{buf}"
-            end
-
-            if compressed
-              raise 'compress option is unsupported'
-            end
-
-            bufs << buf
-          end
-
-          if bufs == ''
-            if @stream.end_read?
-              break
-            end
-
-            next
-          end
-
-          req = @protobuf.decode(bufs)
-
-          if req
-            return req
-          end
-
-          GrpcKit.logger.error("#{bufs} is invalid")
-        end
-
-        if req.nil?
-          raise StopIteration
-        else
-          req
-        end
-      end
-
-      # server
-      def send_msg(data)
-        resp = @protobuf.encode(data)
-        @stream.write(pack(resp))
-
-        return if @sent_first_msg
-
-        @stream.submit_response(
-          ':status' => '200',
-          'content-type' => 'application/grpc',
-          'accept-encoding' => 'identity,gzip',
-        )
-        @sent_first_msg = true
-      end
     end
   end
 end
