@@ -52,22 +52,23 @@ module GrpcKit
         Class.new(GrpcKit::Client) do
           rpc_descs_.each do |_, rpc_desc|
             method_name = rpc_desc.ruby_style_name
+            rpc = rpc_desc.build_client
 
             if rpc_desc.request_response?
               define_method(method_name) do |request, opts = {}|
-                request_response(rpc_desc, request, opts)
+                request_response(rpc, request, opts)
               end
             elsif rpc_desc.client_streamer?
               define_method(method_name) do |opts = {}|
-                client_streamer(rpc_desc, opts)
+                client_streamer(rpc, opts)
               end
             elsif rpc_desc.server_streamer?
               define_method(method_name) do |request, opts = {}|
-                server_streamer(rpc_desc, request, opts)
+                server_streamer(rpc, request, opts)
               end
             elsif rpc_desc.bidi_streamer?
               define_method(method_name) do |requests, opts = {}, &blk|
-                bidi_streamer(rpc_desc, requests, opts, &blk)
+                bidi_streamer(rpc, requests, opts, &blk)
               end
             else
               raise "unknown #{rpc_desc}"
