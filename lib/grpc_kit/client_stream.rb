@@ -15,7 +15,7 @@ module GrpcKit
       @stream = nil
     end
 
-    def send(data, end_stream: false)
+    def send(data, metadata: {}, end_stream: false)
       req = @protobuf.encode(data)
       @input.write(pack(req))
 
@@ -28,7 +28,7 @@ module GrpcKit
 
         @session.run_once(stream_id)
       else
-        stream_id = @session.submit_request(@input, path: @path)
+        stream_id = @session.submit_request(@input, metadata: metadata, path: @path)
         @stream = @session.run_once(stream_id, end_write: end_stream)
         @sent_first_msg = true
       end

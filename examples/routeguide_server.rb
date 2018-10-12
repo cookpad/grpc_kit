@@ -19,8 +19,9 @@ class Server < Routeguide::RouteGuide::Service
     end
   end
 
-  def get_feature(point, _call)
+  def get_feature(point, ctx)
     name = @features.fetch({ 'longitude' => point.longitude, 'latitude' => point.latitude }, '')
+    @logger.info("Point longitude=#{point.longitude}, latitude=#{point.latitude}, metadata=#{ctx.metadata}")
     Routeguide::Feature.new(location: point, name: name)
   end
 

@@ -24,8 +24,8 @@ module GrpcKit
         }
       end
 
-      def submit_request(body, path:, **headers)
-        super(@request.merge(headers.merge(':path' => path)), body)
+      def submit_request(body, path:, metadata: {}, **headers)
+        super(metadata.merge(@request.merge(headers.merge(':path' => path))), body)
       end
 
       def start(stream_id)

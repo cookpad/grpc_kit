@@ -92,9 +92,11 @@ module GrpcKit
           end
           unless stream.handling
             stream.handling = true
-            @handler.on_frame_data_recv(stream)
+            @handler.dispatch(stream)
           end
-        # when DS9::Frames::Headers
+        when DS9::Frames::Headers
+        # nothing
+
         # when DS9::Frames::Goaway
         # when DS9::Frames::RstStream
         else
@@ -130,20 +132,20 @@ module GrpcKit
 
       # for nghttp2_session_callbacks_set_on_header_callback
       def on_header(name, value, frame, _flags)
-        @streams[frame.stream_id].headers[name] = value
+        @streams[frame.stream_id].process_header_feild(name, value)
       end
 
       # for nghttp2_session_callbacks_set_on_begin_frame_callback
-      def on_begin_frame(frame_header)
-        GrpcKit.logger.debug("on_begin_frame #{frame_header}")
-        true
-      end
+      # def on_begin_frame(frame_header)
+      #   GrpcKit.logger.debug("on_begin_frame #{frame_header}")
+      #   true
+      # end
 
       # for nghttp2_session_callbacks_set_on_invalid_frame_recv_callback
-      def on_invalid_frame_recv(frame, error_code)
-        GrpcKit.logger.debug("on_invalid_frame_recv #{error_code}")
-        true
-      end
+      # def on_invalid_frame_recv(frame, error_code)
+      #   GrpcKit.logger.debug("on_invalid_frame_recv #{error_code}")
+      #   true
+      # end
 
       # for nghttp2_session_callbacks_set_on_stream_close_callback
       def on_stream_close(stream_id, error_code)

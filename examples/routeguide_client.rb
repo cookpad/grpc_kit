@@ -20,8 +20,8 @@ def get_feature(stub)
   ]
 
   points.each do |pt|
-    feature = stub.get_feature(pt)
-    puts "get_feature #{feature.name}, #{feature.location}"
+    feature = stub.get_feature(pt, metadata: { 'metadata' => 'data1' })
+    $logger.info("get_feature #{feature.name}, #{feature.location}")
   end
 end
 

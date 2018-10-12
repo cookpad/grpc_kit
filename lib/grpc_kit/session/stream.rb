@@ -1,11 +1,11 @@
 # frozen_string_literal: false
 
-require 'ds9'
+require 'grpc_kit/session/header'
 
 module GrpcKit
   module Session
     class Stream
-      attr_reader :headers, :stream_id, :session
+      attr_reader :headers, :header_builder, :stream_id, :session
       attr_accessor :data, :handling
 
       def initialize(stream_id:, session:, end_read_stream: false, end_write_stream: false)
@@ -14,7 +14,7 @@ module GrpcKit
         @end_write_stream = end_write_stream
         @session = session
         @end_stream = false
-        @headers = {}
+        @headers = Header.new({}) # Set metadata {}
 
         @read_data = Queue.new
         @write_data = ''
@@ -26,8 +26,12 @@ module GrpcKit
           @stream_id,
           ':status' => status.to_s,
           'content-type' => 'application/grpc',
-          'accept-encoding' => 'identity,gzip',
+          'accept-encoding' => 'identity',
         )
+      end
+
+      def process_header_feild(key, val)
+        HeaderProcessor.call(key, val, @headers)
       end
 
       def recv(data)

@@ -40,10 +40,8 @@ module GrpcKit
       session.start # blocking
     end
 
-    # TODO: name
-    def on_frame_data_recv(stream)
-      path = stream.headers[':path']
-      rpc = @rpc_descs[path.to_sym]
+    def dispatch(stream)
+      rpc = @rpc_descs[stream.headers.path]
       unless rpc
         raise "Unkown path #{path}"
       end

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'grpc_kit/rpcs/base'
+require 'grpc_kit/rpcs/context'
 
 module GrpcKit
   module Rpcs
@@ -8,7 +9,7 @@ module GrpcKit
       class RequestResponse < Base
         def invoke(session, data, opts = {})
           cs = GrpcKit::ClientStream.new(path: path, protobuf: protobuf, session: session)
-          cs.send(data, end_stream: true)
+          cs.send(data, metadata: opts[:metadata], end_stream: true)
           cs.recv
         end
       end
@@ -19,7 +20,8 @@ module GrpcKit
         def invoke(stream)
           ss = GrpcKit::ServerStream.new(stream: stream, protobuf: protobuf)
           req = ss.recv
-          resp = handler.send(method_name, req, {})
+          ctx = GrpcKit::Rpcs::Context.new(stream.headers.metadata)
+          resp = handler.send(method_name, req, ctx.freeze)
           ss.send_msg(resp)
           stream.end_write
         end
