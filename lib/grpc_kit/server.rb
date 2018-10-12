@@ -5,9 +5,10 @@ require 'grpc_kit/session/server'
 
 module GrpcKit
   class Server
-    def initialize
+    def initialize(interceptors: [])
       @sessions = []
       @rpc_descs = {}
+      @interceptors = interceptors
     end
 
     # @params handler [object]
@@ -17,7 +18,7 @@ module GrpcKit
           raise "Duplicated method registered #{path}, class: #{handler}"
         end
 
-        @rpc_descs[path] = rpc_desc.build_server(handler)
+        @rpc_descs[path] = rpc_desc.build_server(handler, interceptors: @interceptors)
       end
     end
 

@@ -2,6 +2,7 @@
 
 require 'grpc_kit/rpcs'
 require 'grpc_kit/protobuffer'
+require 'grpc_kit/interceptors'
 
 module GrpcKit
   class RpcDesc
@@ -14,12 +15,17 @@ module GrpcKit
       @service_name = service_name
     end
 
-    def build_server(handler)
-      server.new(handler, ruby_style_name, server_protobuf)
+    def build_server(handler, interceptors: [])
+      if interceptors.empty?
+        server.new(handler, ruby_style_name, server_protobuf, path, nil, @service_name)
+      else
+        i = server_interceptor.new(interceptors)
+        server.new(handler, ruby_style_name, server_protobuf, path, i, @service_name)
+      end
     end
 
     def build_client
-      client.new(path.to_s, client_protobuf)
+      client.new(path.to_s, client_protobuf, client_interceptor.new, @service_name, ruby_style_name)
     end
 
     def ruby_style_name
@@ -90,6 +96,30 @@ module GrpcKit
         encode_method: @marshal_method,
         decode_method: @unmarshal_method,
       )
+    end
+
+    def server_interceptor
+      if request_response?
+        GrpcKit::Interceptors::Server::RequestResponse
+      elsif client_streamer?
+        GrpcKit::Interceptors::Server::RequestResponse # TODO
+      elsif server_streamer?
+        GrpcKit::Interceptors::Server::RequestResponse # TODO
+      elsif bidi_streamer?
+        GrpcKit::Interceptors::Server::RequestResponse # TODO
+      end
+    end
+
+    def client_interceptor
+      if request_response?
+        GrpcKit::Interceptors::Client::RequestResponse
+      elsif client_streamer?
+        GrpcKit::Interceptors::Client::RequestResponse # TODO
+      elsif server_streamer?
+        GrpcKit::Interceptors::Client::RequestResponse # TODO
+      elsif bidi_streamer?
+        GrpcKit::Interceptors::Client::RequestResponse # TODO
+      end
     end
 
     def to_underscore(val)

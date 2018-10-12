@@ -6,11 +6,12 @@ require 'grpc_kit/rpcs'
 
 module GrpcKit
   class Client
-    def initialize(host, port, io = GrpcKit::IO::Basic)
+    def initialize(host, port, io: GrpcKit::IO::Basic, interceptors: [])
       @host = host
       @port = port
       @authority = "#{host}:#{port}"
       @io = io
+      @interceptors = interceptors
     end
 
     def request_response(rpc, request, opts = {})

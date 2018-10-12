@@ -114,8 +114,8 @@ module GrpcKit
         # when DS9::Frames::Headers
         # when DS9::Frames::Goaway
         # when DS9::Frames::RstStream
-        else
-          GrpcKit.logger.info("unsupport frame #{frame}")
+        # else
+          # GrpcKit.logger.info("unsupport frame #{frame}")
         end
 
         true
