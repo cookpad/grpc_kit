@@ -1,0 +1,25 @@
+# frozen_string_literal: true
+
+require 'grpc_kit'
+
+class LoggingInterceptor < GRPC::ClientInterceptor
+  def request_response(request: nil, call: nil, method: nil, metadata: nil)
+    now = Time.now.to_i
+    GrpcKit.logger.info("Started request #{request}, method=#{method.name}, service_name=#{method.receiver.class.service_name}")
+    yield.tap do
+      GrpcKit.logger.info("Elapsed Time: #{Time.now.to_i - now}")
+    end
+  end
+
+  def client_streamer(requests: nil, call: nil, method: nil, metadata: nil)
+    yield
+  end
+
+  def server_streamer(request: nil, call: nil, method: nil, metadata: nil)
+    yield
+  end
+
+  def bidi_streamer(requests: nil, call: nil, method: nil, metadata: nil)
+    yield
+  end
+end

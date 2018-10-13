@@ -59,8 +59,17 @@ def record_route(stub, size)
   puts "summary: #{resp.inspect}"
 end
 
-stub = Routeguide::RouteGuide::Stub.new('localhost', 50051)
+opts = {}
 
-# get_feature(stub)
+if ENV['GRPC_INTERCEPTOR']
+  require_relative 'interceptors/client_logging_interceptor'
+  opts[:interceptors] = [LoggingInterceptor.new]
+elsif ENV['GRPC_TIMEOUT']
+  opts[:timeout] = Integer(ENV['GRPC_TIMEOUT'])
+end
+
+stub = Routeguide::RouteGuide::Stub.new('localhost', 50051, **opts)
+
+get_feature(stub)
 # list_features(stub)
-record_route(stub, 10)
+# record_route(stub, 10)

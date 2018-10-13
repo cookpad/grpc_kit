@@ -101,7 +101,14 @@ end
 
 sock = TCPServer.new(50051)
 
-server = GrpcKit::Server.new
+opts = {}
+
+if ENV['GRPC_INTERCEPTOR']
+  require_relative 'interceptors/server_logging_interceptor'
+  opts[:interceptors] = [LoggingInterceptor.new]
+end
+
+server = GrpcKit::Server.new(**opts)
 server.handle(Server.new)
 server.run
 
