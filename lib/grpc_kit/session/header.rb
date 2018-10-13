@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'grpc_kit/session/duration'
+
 module GrpcKit
   module Session
     Header = Struct.new(
@@ -41,8 +43,7 @@ module GrpcKit
         when 'grpc-status'
           headers.grpc_status = val.to_i
         when 'grpc-timeout'
-          headers.timeout = Time.now # TODO
-          GrpcKit.logger.warn('grpc-timeout is unsupported header now')
+          headers.timeout = Duration.decod(v)
         when 'grpc-message'
           # TODO
           GrpcKit.logger.warn('grpc-message is unsupported header now')

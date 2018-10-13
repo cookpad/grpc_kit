@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+require 'timeout'
+
+require 'grpc_kit/errors'
 require 'grpc_kit/server_stream'
 require 'grpc_kit/client_stream'
 

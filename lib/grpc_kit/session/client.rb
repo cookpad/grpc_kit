@@ -24,8 +24,13 @@ module GrpcKit
         }
       end
 
-      def submit_request(body, path:, metadata: {}, **headers)
-        super(metadata.merge(@request.merge(headers.merge(':path' => path))), body)
+      def submit_request(body, path:, metadata: {}, timeout: nil, **headers)
+        val = headers.merge(':path' => path)
+        if timeout
+          val['grpc-timeout'] = timeout
+        end
+
+        super(metadata.merge(@request.merge(val)), body)
       end
 
       def start(stream_id)

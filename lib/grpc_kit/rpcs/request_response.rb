@@ -7,13 +7,21 @@ module GrpcKit
   module Rpcs
     module Client
       class RequestResponse < Base
-        def invoke(session, request, metadata: {}, **opts)
+        def invoke(session, request, metadata: {}, timeout: nil, **opts)
           cs = GrpcKit::ClientStream.new(path: path, protobuf: protobuf, session: session)
           context = GrpcKit::Rpcs::Context.new(metadata, method_name, service_name)
+
           interceptor.intercept(request, context, metadata) do |r, c, m|
-            # TODO: check ctxt's body
-            cs.send(r, metadata: m, end_stream: true)
-            cs.recv
+            if timeout
+              # XXX: when timeout.to_timeout is 0
+              Timeout.timeout(timeout.to_timeout, GrpcKit::Errors::DeadlienExceeded) do
+                cs.send(r, timeout: timeout.to_s, metadata: m, end_stream: true)
+                cs.recv
+              end
+            else
+              cs.send(r, metadata: m, end_stream: true)
+              cs.recv
+            end
           end
         end
       end

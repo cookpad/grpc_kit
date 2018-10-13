@@ -2,16 +2,23 @@
 
 require 'socket'
 require 'grpc_kit/session/client'
+require 'grpc_kit/session/duration'
 require 'grpc_kit/rpcs'
 
 module GrpcKit
   class Client
-    def initialize(host, port, io: GrpcKit::IO::Basic, interceptors: [])
+    def initialize(host, port, io: GrpcKit::IO::Basic, interceptors: [], timeout: nil)
       @host = host
       @port = port
       @authority = "#{host}:#{port}"
       @io = io
       @interceptors = interceptors
+      @timeout =
+        if timeout
+          GrpcKit::Session::Duration.from_numeric(timeout)
+        else
+          nil
+        end
     end
 
     def request_response(rpc, request, opts = {})
@@ -35,7 +42,7 @@ module GrpcKit
 
     private
 
-    def do_request(rpc, request, opts)
+    def do_request(rpc, request, **opts)
       sock = TCPSocket.new(@host, @port) # XXX
 
       session = GrpcKit::Session::Client.new(
@@ -45,7 +52,8 @@ module GrpcKit
       )
 
       session.submit_settings([])
-      rpc.invoke(session, request, opts)
+      t = opts.delete(:timeout) || @timeout
+      rpc.invoke(session, request, timeout: t, **opts)
     end
   end
 end
