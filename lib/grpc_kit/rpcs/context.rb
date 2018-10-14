@@ -23,6 +23,10 @@ module GrpcKit
       def send(v, opts = {})
         stream.send(v, **opts)
       end
+
+      def close_and_recv
+        stream.close_and_recv
+      end
     end
   end
 end

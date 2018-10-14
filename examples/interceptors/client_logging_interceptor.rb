@@ -12,7 +12,8 @@ class LoggingInterceptor < GRPC::ClientInterceptor
   end
 
   def client_streamer(requests: nil, call: nil, method: nil, metadata: nil)
-    yield
+    GrpcKit.logger.info("Started request method=#{method.name}, service_name=#{method.receiver.class.service_name}")
+    yield(LoggingStream.new(call))
   end
 
   def server_streamer(request: nil, call: nil, method: nil, metadata: nil)
@@ -38,6 +39,10 @@ class LoggingInterceptor < GRPC::ClientInterceptor
       @stream.recv.tap do |v|
         GrpcKit.logger.info("logging interceptor recv #{v}")
       end
+    end
+
+    def close_and_recv
+      @stream.close_and_recv
     end
   end
 end

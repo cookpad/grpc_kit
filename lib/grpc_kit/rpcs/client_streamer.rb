@@ -6,8 +6,17 @@ module GrpcKit
   module Rpcs
     module Client
       class ClientStreamer < Base
-        def invoke(session, _data, opts = {})
-          GrpcKit::ClientStream.new(path: path, protobuf: protobuf, session: session)
+        def invoke(session, _data, metadata: {}, **opts)
+          cs = GrpcKit::ClientStream.new(path: @config.path, protobuf: @config.protobuf, session: session)
+          context = GrpcKit::Rpcs::Context.new(metadata, @config.method_name, @config.service_name, cs)
+
+          if @config.interceptor
+            @config.interceptor.intercept(context) do |s|
+              s
+            end
+          else
+            cs
+          end
         end
       end
     end
@@ -15,9 +24,25 @@ module GrpcKit
     module Server
       class ClientStreamer < Base
         def invoke(stream)
-          ss = GrpcKit::ServerStream.new(stream: stream, protobuf: protobuf)
-          resp = handler.send(method_name, ss)
-          ss.send_msg(resp)
+          ss = GrpcKit::ServerStream.new(stream: stream, protobuf: @config.protobuf)
+          # TODO: create object which is used by only ServerSteamer
+          call = GrpcKit::Rpcs::Context.new(
+            stream.headers.metadata,
+            @config.method_name,
+            @config.service_name,
+            ss,
+          )
+
+          if @config.interceptor
+            @config.interceptor.intercept(call) do |s|
+              resp = @handler.send(@config.ruby_style_method_name, s)
+              s.send_msg(resp)
+            end
+          else
+            resp = @handler.send(@config.ruby_style_method_name, ss)
+            ss.send_msg(resp)
+          end
+
           stream.end_write
         end
       end

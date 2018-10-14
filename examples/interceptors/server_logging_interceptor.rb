@@ -12,7 +12,8 @@ class LoggingInterceptor < GRPC::ServerInterceptor
   end
 
   def client_streamer(call: nil, method: nil)
-    yield
+    GrpcKit.logger.info("Started request method=#{method.name}, service_name=#{method.receiver.class.service_name}")
+    yield(LoggingStream.new(call))
   end
 
   def server_streamer(request: nil, call: nil, method: nil)

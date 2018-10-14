@@ -116,7 +116,7 @@ module GrpcKit
       if request_response?
         GrpcKit::Interceptors::Server::RequestResponse
       elsif client_streamer?
-        GrpcKit::Interceptors::Server::RequestResponse # TODO
+        GrpcKit::Interceptors::Server::ClientStreamer
       elsif server_streamer?
         GrpcKit::Interceptors::Server::ServerStreamer
       elsif bidi_streamer?
@@ -128,7 +128,7 @@ module GrpcKit
       if request_response?
         GrpcKit::Interceptors::Client::RequestResponse
       elsif client_streamer?
-        GrpcKit::Interceptors::Client::RequestResponse # TODO
+        GrpcKit::Interceptors::Client::ClientStreamer
       elsif server_streamer?
         GrpcKit::Interceptors::Client::ServerStreamer
       elsif bidi_streamer?
