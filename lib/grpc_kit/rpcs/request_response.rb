@@ -8,10 +8,10 @@ module GrpcKit
     module Client
       class RequestResponse < Base
         def invoke(session, request, metadata: {}, timeout: nil, **opts)
-          cs = GrpcKit::ClientStream.new(path: path, protobuf: protobuf, session: session)
-          context = GrpcKit::Rpcs::Context.new(metadata, method_name, service_name)
+          cs = GrpcKit::ClientStream.new(path: @config.path, protobuf: @config.protobuf, session: session)
+          context = GrpcKit::Rpcs::Context.new(metadata, @config.method_name, @config.service_name)
 
-          interceptor.intercept(request, context, metadata) do |r, c, m|
+          @config.interceptor.intercept(request, context, metadata) do |r, c, m|
             if timeout
               # XXX: when timeout.to_timeout is 0
               Timeout.timeout(timeout.to_timeout, GrpcKit::Errors::DeadlienExceeded) do
@@ -30,16 +30,16 @@ module GrpcKit
     module Server
       class RequestResponse < Base
         def invoke(stream)
-          ss = GrpcKit::ServerStream.new(stream: stream, protobuf: protobuf)
+          ss = GrpcKit::ServerStream.new(stream: stream, protobuf: @config.protobuf)
           request = ss.recv
-          context = GrpcKit::Rpcs::Context.new(stream.headers.metadata, method_name, service_name)
+          context = GrpcKit::Rpcs::Context.new(stream.headers.metadata, @config.method_name, @config.service_name)
           resp =
-            if interceptor
-              interceptor.intercept(request, context.freeze) do |req, ctx|
-                handler.send(method_name, req, ctx)
+            if @config.interceptor
+              @config.interceptor.intercept(request, context.freeze) do |req, ctx|
+                @handler.send(@config.ruby_style_method_name, req, ctx)
               end
             else
-              handler.send(method_name, request, context.freeze)
+              @handler.send(@config.ruby_style_method_name, request, context.freeze)
             end
 
           ss.send_msg(resp)

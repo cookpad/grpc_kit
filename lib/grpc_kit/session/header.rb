@@ -32,7 +32,7 @@ module GrpcKit
       def self.call(key, val, headers)
         case key
         when ':path'
-          headers.path = val.to_sym
+          headers.path = val
         when ':status'
           headers.http_status = val.to_i
         when 'content-type'

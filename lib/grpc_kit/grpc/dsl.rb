@@ -56,22 +56,18 @@ module GrpcKit
 
             if rpc_desc.request_response?
               define_method(method_name) do |request, opts = {}|
-                rpc.interceptor.interceptors = @interceptors
                 request_response(rpc, request, opts)
               end
             elsif rpc_desc.client_streamer?
               define_method(method_name) do |opts = {}|
-                rpc.interceptor.interceptors = @interceptors
                 client_streamer(rpc, opts)
               end
             elsif rpc_desc.server_streamer?
               define_method(method_name) do |request, opts = {}|
-                rpc.interceptor.interceptors = @interceptors
                 server_streamer(rpc, request, opts)
               end
             elsif rpc_desc.bidi_streamer?
               define_method(method_name) do |requests, opts = {}, &blk|
-                rpc.interceptor.interceptors = @interceptors
                 bidi_streamer(rpc, requests, opts, &blk)
               end
             else

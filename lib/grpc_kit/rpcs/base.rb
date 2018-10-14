@@ -9,24 +9,21 @@ require 'grpc_kit/client_stream'
 module GrpcKit
   module Rpcs
     module Client
-      Base = Struct.new(
-        :path,
-        :protobuf,
-        :interceptor,
-        :service_name,
-        :method_name,
-      )
+      class Base
+        attr_reader :config
+        def initialize(config)
+          @config = config
+        end
+      end
     end
 
     module Server
-      Base = Struct.new(
-        :handler,
-        :method_name,
-        :protobuf,
-        :path,
-        :interceptor,
-        :service_name,
-      )
+      class Base
+        def initialize(handler, config)
+          @handler = handler
+          @config = config
+        end
+      end
     end
   end
 end

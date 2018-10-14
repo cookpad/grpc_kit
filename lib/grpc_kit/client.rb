@@ -23,6 +23,8 @@ module GrpcKit
 
     def request_response(rpc, request, opts = {})
       GrpcKit.logger.info('Calling request_respose')
+
+      rpc.config.interceptor.interceptors = @interceptors
       do_request(rpc, request, opts)
     end
 

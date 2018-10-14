@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'grpc_kit/method_config'
 require 'grpc_kit/rpcs'
 require 'grpc_kit/protobuffer'
 require 'grpc_kit/interceptors'
@@ -16,16 +17,29 @@ module GrpcKit
     end
 
     def build_server(handler, interceptors: [])
-      if interceptors.empty?
-        server.new(handler, ruby_style_name, server_protobuf, path, nil, @service_name)
-      else
-        i = server_interceptor.new(interceptors)
-        server.new(handler, ruby_style_name, server_protobuf, path, i, @service_name)
-      end
+      inter = interceptors.empty? ? nil : server_interceptor.new(interceptors)
+
+      config = GrpcKit::MethodConfig.build_for_server(
+        path: path,
+        ruby_style_method_name: ruby_style_name,
+        protobuf: server_protobuf,
+        service_name: @server_name,
+        method_name: @name,
+        interceptor: inter,
+      )
+      server.new(handler, config)
     end
 
     def build_client
-      client.new(path.to_s, client_protobuf, client_interceptor.new, @service_name, ruby_style_name)
+      config = GrpcKit::MethodConfig.build_for_client(
+        path: path,
+        ruby_style_method_name: ruby_style_name,
+        protobuf: client_protobuf,
+        service_name: @server_name,
+        method_name: @name,
+        interceptor: client_interceptor.new,
+      )
+      client.new(config)
     end
 
     def ruby_style_name
@@ -33,7 +47,7 @@ module GrpcKit
     end
 
     def path
-      @path ||= "/#{@service_name}/#{@name}".to_sym
+      @path ||= "/#{@service_name}/#{@name}"
     end
 
     def request_response?
