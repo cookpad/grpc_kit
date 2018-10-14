@@ -130,7 +130,7 @@ module GrpcKit
       elsif client_streamer?
         GrpcKit::Interceptors::Client::RequestResponse # TODO
       elsif server_streamer?
-        GrpcKit::Interceptors::Client::RequestResponse # TODO
+        GrpcKit::Interceptors::Client::ServerStreamer
       elsif bidi_streamer?
         GrpcKit::Interceptors::Client::RequestResponse # TODO
       end

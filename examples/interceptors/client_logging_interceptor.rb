@@ -16,10 +16,28 @@ class LoggingInterceptor < GRPC::ClientInterceptor
   end
 
   def server_streamer(request: nil, call: nil, method: nil, metadata: nil)
-    yield
+    GrpcKit.logger.info("Started request method=#{method.name}, service_name=#{method.receiver.class.service_name}")
+    yield(LoggingStream.new(call))
   end
 
   def bidi_streamer(requests: nil, call: nil, method: nil, metadata: nil)
     yield
+  end
+
+  class LoggingStream
+    def initialize(stream)
+      @stream = stream
+    end
+
+    def send(msg, **opts)
+      GrpcKit.logger.info("logging interceptor send #{msg}")
+      @stream.send(msg, **opts)
+    end
+
+    def recv
+      @stream.recv.tap do |v|
+        GrpcKit.logger.info("logging interceptor recv #{v}")
+      end
+    end
   end
 end

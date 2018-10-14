@@ -19,6 +19,10 @@ module GrpcKit
       def send_msg(v)
         stream.send_msg(v)
       end
+
+      def send(v, opts = {})
+        stream.send(v, **opts)
+      end
     end
   end
 end
