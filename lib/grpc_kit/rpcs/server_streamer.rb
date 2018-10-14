@@ -17,9 +17,24 @@ module GrpcKit
     module Server
       class ServerStreamer < Base
         def invoke(stream)
-          ss = GrpcKit::ServerStream.new(stream: stream, protobuf: protobuf)
-          req = ss.recv
-          handler.send(method_name, req, ss)
+          ss = GrpcKit::ServerStream.new(stream: stream, protobuf: @config.protobuf)
+          # TODO: create object which is used by only ServerSteamer
+          call = GrpcKit::Rpcs::Context.new(
+            stream.headers.metadata,
+            @config.method_name,
+            @config.service_name,
+            ss,
+          )
+
+          if @config.interceptor
+            @config.interceptor.intercept(call) do |s|
+              request = s.recv
+              @handler.send(@config.ruby_style_method_name, request, s)
+            end
+          else
+            @handler.send(@config.ruby_style_method_name, request, ss)
+          end
+
           stream.end_write
         end
       end

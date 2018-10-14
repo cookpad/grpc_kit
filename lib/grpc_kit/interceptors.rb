@@ -9,7 +9,11 @@ module GrpcKit
         end
 
         def intercept(request, ctx, &block)
-          do_intercept(@interceptors.dup, request, ctx, &block)
+          if @interceptors && !@interceptors.empty?
+            do_intercept(@interceptors.dup, request, ctx, &block)
+          else
+            yield(request, ctx)
+          end
         end
 
         private
@@ -23,6 +27,37 @@ module GrpcKit
           interceptor.request_response(request: request, call: ctx, method: ctx.method) do
             do_intercept(interceptors, request, ctx) do |req, c|
               yield(req, c)
+            end
+          end
+        end
+      end
+
+      class ServerStreamer
+        def initialize(interceptors)
+          @interceptors = interceptors
+        end
+
+        def intercept(ctx, &block)
+          if @interceptors && !@interceptors.empty?
+            do_intercept(@interceptors.dup, ctx, &block)
+          else
+            yield(ctx)
+          end
+        end
+
+        private
+
+        def do_intercept(interceptors, ctx)
+          if interceptors.empty?
+            return yield(ctx)
+          end
+
+          interceptor = interceptors.pop
+          # We don't need a `:request` parameter but,
+          # it shuoldn't remove from paramters due to having a compatibility of grpc gem.
+          interceptor.server_streamer(request: nil, call: ctx, method: ctx.method) do |ss|
+            do_intercept(interceptors, ss) do |c|
+              yield(c)
             end
           end
         end
