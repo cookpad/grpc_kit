@@ -10,14 +10,19 @@ module GrpcKit
         @writer = writer
       end
 
+      def close
+        @reader.close_read
+        @writer.close_write
+      end
+
       def read(length)
         data = @reader.read_nonblock(length, nil, exception: false)
 
         case data
         when :wait_readable
           DS9::ERR_WOULDBLOCK
-        when nil
-          ''
+        when nil # EOF
+          DS9::ERR_EOF
         else
           data
         end

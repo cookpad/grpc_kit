@@ -14,17 +14,22 @@ module GrpcKit
         @streams = {}
         @stop = false
         @handler = handler
+        @peer_shutdowned = false
       end
 
       def start
         @io.wait_readable
         while !@stop && (want_read? || want_write?)
+          if @peer_shutdowned && !want_write?
+            break
+          end
+
           if want_write?
             send
           end
 
           if want_read?
-            receive
+            do_read
           end
         end
       end
@@ -32,9 +37,9 @@ module GrpcKit
       def run_once(stream_id)
         stream = @streams.fetch(stream_id) # XXX
 
-        if !stream.end_stream? && (want_read? || want_write?)
+        if !@stop && !stream.end_stream? && (want_read? || want_write?)
           if want_read?
-            receive
+            do_read
           end
 
           if want_write?
@@ -47,7 +52,27 @@ module GrpcKit
         @stop = true
       end
 
+      def finish
+        stop
+        @io.close
+      end
+
       private
+
+      def do_read
+        receive
+      rescue IOError => e
+        finish
+        raise e
+      rescue DS9::Exception => e
+        finish
+        if DS9::ERR_EOF == e.code
+          return
+          # raise EOFError
+        end
+
+        raise e
+      end
 
       # provider for nghttp2_submit_response
       # override
@@ -76,8 +101,14 @@ module GrpcKit
       # for nghttp2_session_callbacks_set_recv_callback
       # override
       def recv_event(length)
-        # GrpcKit.logger.debug("recv_event #{length}")
-        @io.read(length)
+        v = @io.read(length)
+        if v == DS9::ERR_EOF
+          @peer_shutdowned = true
+          # Attempt not to raise error in DS9. DS9::Exception is not easy to handle
+          ''
+        else
+          v
+        end
       end
 
       # for nghttp2_session_callbacks_set_on_frame_send_callback

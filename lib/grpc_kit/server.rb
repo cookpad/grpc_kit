@@ -39,6 +39,7 @@ module GrpcKit
 
       session.submit_settings([])
       session.start # blocking
+      session.finish
     end
 
     def dispatch(stream)
