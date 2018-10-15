@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'grpc_kit/io/basic'
+require 'grpc_kit/session/io'
 require 'grpc_kit/session/server'
 
 module GrpcKit
@@ -33,8 +33,11 @@ module GrpcKit
       @sessions.each(&:stop)
     end
 
-    def session_start(conn, io = GrpcKit::IO::Basic)
-      session = GrpcKit::Session::Server.new(io.new(conn, conn), self) # TODO: change self to proper object
+    def session_start(conn)
+      session = GrpcKit::Session::Server.new(
+        GrpcKit::Session::IO.new(conn),
+        self,
+      )
       @sessions << session
 
       session.submit_settings([])

@@ -3,15 +3,15 @@
 require 'socket'
 require 'grpc_kit/session/client'
 require 'grpc_kit/session/duration'
+require 'grpc_kit/session/io'
 require 'grpc_kit/rpcs'
 
 module GrpcKit
   class Client
-    def initialize(host, port, io: GrpcKit::IO::Basic, interceptors: [], timeout: nil)
+    def initialize(host, port, interceptors: [], timeout: nil)
       @host = host
       @port = port
       @authority = "#{host}:#{port}"
-      @io = io
       @interceptors = interceptors
       @timeout =
         if timeout
@@ -51,7 +51,7 @@ module GrpcKit
       sock = TCPSocket.new(@host, @port) # XXX
 
       session = GrpcKit::Session::Client.new(
-        @io.new(sock, sock),
+        GrpcKit::Session::IO.new(sock),
         rpc,
         authority: opts.delete(:authority) || @authority,
       )

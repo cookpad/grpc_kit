@@ -1,12 +1,17 @@
 # frozen_string_literal: true
 
+require 'forwardable'
 require 'ds9'
 require 'grpc_kit/session/stream'
 
 module GrpcKit
   module Session
     class Server < DS9::Server
-      # @io [GrpcKit::IO::XXX]
+      extend Forwardable
+
+      delegate %i[send_event recv_event] => :@io
+
+      # @params io [GrpcKit::Session::IO]
       def initialize(io, handler)
         super() # initialize DS9::Session
 
@@ -87,27 +92,6 @@ module GrpcKit
           false # means EOF and END_STREAM
         else
           data
-        end
-      end
-
-      # for nghttp2_session_callbacks_set_send_callback
-      # override
-      def send_event(string)
-        GrpcKit.logger.debug('send_event')
-
-        @io.write(string)
-      end
-
-      # for nghttp2_session_callbacks_set_recv_callback
-      # override
-      def recv_event(length)
-        v = @io.read(length)
-        if v == DS9::ERR_EOF
-          @peer_shutdowned = true
-          # Attempt not to raise error in DS9. DS9::Exception is not easy to handle
-          ''
-        else
-          v
         end
       end
 

@@ -1,12 +1,17 @@
 # frozen_string_literal: true
 
+require 'forwardable'
 require 'ds9'
 require 'grpc_kit/session/stream'
 
 module GrpcKit
   module Session
     class Client < DS9::Client
-      # @io [GrpcKit::IO::XXX]
+      extend Forwardable
+
+      delegate %i[send_event recv_event] => :@io
+
+      # @params io [GrpcKit::Session::IO]
       def initialize(io, handler, opts = {})
         super() # initialize DS9::Session
 
@@ -78,18 +83,6 @@ module GrpcKit
       end
 
       private
-
-      # for nghttp2_session_callbacks_set_send_callback
-      # override
-      def send_event(string)
-        @io.write(string)
-      end
-
-      # for nghttp2_session_callbacks_set_recv_callback
-      # override
-      def recv_event(length)
-        @io.read(length)
-      end
 
       # for nghttp2_session_callbacks_set_on_data_chunk_recv_callback
       def on_data_chunk_recv(stream_id, data, flags)
