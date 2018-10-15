@@ -41,6 +41,7 @@ module GrpcKit
               @handler.send(@config.ruby_style_method_name, request, s)
             end
           else
+            request = ss.recv
             @handler.send(@config.ruby_style_method_name, request, ss)
           end
 
