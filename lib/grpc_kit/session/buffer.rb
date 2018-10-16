@@ -5,8 +5,8 @@ module GrpcKit
 
       def initialize(buffer: nil)
         @buffer = buffer
-        @end_read = end_read
-        @end_write = end_write
+        @end_read = false
+        @end_write = false
         @finish = false
         @write_byte_size = 0
       end
@@ -24,6 +24,10 @@ module GrpcKit
 
       def read(len = nil, last: false)
         end_read if last
+
+        if @buffer.nil?
+          return ''
+        end
 
         if len
           @buffer.slice!(0...len)

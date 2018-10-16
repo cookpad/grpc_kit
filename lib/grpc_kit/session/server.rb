@@ -88,7 +88,7 @@ module GrpcKit
         GrpcKit.logger.debug("on_data_source_read #{stream_id}, lenght=#{length}")
 
         stream = @streams[stream_id]
-        data = @streams[stream_id].consume_write_data(length)
+        data = @streams[stream_id].pending_send_data.read(length)
         if data.empty? && stream.end_write?
           submit_trailer(stream_id, 'grpc-status' => '0')
 
@@ -129,7 +129,7 @@ module GrpcKit
         true
       end
 
-      # for nghttp2_session_callbacks_set_on_frame_send_callback
+      # nghttp2_session_callbacks_set_on_frame_send_callback
       def on_frame_send(frame)
         GrpcKit.logger.debug("on_frame_send #{frame}")
         case frame
@@ -182,10 +182,10 @@ module GrpcKit
       end
 
       # nghttp2_session_callbacks_set_on_data_chunk_recv_callback
-      def on_data_chunk_recv(stream_id, data, flags)
+      def on_data_chunk_recv(stream_id, data, _flags)
         stream = @streams[stream_id]
         if stream
-          stream.recv(data)
+          stream.pending_recv_data.write(data)
         end
       end
     end

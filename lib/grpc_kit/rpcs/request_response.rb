@@ -31,7 +31,7 @@ module GrpcKit
       class RequestResponse < Base
         def invoke(stream)
           ss = GrpcKit::ServerStream.new(stream: stream, protobuf: @config.protobuf)
-          request = ss.recv
+          request = ss.recv(last: true)
           context = GrpcKit::Rpcs::Context.new(stream.headers.metadata, @config.method_name, @config.service_name)
           resp =
             if @config.interceptor
@@ -42,8 +42,7 @@ module GrpcKit
               @handler.send(@config.ruby_style_method_name, request, context.freeze)
             end
 
-          ss.send_msg(resp)
-          stream.end_write
+          ss.send_msg(resp, last: true)
         end
       end
     end

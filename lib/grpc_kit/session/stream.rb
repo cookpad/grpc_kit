@@ -10,19 +10,18 @@ module GrpcKit
       extend Forwardable
 
       delegate end_write: :@pending_send_data
+      delegate end_read: :@pending_recv_data
 
-      attr_reader :headers, :stream_id, :session
-      attr_accessor :local_end_stream, :remote_end_stream, :inflight, :end_stream
+      attr_reader :headers, :stream_id, :session, :pending_send_data, :pending_recv_data
+      attr_accessor :local_end_stream, :remote_end_stream, :inflight
 
-      def initialize(stream_id:, session:, end_read_stream: false)
+      def initialize(stream_id:, session:)
         @stream_id = stream_id
-        @end_read_stream = end_read_stream
+        @end_read_stream = false
         @session = session
-        @end_stream = false
         @headers = GrpcKit::Session::Headers.new
         @pending_send_data = GrpcKit::Session::Buffer.new
-
-        @read_data = Queue.new
+        @pending_recv_data = GrpcKit::Session::Buffer.new
 
         @local_end_stream = false
         @remote_end_stream = false
@@ -38,24 +37,14 @@ module GrpcKit
         )
       end
 
-      def process_header_feild(key, val)
-        HeaderProcessor.call(key, val, @headers)
+      def write_send_data(data, last: false)
+        @pending_send_data.write(data, last: last)
       end
 
-      def recv(data)
-        @read_data.push(data)
-      end
-
-      def read_recv_data
+      def read_recv_data(last: false)
         loop do
-          data =
-            if has_read_data?
-              @read_data.pop
-            else
-              nil
-            end
-
-          unless data
+          data = @pending_recv_data.read(last: last)
+          if data.empty?
             if end_read?
               return nil
             end
@@ -68,47 +57,21 @@ module GrpcKit
         end
       end
 
-      def consume_read_data
-        @session.run_once(@stream_id) # XXX
-
-        if has_read_data?
-          @read_data.pop
-        else
-          nil
-        end
-      end
-
-      def has_read_data?
-        !@read_data.empty?
-      end
-
       def end_write?
         @local_end_stream || @pending_send_data.end_write?
       end
 
-      def end_read
-        @end_read_stream = true
-      end
-
       def end_read?
-        @remote_end_stream
-      end
-
-      def write(data)
-        @pending_send_data.write(data)
-      end
-
-      def consume_write_data(len)
-        @pending_send_data.read(len)
-      end
-
-      def end_stream
-        @end_read_stream = true
-        end_write
+        @remote_end_stream || @pending_recv_data.end_read?
       end
 
       def end_stream?
-        @end_read_stream && end_write?
+        end_read? && end_write?
+      end
+
+      def end_stream
+        end_read
+        end_write
       end
 
       def add_header(name, value)

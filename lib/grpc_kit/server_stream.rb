@@ -12,13 +12,13 @@ module GrpcKit
       @sent_first_msg = false
     end
 
-    def recv
-      data = @stream.read_recv_data
+    def recv(last: false)
+      data = unpack(@stream.read_recv_data(last: last))
       unless data
         raise StopIteration
       end
 
-      compressed, size, buf = unpack(data)
+      compressed, size, buf = *data
 
       unless size == buf.size
         raise "inconsistent data: #{buf}"
@@ -31,9 +31,9 @@ module GrpcKit
       @protobuf.decode(buf)
     end
 
-    def send_msg(data)
+    def send_msg(data, last: false)
       resp = @protobuf.encode(data)
-      @stream.write(pack(resp))
+      @stream.write_send_data(pack(resp), last: last)
       return if @sent_first_msg
 
       @stream.submit_response(status: 200)
