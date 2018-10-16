@@ -110,11 +110,11 @@ module GrpcKit
             @handler.dispatch(stream)
           end
         when DS9::Frames::Headers
-        # nothing
+          # nothing
 
-        # when DS9::Frames::Goaway
-        # when DS9::Frames::RstStream
-        # else
+          # when DS9::Frames::Goaway
+          # when DS9::Frames::RstStream
+          # else
           # GrpcKit.logger.info("unsupport frame #{frame}")
         end
 
@@ -147,7 +147,8 @@ module GrpcKit
 
       # for nghttp2_session_callbacks_set_on_header_callback
       def on_header(name, value, frame, _flags)
-        @streams[frame.stream_id].process_header_feild(name, value)
+        stream = @streams[frame.stream_id]
+        stream.add_header(name, value)
       end
 
       # for nghttp2_session_callbacks_set_on_begin_frame_callback

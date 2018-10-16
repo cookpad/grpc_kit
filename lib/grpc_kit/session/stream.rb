@@ -1,6 +1,6 @@
 # frozen_string_literal: false
 
-require 'grpc_kit/session/header'
+require 'grpc_kit/session/headers'
 
 module GrpcKit
   module Session
@@ -14,7 +14,7 @@ module GrpcKit
         @end_write_stream = end_write_stream
         @session = session
         @end_stream = false
-        @headers = Header.new({}) # Set metadata {}
+        @headers = GrpcKit::Session::Headers.new
 
         @read_data = Queue.new
         @write_data = ''
@@ -83,6 +83,10 @@ module GrpcKit
 
       def end_stream?
         @end_read_stream && @end_write_stream
+      end
+
+      def add_header(name, value)
+        @headers.add(name, value)
       end
     end
   end

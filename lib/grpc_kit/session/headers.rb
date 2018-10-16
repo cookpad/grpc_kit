@@ -4,7 +4,7 @@ require 'grpc_kit/session/duration'
 
 module GrpcKit
   module Session
-    Header = Struct.new(
+    Headers = Struct.new(
       :metadata,
       :path,
       :grpc_encoding,
@@ -13,37 +13,39 @@ module GrpcKit
       :timeout,
       :method,
       :http_status,
-    )
+    ) do
 
-    RESERVED_HEADERS = [
-      'content-type',
-      'user-agent',
-      'grpc-message-type',
-      'grpc-encoding',
-      'grpc-message',
-      'grpc-status',
-      'grpc-status-details-bin',
-      'te'
-    ].freeze
+      RESERVED_HEADERS = [
+        'content-type',
+        'user-agent',
+        'grpc-message-type',
+        'grpc-encoding',
+        'grpc-message',
+        'grpc-status',
+        'grpc-status-details-bin',
+        'te'
+      ].freeze
 
-    METADATA_ACCEPTABLE_HEADER = %w[authority user-agent].freeze
+      METADATA_ACCEPTABLE_HEADER = %w[authority user-agent].freeze
+      def initialize
+        super({}) # set metadata empty hash
+      end
 
-    class HeaderProcessor
-      def self.call(key, val, headers)
+      def add(key, val)
         case key
         when ':path'
-          headers.path = val
+          self.path = val
         when ':status'
-          headers.http_status = val.to_i
+          self.http_status = val.to_i
         when 'content-type'
           # TODO
-          headers.metadata[key] = val
+          metadata[key] = val
         when 'grpc-encoding'
-          headers.grpc_encoding = val
+          self.grpc_encoding = val
         when 'grpc-status'
-          headers.grpc_status = val.to_i
+          self.grpc_status = val.to_i
         when 'grpc-timeout'
-          headers.timeout = Duration.decod(v)
+          self.timeout = Duration.decod(v)
         when 'grpc-message'
           # TODO
           GrpcKit.logger.warn('grpc-message is unsupported header now')
@@ -55,7 +57,7 @@ module GrpcKit
             return
           end
 
-          headers.metadata[key] = val
+          metadata[key] = val
         end
       end
     end
