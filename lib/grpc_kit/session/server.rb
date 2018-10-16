@@ -20,36 +20,33 @@ module GrpcKit
         @stop = false
         @handler = handler
         @peer_shutdowned = false
+        @inflights = []
       end
 
       def start
         @io.wait_readable
-        while !@stop && (want_read? || want_write?)
-          if @peer_shutdowned && !want_write?
+        loop do
+          invoke_handler
+
+          if !want_read? && !want_write?
+            break
+          elsif @peer_shutdowned && !want_write?
             break
           end
 
-          if want_write?
-            send
-          end
-
-          if want_read?
-            do_read
-          end
+          run_once
         end
       end
 
-      def run_once(stream_id)
-        stream = @streams.fetch(stream_id) # XXX
+      def run_once
+        return if @stop
 
-        if !@stop && !stream.end_stream? && (want_read? || want_write?)
-          if want_read?
-            do_read
-          end
+        if want_read?
+          do_read
+        end
 
-          if want_write?
-            send
-          end
+        if want_write?
+          send
         end
       end
 
@@ -64,6 +61,12 @@ module GrpcKit
 
       private
 
+      def invoke_handler
+        while (stream = @inflights.pop)
+          @handler.dispatch(stream)
+        end
+      end
+
       def do_read
         receive
       rescue IOError => e
@@ -72,6 +75,7 @@ module GrpcKit
       rescue DS9::Exception => e
         finish
         if DS9::ERR_EOF == e.code
+          @peer_shutdowned = true
           return
           # raise EOFError
         end
@@ -79,8 +83,7 @@ module GrpcKit
         raise e
       end
 
-      # provider for nghttp2_submit_response
-      # override
+      # `provider` for nghttp2_submit_response
       def on_data_source_read(stream_id, length)
         GrpcKit.logger.debug("on_data_source_read #{stream_id}, lenght=#{length}")
 
@@ -95,27 +98,32 @@ module GrpcKit
         end
       end
 
-      # for nghttp2_session_callbacks_set_on_frame_send_callback
+      # nghttp2_session_callbacks_set_on_frame_recv_callback
       def on_frame_recv(frame)
         GrpcKit.logger.debug("on_frame_recv #{frame}")
+
         case frame
         when DS9::Frames::Data
+
           stream = @streams[frame.stream_id]
 
           if frame.end_stream?
-            stream.end_read
+            stream.remote_end_stream = true
           end
-          unless stream.handling
-            stream.handling = true
-            @handler.dispatch(stream)
+
+          unless stream.inflight
+            stream.inflight = true
+            @inflights << stream
           end
         when DS9::Frames::Headers
-          # nothing
+          stream = @streams[frame.stream_id]
+
+          if frame.end_stream?
+            stream.remote_end_stream = true
+          end
 
           # when DS9::Frames::Goaway
           # when DS9::Frames::RstStream
-          # else
-          # GrpcKit.logger.info("unsupport frame #{frame}")
         end
 
         true
@@ -124,16 +132,24 @@ module GrpcKit
       # for nghttp2_session_callbacks_set_on_frame_send_callback
       def on_frame_send(frame)
         GrpcKit.logger.debug("on_frame_send #{frame}")
+        case frame
+        when DS9::Frames::Data, DS9::Frames::Headers
+          stream = @streams[frame.stream_id]
+          if frame.end_stream?
+            stream.local_end_stream = true
+          end
+        end
+
         true
       end
 
-      # for nghttp2_session_callbacks_set_on_frame_not_send_callback
+      # nghttp2_session_callbacks_set_on_frame_not_send_callback
       def on_frame_not_send(frame, reason)
         GrpcKit.logger.debug("on_frame_not_send frame=#{frame}, reason=#{reason}")
         true
       end
 
-      # for nghttp2_session_callbacks_set_on_begin_headers_callback
+      # nghttp2_session_callbacks_set_on_begin_headers_callback
       def on_begin_headers(header)
         stream_id = header.stream_id
         GrpcKit.logger.debug("on_begin_header stream_id=#{stream_id}")
@@ -145,25 +161,18 @@ module GrpcKit
         @streams[stream_id] = GrpcKit::Session::Stream.new(stream_id: stream_id, session: self)
       end
 
-      # for nghttp2_session_callbacks_set_on_header_callback
+      # nghttp2_session_callbacks_set_on_header_callback
       def on_header(name, value, frame, _flags)
         stream = @streams[frame.stream_id]
         stream.add_header(name, value)
       end
 
-      # for nghttp2_session_callbacks_set_on_begin_frame_callback
-      # def on_begin_frame(frame_header)
-      #   GrpcKit.logger.debug("on_begin_frame #{frame_header}")
-      #   true
-      # end
+      def on_invalid_frame_recv(frame, error_code)
+        GrpcKit.logger.debug("on_invalid_frame_recv #{frame} error_code=#{error_code}")
+        true
+      end
 
-      # for nghttp2_session_callbacks_set_on_invalid_frame_recv_callback
-      # def on_invalid_frame_recv(frame, error_code)
-      #   GrpcKit.logger.debug("on_invalid_frame_recv #{error_code}")
-      #   true
-      # end
-
-      # for nghttp2_session_callbacks_set_on_stream_close_callback
+      # nghttp2_session_callbacks_set_on_stream_close_callback
       def on_stream_close(stream_id, error_code)
         GrpcKit.logger.debug("on_stream_close stream_id=#{stream_id}, error_code=#{error_code}")
         stream = @streams.delete(stream_id)
@@ -172,18 +181,12 @@ module GrpcKit
         stream.end_stream
       end
 
-      # for nghttp2_session_callbacks_set_on_data_chunk_recv_callback
+      # nghttp2_session_callbacks_set_on_data_chunk_recv_callback
       def on_data_chunk_recv(stream_id, data, flags)
         stream = @streams[stream_id]
         if stream
           stream.recv(data)
         end
-      end
-
-      # nghttp2_session_callbacks_set_before_frame_send_callback
-      def before_frame_send(frame)
-        GrpcKit.logger.debug("before_frame_send frame=#{frame}")
-        true
       end
     end
   end

@@ -50,7 +50,7 @@ class Server < Routeguide::RouteGuide::Service
 
     loop do
       point = stream.recv # XXX: raise StopIteration
-      @logger.info("record_route #{point}")
+      @logger.info(point)
 
       count += 1
       name = @features.fetch({ 'longitude' => point.longitude, 'latitude' => point.latitude }, '')

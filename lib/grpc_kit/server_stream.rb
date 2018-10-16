@@ -13,36 +13,22 @@ module GrpcKit
     end
 
     def recv
-      req = nil
-
-      loop do
-        data = @stream.consume_read_data
-
-        if data.nil?
-          if @stream.end_read?
-            break
-          else
-            next
-          end
-        end
-
-        compressed, size, buf = unpack(data)
-
-        unless size == buf.size
-          raise "inconsistent data: #{buf}"
-        end
-
-        if compressed
-          raise 'compress option is unsupported'
-        end
-
-        req = @protobuf.decode(buf)
-        if req
-          return req
-        end
+      data = @stream.read_recv_data
+      unless data
+        raise StopIteration
       end
 
-      raise StopIteration
+      compressed, size, buf = unpack(data)
+
+      unless size == buf.size
+        raise "inconsistent data: #{buf}"
+      end
+
+      if compressed
+        raise 'compress option is unsupported'
+      end
+
+      @protobuf.decode(buf)
     end
 
     def send_msg(data)
