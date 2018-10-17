@@ -6,8 +6,7 @@ module GrpcKit
   module Rpcs
     module Client
       class BidiStreamer < Base
-        def invoke(session, data, opts = {})
-        end
+        def invoke(session, data, opts = {}); end
       end
     end
 

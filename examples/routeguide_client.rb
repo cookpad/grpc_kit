@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# rubocop:disable Style/GlobalVars
+
 $LOAD_PATH.unshift File.expand_path('./examples/routeguide')
 
 require 'grpc_kit'
@@ -77,3 +79,5 @@ stub = Routeguide::RouteGuide::Stub.new('localhost', 50051, **opts)
 get_feature(stub)
 list_features(stub)
 record_route(stub, 10)
+
+# rubocop:enable Style/GlobalVars

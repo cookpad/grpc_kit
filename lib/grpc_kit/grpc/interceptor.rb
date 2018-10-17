@@ -11,6 +11,8 @@ module GrpcKit
     end
 
     class ClientInterceptor < Interceptor
+      # rubocop:disable Lint/UnusedMethodArgument
+
       def request_response(request: nil, call: nil, method: nil, metadata: nil)
         yield
       end
@@ -26,9 +28,13 @@ module GrpcKit
       def bidi_streamer(requests: nil, call: nil, method: nil, metadata: nil)
         yield
       end
+
+      # rubocop:enable Lint/UnusedMethodArgument
     end
 
     class ServerInterceptor < Interceptor
+      # rubocop:disable Lint/UnusedMethodArgument
+
       def request_response(request: nil, call: nil, method: nil)
         yield
       end
@@ -44,6 +50,8 @@ module GrpcKit
       def bidi_streamer(requests: nil, call: nil, method: nil)
         yield
       end
+
+      # rubocop:enable Lint/UnusedMethodArgument
     end
   end
 end

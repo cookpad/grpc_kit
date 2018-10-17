@@ -35,7 +35,7 @@ Style/TrailingCommaInArguments:
 Style/SafeNavigation:
   Enabled: false
 
-Style/PredicateName:
+Naming/PredicateName:
   NamePrefixBlacklist:
     - "is_"
     - "have_"
@@ -52,16 +52,20 @@ Style/SingleLineBlockParams:
 Style/NumericLiterals:
   Enabled: false
 
+Style/GuardClause:
+  Enabled: false
+
+Style/NumericPredicate:
+  Enabled: false
+
 Metrics/ParameterLists:
   CountKeywordArgs: false
 
 Lint/UnderscorePrefixedVariableName:
   Enabled: false
 
-##################### Metrics ##################################
-
 Metrics/AbcSize:
-  Max: 30
+  Max: 50
 
 Metrics/CyclomaticComplexity:
   Max: 10
@@ -70,7 +74,13 @@ Metrics/LineLength:
   Max: 160
 
 Metrics/MethodLength:
-  Max: 30
+  Max: 40
 
 Metrics/PerceivedComplexity:
-  Max: 8
+  Max: 20
+
+Metrics/ClassLength:
+  Max: 200
+
+Metrics/BlockLength:
+  Max: 40
