@@ -11,11 +11,11 @@ module GrpcKit
           @interceptors = nil
         end
 
-        def intercept(ctx, &block)
+        def intercept(call, &block)
           if @interceptors && !@interceptors.empty?
-            do_intercept(@interceptors.dup, ctx, &block)
+            do_intercept(@interceptors.dup, call, &block)
           else
-            yield(ctx)
+            yield(call)
           end
         end
 
@@ -42,23 +42,23 @@ module GrpcKit
           @interceptors = interceptors
         end
 
-        def intercept(ctx, &block)
+        def intercept(call, &block)
           if @interceptors && !@interceptors.empty?
-            do_intercept(@interceptors.dup, ctx, &block)
+            do_intercept(@interceptors.dup, call, &block)
           else
-            yield(ctx)
+            yield(call)
           end
         end
 
         private
 
-        def do_intercept(interceptors, ctx)
+        def do_intercept(interceptors, call)
           if interceptors.empty?
-            return yield(ctx)
+            return yield(call)
           end
 
           interceptor = interceptors.pop
-          invoke(interceptor, ctx) do |inter_call|
+          invoke(interceptor, call) do |inter_call|
             do_intercept(interceptors, inter_call) do |c|
               yield(c)
             end

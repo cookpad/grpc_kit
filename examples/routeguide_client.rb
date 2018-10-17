@@ -55,7 +55,7 @@ def record_route(stub, size)
     location = features.sample['location']
     point = Routeguide::Point.new(latitude: location['latitude'], longitude: location['longitude'])
     puts "Next point is #{point.inspect}"
-    stream.send(point)
+    stream.send_msg(point)
     sleep(rand(0..1))
   end
 
@@ -74,6 +74,6 @@ end
 
 stub = Routeguide::RouteGuide::Stub.new('localhost', 50051, **opts)
 
-# get_feature(stub)
+get_feature(stub)
 list_features(stub)
-# record_route(stub, 10)
+record_route(stub, 10)

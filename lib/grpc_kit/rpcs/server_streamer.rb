@@ -8,16 +8,11 @@ module GrpcKit
       class ServerStreamer < Base
         def invoke(session, request, authority:, metadata: {}, timeout: nil, **opts)
           cs = GrpcKit::Streams::Client.new(path: @config.path, protobuf: @config.protobuf, session: session, authority: authority)
-          context = GrpcKit::Rpcs::Context.new(metadata, @config.method_name, @config.service_name, cs)
+          call = GrpcKit::Rpcs::Call.new(metadata, @config.method_name, @config.service_name, cs)
 
-          if @config.interceptor
-            @config.interceptor.intercept(context) do |s|
-              s.send(request, last: true)
-              s
-            end
-          else
-            cs.send(request, last: true)
-            cs
+          @config.interceptor.intercept(call) do |c|
+            c.send_msg(request, last: true)
+            c
           end
         end
       end
@@ -27,22 +22,16 @@ module GrpcKit
       class ServerStreamer < Base
         def invoke(stream, session)
           ss = GrpcKit::Streams::Server.new(stream: stream, protobuf: @config.protobuf, session: session)
-          # TODO: create object which is used by only ServerSteamer
-          call = GrpcKit::Rpcs::Context.new(
-            stream.headers.metadata,
-            @config.method_name,
-            @config.service_name,
-            ss,
-          )
+          call = GrpcKit::Rpcs::Call.new(stream.headers.metadata, @config.method_name, @config.service_name, ss)
 
           if @config.interceptor
-            @config.interceptor.intercept(call) do |s|
-              request = s.recv(last: true)
-              @handler.send(@config.ruby_style_method_name, request, s)
+            @config.interceptor.intercept(call) do |c|
+              request = c.recv(last: true)
+              @handler.send(@config.ruby_style_method_name, request, c)
             end
           else
-            request = ss.recv(last: true)
-            @handler.send(@config.ruby_style_method_name, request, ss)
+            request = call.recv(last: true)
+            @handler.send(@config.ruby_style_method_name, request, call)
           end
 
           stream.end_write

@@ -11,25 +11,25 @@ module GrpcKit
           @interceptors = nil
         end
 
-        def intercept(request, ctx, metadata, &block)
+        def intercept(request, call, metadata, &block)
           if @interceptors && !@interceptors.empty?
-            do_intercept(@interceptors.dup, request, ctx, metadata, &block)
+            do_intercept(@interceptors.dup, request, call, metadata, &block)
           else
-            yield(request, ctx, metadata)
+            yield(request, call, metadata)
           end
         end
 
         private
 
-        def do_intercept(interceptors, request, ctx, metadata)
+        def do_intercept(interceptors, request, call, metadata)
           if interceptors.empty?
-            return yield(request, metadata)
+            return yield(request, call, metadata)
           end
 
           interceptor = interceptors.pop
-          interceptor.request_response(request: request, call: ctx, method: ctx.method, metadata: metadata) do
-            do_intercept(interceptors, request, ctx, metadata) do |req, c|
-              yield(req, c, metadata)
+          interceptor.request_response(request: request, call: call, method: call.method, metadata: metadata) do
+            do_intercept(interceptors, request, call, metadata) do |r, c, m|
+              yield(r, c, m)
             end
           end
         end
@@ -42,24 +42,24 @@ module GrpcKit
           @interceptors = interceptors
         end
 
-        def intercept(request, ctx, &block)
+        def intercept(request, call, &block)
           if @interceptors && !@interceptors.empty?
-            do_intercept(@interceptors.dup, request, ctx, &block)
+            do_intercept(@interceptors.dup, request, call, &block)
           else
-            yield(request, ctx)
+            yield(request, call)
           end
         end
 
         private
 
-        def do_intercept(interceptors, request, ctx)
+        def do_intercept(interceptors, request, call)
           if interceptors.empty?
-            return yield(request, ctx)
+            return yield(request, call)
           end
 
           interceptor = interceptors.pop
-          interceptor.request_response(request: request, call: ctx, method: ctx.method) do
-            do_intercept(interceptors, request, ctx) do |req, c|
+          interceptor.request_response(request: request, call: call, method: call.method) do
+            do_intercept(interceptors, request, call) do |req, c|
               yield(req, c)
             end
           end

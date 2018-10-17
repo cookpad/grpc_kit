@@ -14,7 +14,7 @@ module GrpcKit
         @authority = authority
       end
 
-      def send(data, metadata: {}, timeout: nil, last: false)
+      def send_msg(data, metadata: {}, timeout: nil, last: false)
         if @stream
           unless @stream.end_write?
             @session.resume_data(@stream.stream_id)
