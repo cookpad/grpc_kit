@@ -3,8 +3,8 @@
 require 'timeout'
 
 require 'grpc_kit/errors'
-require 'grpc_kit/server_stream'
-require 'grpc_kit/client_stream'
+require 'grpc_kit/streams/server'
+require 'grpc_kit/streams/client'
 
 module GrpcKit
   module Rpcs

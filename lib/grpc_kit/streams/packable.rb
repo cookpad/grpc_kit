@@ -1,9 +1,7 @@
 # frozen_string_literal: true
 
-require 'forwardable'
-
 module GrpcKit
-  module Rpcs
+  module Streams
     module Packable
       # @params data [String]
       # @params compress [Boolean]
@@ -26,7 +24,7 @@ module GrpcKit
       end
 
       def unpacker
-        @unpacker ||= GrpcKit::Rpcs::Packable::Unpacker.new
+        @unpacker ||= GrpcKit::Streams::Packable::Unpacker.new
       end
 
       class Unpacker

@@ -1,20 +1,37 @@
 # frozen_string_literal: true
 
-require 'grpc_kit/rpcs/packable'
+require 'forwardable'
+require 'grpc_kit/streams/packable'
 
 module GrpcKit
-  class ServerStream
-    include GrpcKit::Rpcs::Packable
+  class Stream
+    include GrpcKit::Streams::Packable
 
-    def initialize(stream:, protobuf:, session:)
-      @stream = stream
+    extend Forwardable
+
+    delegate %i[stream_id end_write end_read end_write? end_read?] => :@stream
+
+    # @params protobuf [GrpcKit::Protobuffer]
+    # @params session [GrpcKit::Session::Server|GrpcKit::Session::Client]
+    # @params stream [GrpcKit::Session::Stream] primitive H2 stream id
+    def initialize(protobuf:, session:, stream:)
       @protobuf = protobuf
       @session = session
-      @sent_first_msg = false
+      @stream = stream
+    end
+
+    def each
+      loop { yield(recv) }
+    end
+
+    def send(data, last: false)
+      req = @protobuf.encode(data)
+      @stream.write_send_data(pack(req), last: last)
     end
 
     def recv(last: false)
       data = unpack(read(last: last))
+
       unless data
         raise StopIteration
       end
@@ -30,20 +47,6 @@ module GrpcKit
       end
 
       @protobuf.decode(buf)
-    end
-
-    def send_msg(data, last: false)
-      resp = @protobuf.encode(data)
-      @stream.write_send_data(pack(resp), last: last)
-      return if @sent_first_msg
-
-      @session.submit_response(
-        @stream.stream_id,
-        ':status' => '200',
-        'content-type' => 'application/grpc',
-        'accept-encoding' => 'identity',
-      )
-      @sent_first_msg = true
     end
 
     private

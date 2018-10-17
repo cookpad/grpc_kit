@@ -7,7 +7,7 @@ module GrpcKit
     module Client
       class ClientStreamer < Base
         def invoke(session, _data, metadata: {}, **opts)
-          cs = GrpcKit::ClientStream.new(path: @config.path, protobuf: @config.protobuf, session: session)
+          cs = GrpcKit::Streams::Client.new(path: @config.path, protobuf: @config.protobuf, session: session)
           context = GrpcKit::Rpcs::Context.new(metadata, @config.method_name, @config.service_name, cs)
 
           if @config.interceptor
@@ -24,7 +24,7 @@ module GrpcKit
     module Server
       class ClientStreamer < Base
         def invoke(stream, session)
-          ss = GrpcKit::ServerStream.new(stream: stream, protobuf: @config.protobuf, session: session)
+          ss = GrpcKit::Streams::Server.new(stream: stream, protobuf: @config.protobuf, session: session)
           # TODO: create object which is used by only ServerSteamer
           call = GrpcKit::Rpcs::Context.new(
             stream.headers.metadata,
