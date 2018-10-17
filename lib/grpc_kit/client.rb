@@ -49,16 +49,11 @@ module GrpcKit
 
     def do_request(rpc, request, **opts)
       sock = TCPSocket.new(@host, @port) # XXX
-
-      session = GrpcKit::Session::Client.new(
-        GrpcKit::Session::IO.new(sock),
-        rpc,
-        authority: opts.delete(:authority) || @authority,
-      )
-
+      session = GrpcKit::Session::Client.new(GrpcKit::Session::IO.new(sock), rpc)
       session.submit_settings([])
-      t = opts.delete(:timeout) || @timeout
-      rpc.invoke(session, request, timeout: t, **opts)
+
+      default = { timeout: @timeout, authority: @authority }.compact
+      rpc.invoke(session, request, opts.merge(default))
     end
   end
 end

@@ -74,6 +74,6 @@ end
 
 stub = Routeguide::RouteGuide::Stub.new('localhost', 50051, **opts)
 
-get_feature(stub)
+# get_feature(stub)
 list_features(stub)
-record_route(stub, 10)
+# record_route(stub, 10)

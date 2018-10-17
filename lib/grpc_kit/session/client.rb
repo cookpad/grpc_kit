@@ -18,24 +18,11 @@ module GrpcKit
         @io = io
         @streams = {}
         @handler = handler
-        @request = {
-          ':method' => 'POST',
-          ':scheme' => 'http',
-          ':authority' => opts[:authority],
-          'te' => 'trailers',
-          'content-type' => 'application/grpc',
-          'user-agent' => "grpc-ruby/#{GrpcKit::VERSION} (grpc_kit)",
-          'grpc-accept-encoding' => 'identity,deflate,gzip',
-        }
+        @opts = opts
       end
 
-      def start_request(data, path:, metadata: {}, timeout: nil, **headers)
-        val = headers.merge(':path' => path)
-        if timeout
-          val['grpc-timeout'] = timeout
-        end
-
-        stream_id = submit_request(metadata.merge(@request.merge(val)), data)
+      def start_request(data, headers)
+        stream_id = submit_request(headers, data)
         stream = GrpcKit::Session::Stream.new(stream_id: stream_id, send_data: data)
         stream.stream_id = stream_id
         @streams[stream_id] = stream

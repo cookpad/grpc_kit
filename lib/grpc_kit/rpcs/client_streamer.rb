@@ -6,8 +6,8 @@ module GrpcKit
   module Rpcs
     module Client
       class ClientStreamer < Base
-        def invoke(session, _data, metadata: {}, **opts)
-          cs = GrpcKit::Streams::Client.new(path: @config.path, protobuf: @config.protobuf, session: session)
+        def invoke(session, _request, authority:, metadata: {}, timeout: nil, **opts)
+          cs = GrpcKit::Streams::Client.new(path: @config.path, protobuf: @config.protobuf, session: session, authority: authority)
           context = GrpcKit::Rpcs::Context.new(metadata, @config.method_name, @config.service_name, cs)
 
           if @config.interceptor

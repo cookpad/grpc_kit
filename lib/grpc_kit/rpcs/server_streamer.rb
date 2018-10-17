@@ -6,17 +6,17 @@ module GrpcKit
   module Rpcs
     module Client
       class ServerStreamer < Base
-        def invoke(session, data, metadata: {}, **opts)
-          cs = GrpcKit::Streams::Client.new(path: @config.path, protobuf: @config.protobuf, session: session)
+        def invoke(session, request, authority:, metadata: {}, timeout: nil, **opts)
+          cs = GrpcKit::Streams::Client.new(path: @config.path, protobuf: @config.protobuf, session: session, authority: authority)
           context = GrpcKit::Rpcs::Context.new(metadata, @config.method_name, @config.service_name, cs)
 
           if @config.interceptor
             @config.interceptor.intercept(context) do |s|
-              s.send(data, last: true)
+              s.send(request, last: true)
               s
             end
           else
-            cs.send(data, last: true)
+            cs.send(request, last: true)
             cs
           end
         end

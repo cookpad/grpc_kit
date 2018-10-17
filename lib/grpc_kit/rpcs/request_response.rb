@@ -7,8 +7,8 @@ module GrpcKit
   module Rpcs
     module Client
       class RequestResponse < Base
-        def invoke(session, request, metadata: {}, timeout: nil, **opts)
-          cs = GrpcKit::Streams::Client.new(path: @config.path, protobuf: @config.protobuf, session: session)
+        def invoke(session, request, authority:, metadata: {}, timeout: nil, **opts)
+          cs = GrpcKit::Streams::Client.new(path: @config.path, protobuf: @config.protobuf, session: session, authority: authority)
           context = GrpcKit::Rpcs::Context.new(metadata, @config.method_name, @config.service_name)
 
           @config.interceptor.intercept(request, context, metadata) do |r, c, m|
@@ -16,11 +16,11 @@ module GrpcKit
               # XXX: when timeout.to_timeout is 0
               Timeout.timeout(timeout.to_timeout, GrpcKit::Errors::DeadlienExceeded) do
                 cs.send(r, timeout: timeout.to_s, metadata: m, last: true)
-                cs.recv
+                cs.recv(last: true)
               end
             else
               cs.send(r, metadata: m, last: true)
-              cs.recv
+              cs.recv(last: true)
             end
           end
         end

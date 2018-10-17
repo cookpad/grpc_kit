@@ -6,11 +6,12 @@ require 'grpc_kit/streams/send_buffer'
 module GrpcKit
   module Streams
     class Client
-      def initialize(path:, protobuf:, session:)
+      def initialize(path:, protobuf:, session:, authority:)
         @path = path
         @session = session
         @protobuf = protobuf
         @stream = nil
+        @authority = authority
       end
 
       def send(data, metadata: {}, timeout: nil, last: false)
@@ -19,7 +20,8 @@ module GrpcKit
             @session.resume_data(@stream.stream_id)
           end
         else
-          stream = @session.start_request(GrpcKit::Streams::SendBuffer.new, metadata: metadata, timeout: timeout, path: @path)
+          headers = build_headers(metadata: metadata, timeout: timeout)
+          stream = @session.start_request(GrpcKit::Streams::SendBuffer.new, headers)
           @stream = GrpcKit::Stream.new(protobuf: @protobuf, session: @session, stream: stream)
         end
 
@@ -59,6 +61,26 @@ module GrpcKit
         data = []
         @stream.each { |d| data.push(d) }
         data
+      end
+
+      private
+
+      def build_headers(metadata: {}, timeout: nil, **headers)
+        hdrs = metadata.merge(headers).merge(
+          ':method' => 'POST',
+          ':scheme' => 'http',
+          ':path' => @path,
+          ':authority' => @authority,
+          'te' => 'trailers',
+          'content-type' => 'application/grpc',
+          'user-agent' => "grpc-ruby/#{GrpcKit::VERSION} (grpc_kit)",
+          'grpc-accept-encoding' => 'identity,deflate,gzip',
+        )
+        if timeout
+          hdrs['grpc-timeout'] = timeout
+        end
+
+        hdrs
       end
     end
   end
