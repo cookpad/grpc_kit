@@ -36,7 +36,7 @@ module GrpcKit
         end
 
         stream_id = submit_request(metadata.merge(@request.merge(val)), data)
-        stream = GrpcKit::Session::Stream.new(stream_id: stream_id, session: self, send_data: data)
+        stream = GrpcKit::Session::Stream.new(stream_id: stream_id, send_data: data)
         stream.stream_id = stream_id
         @streams[stream_id] = stream
         stream

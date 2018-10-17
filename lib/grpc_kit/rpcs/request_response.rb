@@ -29,8 +29,8 @@ module GrpcKit
 
     module Server
       class RequestResponse < Base
-        def invoke(stream)
-          ss = GrpcKit::ServerStream.new(stream: stream, protobuf: @config.protobuf)
+        def invoke(stream, session)
+          ss = GrpcKit::ServerStream.new(stream: stream, protobuf: @config.protobuf, session: session)
           request = ss.recv(last: true)
           context = GrpcKit::Rpcs::Context.new(stream.headers.metadata, @config.method_name, @config.service_name)
           resp =

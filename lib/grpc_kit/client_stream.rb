@@ -37,7 +37,7 @@ module GrpcKit
         raise 'You should call `send` method to send data'
       end
 
-      data = unpack(@stream.read_recv_data(last: last))
+      data = unpack(read(last: last))
 
       unless data
         raise StopIteration
@@ -72,6 +72,24 @@ module GrpcKit
       data = []
       each { |d| data.push(d) }
       data
+    end
+
+    private
+
+    def read(last: false)
+      loop do
+        data = @stream.read_recv_data(last: last)
+        if data.empty?
+          if @stream.end_read?
+            return nil
+          end
+
+          @session.run_once
+          redo
+        end
+
+        return data
+      end
     end
 
     class SendBuffer

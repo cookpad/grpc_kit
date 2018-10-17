@@ -12,13 +12,12 @@ module GrpcKit
       delegate end_write: :@pending_send_data
       delegate end_read: :@pending_recv_data
 
-      attr_reader :headers, :session, :pending_send_data, :pending_recv_data
+      attr_reader :headers, :pending_send_data, :pending_recv_data
       attr_accessor :local_end_stream, :remote_end_stream, :inflight, :stream_id
 
-      def initialize(stream_id:, session:, send_data: GrpcKit::Session::Buffer.new)
+      def initialize(stream_id:, send_data: GrpcKit::Session::Buffer.new)
         @stream_id = stream_id
         @end_read_stream = false
-        @session = session
         @headers = GrpcKit::Session::Headers.new
         @pending_send_data = send_data
         @pending_recv_data = GrpcKit::Session::Buffer.new
@@ -28,33 +27,12 @@ module GrpcKit
         @inflight = false
       end
 
-      def submit_response(status:)
-        @session.submit_response(
-          @stream_id,
-          ':status' => status.to_s,
-          'content-type' => 'application/grpc',
-          'accept-encoding' => 'identity',
-        )
-      end
-
       def write_send_data(data, last: false)
         @pending_send_data.write(data, last: last)
       end
 
       def read_recv_data(last: false)
-        loop do
-          data = @pending_recv_data.read(last: last)
-          if data.empty?
-            if end_read?
-              return nil
-            end
-
-            session.run_once
-            redo
-          end
-
-          return data
-        end
+        @pending_recv_data.read(last: last)
       end
 
       def end_write?

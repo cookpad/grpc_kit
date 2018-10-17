@@ -63,7 +63,7 @@ module GrpcKit
 
       def invoke_handler
         while (stream = @inflights.pop)
-          @handler.dispatch(stream)
+          @handler.dispatch(stream, self)
         end
       end
 
@@ -158,7 +158,7 @@ module GrpcKit
           raise "#{stream_id} is already existed"
         end
 
-        @streams[stream_id] = GrpcKit::Session::Stream.new(stream_id: stream_id, session: self)
+        @streams[stream_id] = GrpcKit::Session::Stream.new(stream_id: stream_id)
       end
 
       # nghttp2_session_callbacks_set_on_header_callback

@@ -25,8 +25,8 @@ module GrpcKit
 
     module Server
       class ServerStreamer < Base
-        def invoke(stream)
-          ss = GrpcKit::ServerStream.new(stream: stream, protobuf: @config.protobuf)
+        def invoke(stream, session)
+          ss = GrpcKit::ServerStream.new(stream: stream, protobuf: @config.protobuf, session: session)
           # TODO: create object which is used by only ServerSteamer
           call = GrpcKit::Rpcs::Context.new(
             stream.headers.metadata,

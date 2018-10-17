@@ -45,13 +45,13 @@ module GrpcKit
       session.finish
     end
 
-    def dispatch(stream)
+    def dispatch(stream, session)
       rpc = @rpc_descs[stream.headers.path]
       unless rpc
         raise "Unkown path #{path}"
       end
 
-      rpc.invoke(stream)
+      rpc.invoke(stream, session)
     end
   end
 end
