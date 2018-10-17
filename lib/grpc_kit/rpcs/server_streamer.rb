@@ -12,11 +12,11 @@ module GrpcKit
 
           if @config.interceptor
             @config.interceptor.intercept(context) do |s|
-              s.send(data, end_stream: true)
+              s.send(data, last: true)
               s
             end
           else
-            cs.send(data, end_stream: true)
+            cs.send(data, last: true)
             cs
           end
         end

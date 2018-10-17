@@ -10,94 +10,87 @@ module GrpcKit
       @path = path
       @session = session
       @protobuf = protobuf
-      @sent_first_msg = false
-      @input = Sock.new
       @stream = nil
     end
 
-    def send(data, metadata: {}, timeout: nil, end_stream: false)
-      req = @protobuf.encode(data)
-      @input.write(pack(req))
-
-      if @sent_first_msg
-        stream_id = @stream.stream_id
-
-        unless @input.end_write?
-          @session.resume_data(stream_id)
-        end
-
-        @session.run_once(stream_id)
-      else
-        stream_id = @session.submit_request(@input, metadata: metadata, timeout: timeout, path: @path)
-        @stream = @session.run_once(stream_id, end_write: end_stream)
-        @sent_first_msg = true
-      end
+    def each
+      loop { yield(recv) }
     end
 
-    def recv
-      req = nil
-
-      loop do
-        data = @stream.consume_read_data
-
-        if data.nil?
-          if @stream.end_read?
-            break
-          else
-            next
-          end
+    def send(data, metadata: {}, timeout: nil, last: false)
+      if @stream
+        unless @stream.end_write?
+          @session.resume_data(@stream.stream_id)
         end
-
-        compressed, size, buf = unpack(data)
-
-        unless size == buf.size
-          raise "inconsistent data: #{buf}"
-        end
-
-        if compressed
-          raise 'compress option is unsupported'
-        end
-
-        req = @protobuf.decode(buf)
-        if req
-          return req
-        end
+      else
+        @stream = @session.start_request(SendBuffer.new, metadata: metadata, timeout: timeout, path: @path)
       end
 
-      raise StopIteration
+      req = @protobuf.encode(data)
+      @stream.write_send_data(pack(req), last: last)
+
+      @session.run_once
+    end
+
+    def recv(last: false)
+      unless @stream
+        raise 'You should call `send` method to send data'
+      end
+
+      data = unpack(@stream.read_recv_data(last: last))
+
+      unless data
+        raise StopIteration
+      end
+
+      compressed, size, buf = *data
+
+      unless size == buf.size
+        raise "inconsistent data: #{buf}"
+      end
+
+      if compressed
+        raise 'compress option is unsupported'
+      end
+
+      @protobuf.decode(buf)
     end
 
     def close_and_recv
-      if !@stream && @sent_first_msg
-        raise '`send` must be call at least once'
+      unless @stream
+        raise 'You should call `send` method to send data'
       end
 
-      unless @input.end_write?
+      unless @stream.end_write?
         @session.resume_data(@stream.stream_id)
       end
-      @input.end_write
+
       @stream.end_write
       @session.start(@stream.stream_id)
+      @stream.end_read
 
       data = []
-      loop { data.push(recv) }
+      each { |d| data.push(d) }
       data
     end
 
-    class Sock
+    class SendBuffer
       def initialize
-        @data = StringIO.new(+'')
+        @buffer = nil
         @pos = 0
         @end_write = false
       end
 
-      def write(data)
-        now = @data.pos
-        @data.pos = @pos # move write pos
-        v = @data.write(data)
-        @pos += v
-        @data.pos = now
-        v
+      def write(data, last: false)
+        end_write if last
+
+        if @buffer
+          @buffer << data
+        else
+          @buffer = data
+        end
+
+        data.size
       end
 
       def end_write
@@ -109,10 +102,14 @@ module GrpcKit
       end
 
       def read(size)
-        data = @data.read(size)
-        if data
+        if @buffer.nil?
+          return false
+        end
+
+        data = @buffer.slice!(0, size)
+        if !data.empty?
           data
-        elsif @end_write
+        elsif end_write?
           nil # EOF
         else
           false # deferred

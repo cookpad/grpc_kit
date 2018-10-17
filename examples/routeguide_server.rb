@@ -62,8 +62,6 @@ class Server < Routeguide::RouteGuide::Service
       distance += calculate_distance(point, last)
     end
 
-    @logger.info("finish read")
-
     Routeguide::RouteSummary.new(
       point_count: count,
       feature_count: features,

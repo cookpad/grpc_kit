@@ -15,11 +15,11 @@ module GrpcKit
             if timeout
               # XXX: when timeout.to_timeout is 0
               Timeout.timeout(timeout.to_timeout, GrpcKit::Errors::DeadlienExceeded) do
-                cs.send(r, timeout: timeout.to_s, metadata: m, end_stream: true)
+                cs.send(r, timeout: timeout.to_s, metadata: m, last: true)
                 cs.recv
               end
             else
-              cs.send(r, metadata: m, end_stream: true)
+              cs.send(r, metadata: m, last: true)
               cs.recv
             end
           end

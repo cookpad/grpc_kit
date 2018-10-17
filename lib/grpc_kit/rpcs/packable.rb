@@ -30,7 +30,7 @@ module GrpcKit
       end
 
       class Unpacker
-        # Compressed bit(1Byte) + length bits(4Bytes)
+        # Compressed bytes(1 Byte) + length bytes(4 Bytes)
         METADATA_SIZE = 5
 
         def initialize
@@ -39,7 +39,7 @@ module GrpcKit
         end
 
         def readable?
-          @data.size > @i
+          @data && !@data.empty?
         end
 
         def feed(data)
@@ -51,10 +51,9 @@ module GrpcKit
         end
 
         def read
-          c, size = @data.unpack('CN')
-          @i += METADATA_SIZE
-          data = @data.byteslice(@i, size)
-          @i += size
+          metadata = @data.slice!(0, METADATA_SIZE)
+          c, size = metadata.unpack('CN')
+          data = @data.slice!(0, size)
           [c != 0, size, data]
         end
       end

@@ -21,7 +21,11 @@ def get_feature(stub)
 
   points.each do |pt|
     feature = stub.get_feature(pt, metadata: { 'metadata' => 'data1' })
-    $logger.info("get_feature #{feature.name}, #{feature.location}")
+    if feature.name == ''
+      $logger.info("Found nothing at #{feature.inspect}")
+    else
+      $logger.info("Found '#{feature.name}' at #{feature.location.inspect}")
+    end
   end
 end
 
@@ -36,7 +40,7 @@ def list_features(stub)
 
   loop do
     r = stream.recv
-    $logger.info("list_features #{r.name} at #{r.location.inspect}")
+    $logger.info("Found #{r.name} at #{r.location.inspect}")
   end
 end
 
@@ -49,14 +53,14 @@ def record_route(stub, size)
 
   size.times do
     location = features.sample['location']
-    pt = Routeguide::Point.new(latitude: location['latitude'], longitude: location['longitude'])
-    puts "- next point is #{pt.inspect}"
-    stream.send(pt)
+    point = Routeguide::Point.new(latitude: location['latitude'], longitude: location['longitude'])
+    puts "Next point is #{point.inspect}"
+    stream.send(point)
     sleep(rand(0..1))
   end
 
   resp = stream.close_and_recv
-  puts "summary: #{resp.inspect}"
+  puts "summary: #{resp[0].inspect}"
 end
 
 opts = {}
@@ -71,5 +75,5 @@ end
 stub = Routeguide::RouteGuide::Stub.new('localhost', 50051, **opts)
 
 get_feature(stub)
-# list_features(stub)
-# record_route(stub, 10)
+list_features(stub)
+record_route(stub, 10)
