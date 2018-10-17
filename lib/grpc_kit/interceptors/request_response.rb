@@ -1,11 +1,16 @@
 # frozen_string_literal: true
 
-require 'grpc_kit/interceptors/base'
-
 module GrpcKit
   module Interceptors
     module Client
-      class RequestResponse < Base
+      class RequestResponse
+        attr_writer :interceptors
+
+        def initialize
+          # Cant' get interceptor at definition time...
+          @interceptors = nil
+        end
+
         def intercept(request, ctx, metadata, &block)
           if @interceptors && !@interceptors.empty?
             do_intercept(@interceptors.dup, request, ctx, metadata, &block)
@@ -32,7 +37,11 @@ module GrpcKit
     end
 
     module Server
-      class RequestResponse < Base
+      class RequestResponse
+        def initialize(interceptors)
+          @interceptors = interceptors
+        end
+
         def intercept(request, ctx, &block)
           if @interceptors && !@interceptors.empty?
             do_intercept(@interceptors.dup, request, ctx, &block)
@@ -43,7 +52,7 @@ module GrpcKit
 
         private
 
-        def do_intercept
+        def do_intercept(interceptors, request, ctx)
           if interceptors.empty?
             return yield(request, ctx)
           end

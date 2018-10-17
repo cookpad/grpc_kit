@@ -1,11 +1,16 @@
 # frozen_string_literal: true
 
-require 'grpc_kit/interceptors/base'
-
 module GrpcKit
   module Interceptors
     module Client
-      class Streaming < Base
+      class Streaming
+        attr_writer :interceptors
+
+        def initialize
+          # Cant' get interceptor at definition time...
+          @interceptors = nil
+        end
+
         def intercept(ctx, &block)
           if @interceptors && !@interceptors.empty?
             do_intercept(@interceptors.dup, ctx, &block)
@@ -32,7 +37,11 @@ module GrpcKit
     end
 
     module Server
-      class Streaming < Base
+      class Streaming
+        def initialize(interceptors)
+          @interceptors = interceptors
+        end
+
         def intercept(ctx, &block)
           if @interceptors && !@interceptors.empty?
             do_intercept(@interceptors.dup, ctx, &block)
