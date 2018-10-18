@@ -36,6 +36,8 @@ module GrpcKit
 
           run_once
         end
+      rescue Errno::ECONNRESET, IOError
+        finish
       end
 
       def run_once

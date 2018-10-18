@@ -36,6 +36,8 @@ module GrpcKit
             unless IO.select(nil, [io], nil, 1)
               raise 'timeout writing data'
             end
+          rescue IOError => e
+            raise IOError, e # TODO
           end
 
           data = data.byteslice(remain..-1)
