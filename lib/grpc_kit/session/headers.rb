@@ -45,7 +45,7 @@ module GrpcKit
         when 'grpc-status'
           self.grpc_status = val.to_i
         when 'grpc-timeout'
-          self.timeout = Duration.decod(v)
+          self.timeout = Duration.decode(val)
         when 'grpc-message'
           # TODO
           GrpcKit.logger.warn('grpc-message is unsupported header now')

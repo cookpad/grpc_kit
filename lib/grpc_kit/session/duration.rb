@@ -17,11 +17,11 @@ module GrpcKit
           raise "Invalid format: too short #{value}"
         end
 
-        unit = value[(size - 1)..size]
+        unit = value.slice!(-1, 1)
         d = Duration.new(0, 0, 0, 0)
-        n = Integer(value[0..size])
+        n = Integer(value)
 
-        case u
+        case unit
         when 'H'
           d.sec = n * HOUR
         when 'M'
@@ -35,7 +35,7 @@ module GrpcKit
         when 'n'
           d.nsec = n
         else
-          raise "Invalid unit `#{u}`: #{unit} "
+          raise "Invalid unit `#{unit}`: #{value + unit} "
         end
         d
       end
