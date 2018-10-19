@@ -1,6 +1,8 @@
 # GrpcKit
 
-A kit for creating gRPC server/client.
+__UNDER DEVELOPMENT__
+
+A kit for creating [gRPC](https://grpc.io/) server/client.
 
 ## Installation
 
@@ -24,7 +26,32 @@ $ gem install grpc_kit
 
 ## Usage
 
-TODO: Write usage instructions here
+More Details in [examples directory](https://github.com/ganmacs/grpc_kit/tree/master/examples).
+
+##### Server
+
+```ruby
+sock = TCPServer.new(50051)
+server = GrpcKit::Server.new
+server.handle(GreeterServer.new)
+
+loop do
+  conn = sock.accept
+  server.run(conn)
+end
+```
+
+##### Client
+
+```ruby
+stub = Helloworld::Greeter::Stub.new('localhost', 50051)
+message = stub.say_hello(Helloworld::HelloRequest.new(name: 'your name')).message
+puts message
+```
+
+## Requirements
+
+* [nghttp2](https://nghttp2.org/)
 
 ## Development
 
