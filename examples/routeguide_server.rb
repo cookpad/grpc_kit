@@ -110,9 +110,8 @@ end
 
 server = GrpcKit::Server.new(**opts)
 server.handle(Server.new)
-server.run
 
 loop do
   conn = sock.accept
-  server.session_start(conn)
+  server.run(conn)
 end

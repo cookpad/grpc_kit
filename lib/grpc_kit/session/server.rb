@@ -52,16 +52,16 @@ module GrpcKit
         end
       end
 
-      def stop
-        @stop = true
-      end
-
       def finish
         stop
         @io.close
       end
 
       private
+
+      def stop
+        @stop = true
+      end
 
       def invoke_handler
         while (stream = @inflights.pop)

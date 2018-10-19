@@ -9,6 +9,7 @@ module GrpcKit
       @sessions = []
       @rpc_descs = {}
       @interceptors = interceptors
+      @mutex = Mutex.new
     end
 
     # @params handler [object]
@@ -22,27 +23,21 @@ module GrpcKit
       end
     end
 
-    def run
-      GrpcKit.logger.info("Start grpc_kit v#{GrpcKit::VERSION}")
+    def run(conn)
+      GrpcKit.logger.debug("Start grpc_kit(v#{GrpcKit::VERSION})")
 
-      @rpc_descs.freeze
+      establish_session(conn) do |s|
+        s.submit_settings([])
+        s.start
+      end
     end
 
-    def stop
-      GrpcKit.logger.info('Stop grpc_kit')
-      @sessions.each(&:stop)
-    end
+    def shutdown
+      GrpcKit.logger.debug('Shutdown grpc_kit')
 
-    def session_start(conn)
-      session = GrpcKit::Session::Server.new(
-        GrpcKit::Session::IO.new(conn),
-        self,
-      )
-      @sessions << session
-
-      session.submit_settings([])
-      session.start # blocking
-      session.finish
+      @mutex.synchronize do
+        @sessions.each(&:finish)
+      end
     end
 
     def dispatch(stream, session)
@@ -52,6 +47,18 @@ module GrpcKit
       end
 
       rpc.invoke(stream, session)
+    end
+
+    private
+
+    def establish_session(conn)
+      session = GrpcKit::Session::Server.new(GrpcKit::Session::IO.new(conn), self)
+      begin
+        @mutex.synchronize { @sessions << session }
+        yield(session)
+      ensure
+        @mutex.synchronize { @sessions.delete(session) }
+      end
     end
   end
 end

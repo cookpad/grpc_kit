@@ -17,9 +17,8 @@ sock = TCPServer.new(50051)
 
 server = GrpcKit::Server.new
 server.handle(GreeterServer.new)
-server.run
 
 loop do
   conn = sock.accept
-  server.session_start(conn)
+  server.run(conn)
 end
