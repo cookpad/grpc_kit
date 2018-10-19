@@ -22,27 +22,27 @@ module GrpcKit
     end
 
     def request_response(rpc, request, opts = {})
-      GrpcKit.logger.info('Calling request_respose')
+      GrpcKit.logger.debug('Calling request_respose')
 
       rpc.config.interceptor.interceptors = @interceptors
       do_request(rpc, request, opts)
     end
 
     def client_streamer(rpc, opts = {})
-      GrpcKit.logger.info('Calling client_streamer')
+      GrpcKit.logger.debug('Calling client_streamer')
       rpc.config.interceptor.interceptors = @interceptors
       do_request(rpc, nil, opts)
     end
 
     def server_streamer(rpc, request, opts = {})
-      GrpcKit.logger.info('Calling server_streamer')
+      GrpcKit.logger.debug('Calling server_streamer')
       rpc.config.interceptor.interceptors = @interceptors
       do_request(rpc, request, opts)
     end
 
     def bidi_streamer(rpc, requests, opts = {})
       rpc.config.interceptor.interceptors = @interceptors
-      GrpcKit.logger.info('Calling bidi_streamer')
+      GrpcKit.logger.debug('Calling bidi_streamer')
     end
 
     private

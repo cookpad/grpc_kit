@@ -8,7 +8,7 @@ require 'grpc_kit/client'
 
 module GrpcKit
   def self.logger
-    @logger ||= Logger.new(STDOUT, level: :debug) # TODO: use :info level
+    @logger ||= Logger.new(STDOUT, level: :debug)
   end
 
   def self.logger=(logger)

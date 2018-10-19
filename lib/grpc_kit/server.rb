@@ -24,8 +24,7 @@ module GrpcKit
     end
 
     def run(conn)
-      GrpcKit.logger.debug("Start grpc_kit(v#{GrpcKit::VERSION})")
-
+      GrpcKit.logger.debug("Run grpc_kit(v#{GrpcKit::VERSION})")
       establish_session(conn) do |s|
         s.submit_settings([])
         s.start
