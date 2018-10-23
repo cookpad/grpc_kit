@@ -10,8 +10,8 @@ module GrpcKit
           cs = GrpcKit::Streams::Client.new(path: @config.path, protobuf: @config.protobuf, session: session, authority: authority)
           call = GrpcKit::Rpcs::Call.new(metadata, @config.method_name, @config.service_name, cs)
 
-          @config.interceptor.intercept(call) do |c|
-            c.send_msg(request, last: true)
+          @config.interceptor.intercept(call, metadata) do |c, m|
+            c.send_msg(request, metadata: m, last: true)
             c
           end
         end

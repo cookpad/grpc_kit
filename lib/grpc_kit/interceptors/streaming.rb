@@ -11,25 +11,25 @@ module GrpcKit
           @interceptors = nil
         end
 
-        def intercept(call, &block)
+        def intercept(call, metadata, &block)
           if @interceptors && !@interceptors.empty?
-            do_intercept(@interceptors.dup, call, &block)
+            do_intercept(@interceptors.dup, call, metadata, &block)
           else
-            yield(call)
+            yield(call, metadata)
           end
         end
 
         private
 
-        def do_intercept(interceptors, call)
+        def do_intercept(interceptors, call, metadata)
           if interceptors.empty?
-            return yield(call)
+            return yield(call, metadata)
           end
 
           interceptor = interceptors.pop
-          invoke(interceptor, call) do |inter_call|
-            do_intercept(interceptors, inter_call) do |c|
-              yield(c)
+          invoke(interceptor, call, metadata) do |inter_call, meta|
+            do_intercept(interceptors, inter_call, meta) do |c, m|
+              yield(c, m)
             end
           end
         end

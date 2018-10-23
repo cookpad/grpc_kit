@@ -10,18 +10,18 @@ module GrpcKit
         @end_read = false
         @end_write = false
         @finish = false
-        @write_byte_size = 0
       end
 
       def write(data, last: false)
         end_write if last
-        @write_byte_size += data.size
 
         if @buffer
           @buffer << data
         else
-          @buffer = data
+          @buffer = data.dup
         end
+
+        data.bytesize
       end
 
       def read(len = nil, last: false)

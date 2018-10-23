@@ -36,14 +36,14 @@ module GrpcKit
         when ':path'
           self.path = val
         when ':status'
-          self.http_status = val.to_i
+          self.http_status = Integer(val)
         when 'content-type'
           # TODO
           metadata[key] = val
         when 'grpc-encoding'
           self.grpc_encoding = val
         when 'grpc-status'
-          self.grpc_status = val.to_i
+          self.grpc_status = Integer(val)
         when 'grpc-timeout'
           self.timeout = Duration.decode(val)
         when 'grpc-message'

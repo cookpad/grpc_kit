@@ -12,6 +12,7 @@ module GrpcKit
 
       # @params val [String]
       def self.decode(value)
+        value = value.dup
         size = value.size
         if size < 2
           raise "Invalid format: too short #{value}"

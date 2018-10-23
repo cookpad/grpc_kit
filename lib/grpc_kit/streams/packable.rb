@@ -7,7 +7,7 @@ module GrpcKit
       # @params compress [Boolean]
       def pack(data, compress = false)
         c = compress ? 1 : 0
-        [c, data.size, data].pack('CNa*')
+        [c, data.bytesize, data].pack('CNa*')
       end
 
       # @params data [String]

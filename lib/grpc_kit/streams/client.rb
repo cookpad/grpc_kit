@@ -16,6 +16,10 @@ module GrpcKit
 
       def send_msg(data, metadata: {}, timeout: nil, last: false)
         if @stream
+          # unless metadata.empty?
+          #   raise 'You can attach metadata at first send_msg' # XXX
+          # end
+
           unless @stream.end_write?
             @session.resume_data(@stream.stream_id)
           end

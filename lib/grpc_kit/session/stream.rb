@@ -15,12 +15,12 @@ module GrpcKit
       attr_reader :headers, :pending_send_data, :pending_recv_data
       attr_accessor :local_end_stream, :remote_end_stream, :inflight, :stream_id
 
-      def initialize(stream_id:, send_data: GrpcKit::Session::Buffer.new)
+      def initialize(stream_id:, send_data: nil, recv_data: nil)
         @stream_id = stream_id
         @end_read_stream = false
         @headers = GrpcKit::Session::Headers.new
-        @pending_send_data = send_data
-        @pending_recv_data = GrpcKit::Session::Buffer.new
+        @pending_send_data = send_data || GrpcKit::Session::Buffer.new
+        @pending_recv_data = recv_data || GrpcKit::Session::Buffer.new
 
         @local_end_stream = false
         @remote_end_stream = false
