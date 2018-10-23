@@ -27,7 +27,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'googleapis-common-protos-types', '~> 1.0.2'
 
   spec.add_development_dependency 'bundler'
-  spec.add_development_dependency 'grpc-tools'
+  spec.add_development_dependency 'grpc-tools', '~> 1.15.0'
   spec.add_development_dependency 'pry-byebug'
   spec.add_development_dependency 'rake'
   spec.add_development_dependency 'rspec'
