@@ -27,23 +27,14 @@ module GrpcKit
       end
 
       def send_event(data)
-        remain = data.bytesize
-        size = remain
-        while remain > 0
-          begin
-            remain -= @io.syswrite(data)
-          rescue Errno::EAGAIN, Errno::EWOULDBLOCK
-            unless IO.select(nil, [io], nil, 1)
-              raise 'timeout writing data'
-            end
-          rescue IOError => e
-            raise IOError, e # TODO
-          end
+        return 0 if data.empty?
 
-          data = data.byteslice(remain..-1)
+        bytes = @io.write_nonblock(data, exception: false)
+        if bytes == :wait_writable
+          DS9::ERR_WOULDBLOCK
+        else
+          bytes
         end
-
-        size
       end
 
       def wait_readable
