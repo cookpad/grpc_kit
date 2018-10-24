@@ -8,6 +8,7 @@ module GrpcKit
     def initialize(interceptors: [])
       @sessions = []
       @rpc_descs = {}
+      @error_rpc = GrpcKit::Rpcs::Server::Error.new
       @interceptors = interceptors
       @mutex = Mutex.new
 
@@ -43,7 +44,7 @@ module GrpcKit
     def dispatch(stream, session)
       rpc = @rpc_descs[stream.headers.path]
       unless rpc
-        raise "Unkown path #{path}"
+        return @error_rpc.send_bad_status(stream, session, GrpcKit::Errors::Unimplemented.new(stream.headers.path))
       end
 
       rpc.invoke(stream, session)

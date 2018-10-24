@@ -92,10 +92,9 @@ module GrpcKit
         stream = @streams[stream_id]
         data = @streams[stream_id].pending_send_data.read(length)
         if data.empty? && stream.end_write?
-          # TODO
-          submit_trailer(stream_id, 'grpc-status' => '0')
-
-          false # means EOF and END_STREAM
+          submit_trailer(stream_id, stream.trailer_data)
+          # trailer header
+          false
         else
           data
         end

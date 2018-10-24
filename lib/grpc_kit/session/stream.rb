@@ -12,7 +12,7 @@ module GrpcKit
       delegate end_write: :@pending_send_data
       delegate end_read: :@pending_recv_data
 
-      attr_reader :headers, :pending_send_data, :pending_recv_data
+      attr_reader :headers, :pending_send_data, :pending_recv_data, :trailer_data
       attr_accessor :local_end_stream, :remote_end_stream, :inflight, :stream_id
 
       def initialize(stream_id:, send_data: nil, recv_data: nil)
@@ -25,6 +25,11 @@ module GrpcKit
         @local_end_stream = false
         @remote_end_stream = false
         @inflight = false
+        @trailer_data = {}
+      end
+
+      def write_trailers_data(tariler)
+        @trailer_data = tariler
       end
 
       def write_send_data(data, last: false)
