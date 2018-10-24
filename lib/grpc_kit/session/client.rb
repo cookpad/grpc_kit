@@ -137,9 +137,11 @@ module GrpcKit
       # def on_frame_not_send(frame, reason)
       # end
 
-      # # for nghttp2_session_callbacks_set_on_header_callback
-      # def on_header(name, value, frame, flags)
-      # end
+      # for nghttp2_session_callbacks_set_on_header_callback
+      def on_header(name, value, frame, _flags)
+        stream = @streams[frame.stream_id]
+        stream.add_header(name, value)
+      end
 
       # # for nghttp2_session_callbacks_set_on_begin_headers_callback
       # def on_begin_header(name, value, frame, flags)

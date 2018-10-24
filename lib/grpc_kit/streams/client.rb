@@ -2,6 +2,7 @@
 
 require 'grpc_kit/stream'
 require 'grpc_kit/streams/send_buffer'
+require 'grpc_kit/status_codes'
 
 module GrpcKit
   module Streams
@@ -46,7 +47,13 @@ module GrpcKit
           raise 'You should call `send` method to send data'
         end
 
-        @stream.recv(last: last)
+        begin
+          @stream.recv(last: last)
+        rescue StandardError => e
+          GrpcKit.logger.error(e)
+
+          raise GrpcKit::Errors.from_error_code(@stream.headers.grpc_status, @stream.headers.status_message)
+        end
       end
 
       def close_and_recv

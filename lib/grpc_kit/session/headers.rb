@@ -43,12 +43,11 @@ module GrpcKit
         when 'grpc-encoding'
           self.grpc_encoding = val
         when 'grpc-status'
-          self.grpc_status = Integer(val)
+          self.grpc_status = val
         when 'grpc-timeout'
           self.timeout = Duration.decode(val)
         when 'grpc-message'
-          # TODO
-          GrpcKit.logger.warn('grpc-message is unsupported header now')
+          self.status_message = val
         when 'grpc-status-details-bin'
           # TODO
           GrpcKit.logger.warn('grpc-status-details-bin is unsupported header now')

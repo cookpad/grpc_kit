@@ -47,7 +47,7 @@
 - [ ] duration parse in header
 - [ ] send `grpc-status` along with header frame if possible
    - need to support  https://nghttp2.org/documentation/nghttp2_submit_response.html, data_prd is not NULL
-- [ ] unimplemented error
+- [x] unimplemented error
 - [ ] goaway
 - [ ] cancel
 - [ ] support h2's header continuation
