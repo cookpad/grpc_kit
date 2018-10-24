@@ -6,8 +6,10 @@ module GrpcKit
   module Errors
     # https://github.com/grpc/grpc/blob/23b5b1a5a9c7084c5b64d4998ee15af0f77bd589/doc/statuscodes.md
     class BadStatus < StandardError
+      attr_reader :code
+
       def initialize(code, message)
-        super("#{code} #{message}")
+        super("#{GrpcKit::StatusCodes::CODE_NAME[code]} #{message}")
         @code = code
         @message = message
       end
