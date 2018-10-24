@@ -23,7 +23,7 @@ module GrpcKit
 
     class Unknown < BadStatus
       def initialize(mesage)
-        super(GrpcKit::StatusCodes::DEADLINE_EXCEEDED, mesage, 'application throws an exception')
+        super(GrpcKit::StatusCodes::UNKNOWN, mesage, 'application throws an exception')
       end
     end
 
