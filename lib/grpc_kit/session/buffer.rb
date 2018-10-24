@@ -13,6 +13,8 @@ module GrpcKit
       end
 
       def write(data, last: false)
+        return 0 if data.empty?
+
         end_write if last
 
         if @buffer
@@ -25,12 +27,13 @@ module GrpcKit
       end
 
       def read(len = nil, last: false)
-        end_read if last
-
-        if @buffer.nil?
+        if @buffer.nil? || @buffer.empty?
           return ''
         end
 
+        end_read if last
+
+        # TODO: more efficient code
         if len
           @buffer.slice!(0...len)
         else
