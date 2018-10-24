@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'grpc_kit/rpcs/base'
+require 'grpc_kit/status_codes'
 
 module GrpcKit
   module Rpcs
@@ -32,7 +33,20 @@ module GrpcKit
           ss = GrpcKit::Streams::Server.new(stream: stream, protobuf: @config.protobuf, session: session)
           call = GrpcKit::Rpcs::Call.new(stream.headers.metadata, @config.method_name, @config.service_name, ss)
 
+          begin
+            do_invoke(ss, call)
+          rescue GrpcKit::Errors::BadStatus => e
+            ss.send_status(status: e.code, msg: e.grpc_message, metadata: {}) # TODO: metadata should be set
+          rescue StandardError => e
+            ss.send_status(status: GrpcKit::StatusCodes::UNKNOWN, msg: e.message, metadata: {})
+          end
+        end
+
+        private
+
+        def do_invoke(ss, call)
           request = ss.recv(last: true)
+
           resp =
             if @config.interceptor
               @config.interceptor.intercept(request, call) do |req, c|
