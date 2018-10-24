@@ -10,6 +10,8 @@ module GrpcKit
       @rpc_descs = {}
       @interceptors = interceptors
       @mutex = Mutex.new
+
+      GrpcKit.logger.debug("Launched grpc_kit(v#{GrpcKit::VERSION})")
     end
 
     # @params handler [object]
@@ -24,7 +26,6 @@ module GrpcKit
     end
 
     def run(conn)
-      GrpcKit.logger.debug("Run grpc_kit(v#{GrpcKit::VERSION})")
       establish_session(conn) do |s|
         s.submit_settings([])
         s.start
