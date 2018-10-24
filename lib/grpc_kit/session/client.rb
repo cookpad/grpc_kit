@@ -139,6 +139,7 @@ module GrpcKit
 
       # for nghttp2_session_callbacks_set_on_header_callback
       def on_header(name, value, frame, _flags)
+        GrpcKit.logger.debug("#{name} => #{value}")
         stream = @streams[frame.stream_id]
         stream.add_header(name, value)
       end
