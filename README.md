@@ -2,7 +2,7 @@
 
 __UNDER DEVELOPMENT__
 
-A kit for creating [gRPC](https://grpc.io/) server/client.
+A kit for creating [gRPC](https://grpc.io/) server/client in Ruby.
 
 ## Installation
 
