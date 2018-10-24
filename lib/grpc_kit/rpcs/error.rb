@@ -15,7 +15,7 @@ module GrpcKit
       class Error
         def send_bad_status(stream, session, bad_status)
           ss = GrpcKit::Streams::Server.new(stream: stream, protobuf: nil, session: session)
-          ss.send_status(status: bad_status.code, msg: bad_status.message)
+          ss.send_status(status: bad_status.code, msg: bad_status.grpc_message)
         end
       end
     end

@@ -52,7 +52,7 @@ module GrpcKit
         rescue StandardError => e
           GrpcKit.logger.error(e)
 
-          raise GrpcKit::Errors.from_error_code(@stream.headers.grpc_status, @stream.headers.status_message)
+          raise GrpcKit::Errors.from_status_code(@stream.headers.grpc_status, @stream.headers.status_message)
         end
       end
 
