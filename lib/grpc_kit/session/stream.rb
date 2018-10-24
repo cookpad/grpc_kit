@@ -3,17 +3,19 @@
 require 'forwardable'
 require 'grpc_kit/session/buffer'
 require 'grpc_kit/session/headers'
+require 'grpc_kit/session/stream_status'
 
 module GrpcKit
   module Session
     class Stream
       extend Forwardable
 
-      delegate end_write: :@pending_send_data
-      delegate end_read: :@pending_recv_data
+      delegate %i[end_write end_write?] => :@pending_send_data
+      delegate %i[end_read end_read?] => :@pending_recv_data
+      delegate %i[close close_remote close_local close? remote_close? local_close?] => :@status
 
-      attr_reader :headers, :pending_send_data, :pending_recv_data, :trailer_data
-      attr_accessor :local_end_stream, :remote_end_stream, :inflight, :stream_id
+      attr_reader :headers, :pending_send_data, :pending_recv_data, :trailer_data, :status
+      attr_accessor :inflight, :stream_id
 
       def initialize(stream_id:, send_data: nil, recv_data: nil)
         @stream_id = stream_id
@@ -22,10 +24,9 @@ module GrpcKit
         @pending_send_data = send_data || GrpcKit::Session::Buffer.new
         @pending_recv_data = recv_data || GrpcKit::Session::Buffer.new
 
-        @local_end_stream = false
-        @remote_end_stream = false
         @inflight = false
         @trailer_data = {}
+        @status = GrpcKit::Session::StreamStatus.new
       end
 
       def write_trailers_data(tariler)
@@ -38,23 +39,6 @@ module GrpcKit
 
       def read_recv_data(last: false)
         @pending_recv_data.read(last: last)
-      end
-
-      def end_write?
-        @local_end_stream || @pending_send_data.end_write?
-      end
-
-      def end_read?
-        @remote_end_stream || @pending_recv_data.end_read?
-      end
-
-      def end_stream?
-        end_read? && end_write?
-      end
-
-      def end_stream
-        end_read
-        end_write
       end
 
       def add_header(name, value)

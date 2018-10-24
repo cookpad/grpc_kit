@@ -81,8 +81,7 @@ module GrpcKit
       loop do
         data = @stream.read_recv_data(last: last)
         if data.empty?
-          # Consider `end_read` is set in this invocation
-          if @stream.end_read? && !last
+          if @stream.remote_close?
             return nil
           end
 

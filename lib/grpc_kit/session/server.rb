@@ -110,7 +110,7 @@ module GrpcKit
           stream = @streams[frame.stream_id]
 
           if frame.end_stream?
-            stream.remote_end_stream = true
+            stream.close_remote
           end
 
           unless stream.inflight
@@ -121,7 +121,7 @@ module GrpcKit
           stream = @streams[frame.stream_id]
 
           if frame.end_stream?
-            stream.remote_end_stream = true
+            stream.close_remote
           end
 
           # when DS9::Frames::Goaway
@@ -138,7 +138,7 @@ module GrpcKit
         when DS9::Frames::Data, DS9::Frames::Headers
           stream = @streams[frame.stream_id]
           if frame.end_stream?
-            stream.local_end_stream = true
+            stream.close_local
           end
         end
 
@@ -180,7 +180,7 @@ module GrpcKit
         stream = @streams.delete(stream_id)
         return unless stream
 
-        stream.end_stream
+        stream.close
       end
 
       # nghttp2_session_callbacks_set_on_data_chunk_recv_callback
