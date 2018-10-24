@@ -17,8 +17,10 @@ module GrpcKit
           @status = HALF_CLOSE_LOCAL
         elsif @status == HALF_CLOSE_REMOTE
           @status = CLOSE
+        elsif @status == HALF_CLOSE_REMOTE
+        # nothing
         else
-          raise "invalid close write in #{@status} "
+          raise 'stream is already closed'
         end
       end
 
@@ -27,8 +29,10 @@ module GrpcKit
           @status = HALF_CLOSE_REMOTE
         elsif @status == HALF_CLOSE_LOCAL
           @status = CLOSE
+        elsif @status == HALF_CLOSE_REMOTE
+        # nothing
         else
-          raise "invalid close write in #{@status} "
+          raise 'stream is already closed'
         end
       end
 
