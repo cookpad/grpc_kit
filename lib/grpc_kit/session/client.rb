@@ -33,7 +33,7 @@ module GrpcKit
         stream = @streams.fetch(stream_id)
 
         loop do
-          if (!want_read? && !want_write?) || stream.end_stream?
+          if (!want_read? && !want_write?) || stream.close?
             break
           end
 
