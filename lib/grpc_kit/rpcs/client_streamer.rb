@@ -9,7 +9,7 @@ module GrpcKit
         def invoke(session, _request, authority:, metadata: {}, timeout: nil, **opts)
           cs = GrpcKit::Streams::Client.new(config: @config, session: session, authority: authority)
           call = GrpcKit::Rpcs::Call.new(metadata, @config.method_name, @config.service_name, cs)
-          @config.interceptor.intercept(call) do |s|
+          @config.interceptor.intercept(call, metadata) do |s|
             s
           end
         end
