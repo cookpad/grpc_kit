@@ -106,7 +106,6 @@ module GrpcKit
 
         case frame
         when DS9::Frames::Data
-
           stream = @streams[frame.stream_id]
 
           if frame.end_stream?

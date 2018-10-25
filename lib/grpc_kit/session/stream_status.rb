@@ -40,11 +40,11 @@ module GrpcKit
         @status = CLOSE
       end
 
-      def remote_close?
+      def close_remote?
         (@status == HALF_CLOSE_REMOTE) || close?
       end
 
-      def local_close?
+      def close_local?
         (@status == HALF_CLOSE_LOCAL) || close?
       end
 

@@ -9,7 +9,7 @@ module GrpcKit
 
     extend Forwardable
 
-    delegate %i[stream_id end_write end_read end_write? end_read? remote_close? headers] => :@stream
+    delegate %i[stream_id end_write end_read end_write? end_read? close_remote? headers] => :@stream
 
     # @params protobuf [GrpcKit::Protobuffer]
     # @params session [GrpcKit::Session::Server|GrpcKit::Session::Client]
@@ -104,7 +104,7 @@ module GrpcKit
         data = @stream.read_recv_data(last: last)
         return data unless data.empty?
 
-        if @stream.remote_close?
+        if @stream.close_remote?
           # it do not receive data which we need, it may receive invalid grpc-status
           unless @stream.end_read?
             return nil

@@ -12,7 +12,7 @@ module GrpcKit
 
       delegate %i[end_write end_write?] => :@pending_send_data
       delegate %i[end_read end_read?] => :@pending_recv_data
-      delegate %i[close close_remote close_local close? remote_close? local_close?] => :@status
+      delegate %i[close close_remote close_local close? close_remote? close_local?] => :@status
 
       attr_reader :headers, :pending_send_data, :pending_recv_data, :trailer_data, :status
       attr_accessor :inflight, :stream_id

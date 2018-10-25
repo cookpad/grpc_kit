@@ -80,7 +80,7 @@ module GrpcKit
 
       def check_status!
         # XXX: wait until half close (remote) to get grpc-status
-        until @stream.remote_close?
+        until @stream.close_remote?
           @session.run_once
         end
 
