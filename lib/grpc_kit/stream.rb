@@ -21,7 +21,12 @@ module GrpcKit
     end
 
     def each
-      loop { yield(recv) }
+      loop do
+        data = recv
+        return if data.nil?
+
+        yield(data)
+      end
     end
 
     def send(data, last: false)
@@ -32,9 +37,7 @@ module GrpcKit
     def recv(last: false)
       data = unpack(read(last: last))
 
-      unless data
-        raise StopIteration
-      end
+      return nil unless data
 
       compressed, size, buf = *data
 
@@ -85,7 +88,7 @@ module GrpcKit
         if @stream.remote_close?
           # it do not receive data which we need, it may receive invalid grpc-status
           unless @stream.end_read?
-            raise 'invalid status'
+            return nil
           end
 
           return nil

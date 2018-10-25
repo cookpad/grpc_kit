@@ -30,6 +30,13 @@ module GrpcKit
         @sent_first_msg = true
       end
 
+      def recv(last: false)
+        data = @stream.recv(last: last)
+        raise StopIteration if data.nil?
+
+        data
+      end
+
       def send_status(status: GrpcKit::StatusCodes::INTERNAL, msg: nil, metadata: {})
         @stream.send_trailer(status: status, msg: msg, metadata: metadata)
         return if @sent_first_msg

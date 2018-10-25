@@ -46,13 +46,14 @@ module GrpcKit
           raise 'You should call `send` method to send data'
         end
 
-        begin
-          @stream.recv(last: last)
-        rescue StandardError => e
-          GrpcKit.logger.error(e)
+        data = @stream.recv(last: last)
 
-          raise GrpcKit::Errors.from_status_code(@stream.headers.grpc_status, @stream.headers.status_message)
+        if data.nil?
+          check_status!
+          raise StopIteration
         end
+
+        data
       end
 
       def close_and_recv
@@ -68,12 +69,27 @@ module GrpcKit
         @session.start(@stream.stream_id)
         @stream.end_read
 
+        check_status!
+
         data = []
         @stream.each { |d| data.push(d) }
         data
       end
 
       private
+
+      def check_status!
+        # XXX: wait until half close (remote) to get grpc-status
+        until @stream.remote_close?
+          @session.run_once
+        end
+
+        if @stream.headers.grpc_status != GrpcKit::StatusCodes::OK
+          raise GrpcKit::Errors.from_status_code(@stream.headers.grpc_status, @stream.headers.status_message)
+        else
+          GrpcKit.logger.debug('request is success')
+        end
+      end
 
       def build_headers(metadata: {}, timeout: nil, **headers)
         hdrs = metadata.merge(headers).merge(
