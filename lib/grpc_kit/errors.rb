@@ -11,7 +11,7 @@ module GrpcKit
     end
 
     class BadStatus < StandardError
-      attr_reader :code, :reason, :grpc_message
+      attr_reader :code, :reason
 
       def initialize(code, reason)
         @code = code
@@ -35,6 +35,18 @@ module GrpcKit
     class Unimplemented < BadStatus
       def initialize(mesage)
         super(GrpcKit::StatusCodes::UNIMPLEMENTED, mesage)
+      end
+    end
+
+    class ResourceExhausted < BadStatus
+      def initialize(mesage)
+        super(GrpcKit::StatusCodes::RESOURCE_EXHAUSTED, mesage)
+      end
+    end
+
+    class Internal < BadStatus
+      def initialize(mesage)
+        super(GrpcKit::StatusCodes::INTERNAL, mesage)
       end
     end
 

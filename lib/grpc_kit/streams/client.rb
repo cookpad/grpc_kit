@@ -29,7 +29,7 @@ module GrpcKit
           @stream = GrpcKit::Stream.new(protobuf: @config.protobuf, session: @session, stream: stream)
         end
 
-        @stream.send(data, last: last)
+        @stream.send(data, last: last, limit_size: @config.max_send_message_size)
         @session.run_once
       end
 
@@ -46,7 +46,7 @@ module GrpcKit
           raise 'You should call `send` method to send data'
         end
 
-        data = @stream.recv(last: last)
+        data = @stream.recv(last: last, limit_size: @config.max_receive_message_size)
 
         if data.nil?
           check_status!

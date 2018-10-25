@@ -23,7 +23,7 @@ module GrpcKit
           @stream.send_trailer # TODO: pass trailer metadata
         end
 
-        @stream.send(data, last: last)
+        @stream.send(data, last: last, limit_size: @config.max_send_message_size)
         return if @sent_first_msg
 
         @stream.submit_response
@@ -31,7 +31,7 @@ module GrpcKit
       end
 
       def recv(last: false)
-        data = @stream.recv(last: last)
+        data = @stream.recv(last: last, limit_size: @config.max_receive_message_size)
         raise StopIteration if data.nil?
 
         data

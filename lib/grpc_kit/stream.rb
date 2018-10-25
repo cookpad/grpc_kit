@@ -9,7 +9,7 @@ module GrpcKit
 
     extend Forwardable
 
-    delegate %i[stream_id end_write end_read end_write? end_read? headers] => :@stream
+    delegate %i[stream_id end_write end_read end_write? end_read? remote_close? headers] => :@stream
 
     # @params protobuf [GrpcKit::Protobuffer]
     # @params session [GrpcKit::Session::Server|GrpcKit::Session::Client]
@@ -29,12 +29,23 @@ module GrpcKit
       end
     end
 
-    def send(data, last: false)
-      req = @protobuf.encode(data)
-      @stream.write_send_data(pack(req), last: last)
+    def send(data, last: false, limit_size: nil)
+      b =
+        begin
+          @protobuf.encode(data)
+        rescue ArgumentError => e
+          raise GrpcKit::Errors::Internal, "Error while encoding: #{e}"
+        end
+
+      req = pack(b)
+      if limit_size && req.bytesize > limit_size
+        raise GrpcKit::Errors::ResourceExhausted, "Sending message is too large: send=#{req.bytesize}, max=#{limit_size}"
+      end
+
+      @stream.write_send_data(req, last: last)
     end
 
-    def recv(last: false)
+    def recv(last: false, limit_size: nil)
       data = unpack(read(last: last))
 
       return nil unless data
@@ -45,11 +56,19 @@ module GrpcKit
         raise "inconsistent data: #{buf}"
       end
 
+      if limit_size && size > limit_size
+        raise GrpcKit::Errors::ResourceExhausted, "Receving message is too large: recevied=#{size}, max=#{limit_size}"
+      end
+
       if compressed
         raise 'compress option is unsupported'
       end
 
-      @protobuf.decode(buf)
+      begin
+        @protobuf.decode(buf)
+      rescue ArgumentError => e
+        raise GrpcKit::Errors::Internal, "Error while decoding #{e}"
+      end
     end
 
     def send_trailer(status: GrpcKit::StatusCodes::OK, msg: nil, metadata: {})

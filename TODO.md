@@ -42,7 +42,8 @@
 
 ## Error handling
 
-- [ ] resouce exhausted (body size is to large)
+- [x] resouce exhausted (body size is to large)
+- [x] internal
 - [ ] resouce exhausted (worker is exhausted)
 - [ ] duration parse in header
 - [ ] send `grpc-status` along with header frame if possible
