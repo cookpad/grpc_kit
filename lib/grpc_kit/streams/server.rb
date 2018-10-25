@@ -12,8 +12,9 @@ module GrpcKit
 
       delegate %i[each recv] => :@stream
 
-      def initialize(protobuf:, session:, stream:)
-        @stream = GrpcKit::Stream.new(protobuf: protobuf, session: session, stream: stream)
+      def initialize(stream:, session:, config:)
+        @stream = GrpcKit::Stream.new(protobuf: config.protobuf, session: session, stream: stream)
+        @config = config
         @sent_first_msg = false
       end
 

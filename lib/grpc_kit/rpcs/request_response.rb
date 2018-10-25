@@ -8,7 +8,7 @@ module GrpcKit
     module Client
       class RequestResponse < Base
         def invoke(session, request, authority:, metadata: {}, timeout: nil, **opts)
-          cs = GrpcKit::Streams::Client.new(path: @config.path, protobuf: @config.protobuf, session: session, authority: authority)
+          cs = GrpcKit::Streams::Client.new(config: @config, session: session, authority: authority)
 
           call = GrpcKit::Rpcs::Call.new(metadata, @config.method_name, @config.service_name, cs)
           @config.interceptor.intercept(request, call, metadata) do |r, c, m|
@@ -30,13 +30,13 @@ module GrpcKit
     module Server
       class RequestResponse < Base
         def invoke(stream, session)
-          ss = GrpcKit::Streams::Server.new(stream: stream, protobuf: @config.protobuf, session: session)
+          ss = GrpcKit::Streams::Server.new(stream: stream, session: session, config: @config)
           call = GrpcKit::Rpcs::Call.new(stream.headers.metadata, @config.method_name, @config.service_name, ss)
 
           begin
             do_invoke(ss, call)
           rescue GrpcKit::Errors::BadStatus => e
-            ss.send_status(status: e.code, msg: e.grpc_message, metadata: {}) # TODO: metadata should be set
+            ss.send_status(status: e.code, msg: e.reason, metadata: {}) # TODO: metadata should be set
           rescue StandardError => e
             ss.send_status(status: GrpcKit::StatusCodes::UNKNOWN, msg: e.message, metadata: {})
           end

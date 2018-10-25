@@ -7,10 +7,9 @@ require 'grpc_kit/status_codes'
 module GrpcKit
   module Streams
     class Client
-      def initialize(path:, protobuf:, session:, authority:)
-        @path = path
+      def initialize(session:, config:, authority:)
+        @config = config
         @session = session
-        @protobuf = protobuf
         @stream = nil
         @authority = authority
       end
@@ -27,7 +26,7 @@ module GrpcKit
         else
           headers = build_headers(metadata: metadata, timeout: timeout)
           stream = @session.start_request(GrpcKit::Streams::SendBuffer.new, headers)
-          @stream = GrpcKit::Stream.new(protobuf: @protobuf, session: @session, stream: stream)
+          @stream = GrpcKit::Stream.new(protobuf: @config.protobuf, session: @session, stream: stream)
         end
 
         @stream.send(data, last: last)
@@ -80,7 +79,7 @@ module GrpcKit
         hdrs = metadata.merge(headers).merge(
           ':method' => 'POST',
           ':scheme' => 'http',
-          ':path' => @path,
+          ':path' => @config.path,
           ':authority' => @authority,
           'te' => 'trailers',
           'content-type' => 'application/grpc',
