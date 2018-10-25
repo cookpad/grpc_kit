@@ -34,7 +34,7 @@ module GrpcKit
             @handler.send(@config.ruby_style_method_name, request, call)
           end
 
-          stream.end_write
+          ss.send_trailer
         end
       end
     end

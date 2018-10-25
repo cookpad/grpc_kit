@@ -37,6 +37,11 @@ module GrpcKit
         data
       end
 
+      def send_trailer
+        @stream.send_trailer # TODO: pass trailer metadata
+        @stream.end_write
+      end
+
       def send_status(status: GrpcKit::StatusCodes::INTERNAL, msg: nil, metadata: {})
         @stream.send_trailer(status: status, msg: msg, metadata: metadata)
         return if @sent_first_msg
