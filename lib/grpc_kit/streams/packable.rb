@@ -51,6 +51,7 @@ module GrpcKit
         def read
           metadata = @data.slice!(0, METADATA_SIZE)
           c, size = metadata.unpack('CN')
+          # TODO: more efficient code
           data = @data.slice!(0, size)
           [c != 0, size, data]
         end
