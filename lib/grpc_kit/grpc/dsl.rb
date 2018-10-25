@@ -39,7 +39,7 @@ module GrpcKit
         rpc_descs[rpc_desc.path] = rpc_desc
 
         define_method(rpc_desc.ruby_style_name) do |_, _|
-          raise GrpcKit::Errors::Unimplemented, name.to_s
+          raise GrpcKit::Errors::Unimplemented, "Method not found: #{name}"
         end
       end
 

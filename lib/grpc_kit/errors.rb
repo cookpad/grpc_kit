@@ -7,35 +7,34 @@ module GrpcKit
     # https://github.com/grpc/grpc/blob/23b5b1a5a9c7084c5b64d4998ee15af0f77bd589/doc/statuscodes.md
 
     def self.from_status_code(code, message)
-      CODES[code].new(message)
+      CODES.fetch(code).new(message)
     end
 
     class BadStatus < StandardError
       attr_reader :code, :reason, :grpc_message
 
-      def initialize(code, reason, grpc_message)
-        super("[#{GrpcKit::StatusCodes::CODE_NAME[code]}] #{reason}")
+      def initialize(code, reason)
         @code = code
         @reason = reason
-        @grpc_message = "#{grpc_message}: #{reason}"
+        super("[#{GrpcKit::StatusCodes::CODE_NAME[code]}] #{reason}")
       end
     end
 
     class Unknown < BadStatus
       def initialize(mesage)
-        super(GrpcKit::StatusCodes::UNKNOWN, mesage, 'application throws an exception')
+        super(GrpcKit::StatusCodes::UNKNOWN, mesage)
       end
     end
 
     class DeadlineExceeded < BadStatus
       def initialize(mesage)
-        super(GrpcKit::StatusCodes::DEADLINE_EXCEEDED, mesage, 'Deadline expires before server returns status')
+        super(GrpcKit::StatusCodes::DEADLINE_EXCEEDED, mesage)
       end
     end
 
     class Unimplemented < BadStatus
       def initialize(mesage)
-        super(GrpcKit::StatusCodes::UNIMPLEMENTED, mesage, 'Method not found')
+        super(GrpcKit::StatusCodes::UNIMPLEMENTED, mesage)
       end
     end
 
@@ -48,12 +47,12 @@ module GrpcKit
       # GrpcKit::StatusCode::NOT_FOUND           => 'NOT_FOUND',
       # GrpcKit::StatusCode::ALREADY_EXISTS      => 'ALREADY_EXISTS',
       # GrpcKit::StatusCode::PERMISSION_DENIED   => 'PERMISSION_DENIED',
-      # GrpcKit::StatusCode::RESOURCE_EXHAUSTED  => 'RESOURCE_EXHAUSTED',
+      GrpcKit::StatusCodes::RESOURCE_EXHAUSTED  => ResourceExhausted,
       # GrpcKit::StatusCode::FAILED_PRECONDITION => 'FAILED_PRECONDITION',
       # GrpcKit::StatusCode::ABORTED             => 'ABORTED',
       # GrpcKit::StatusCode::OUT_OF_RANGE        => 'OUT_OF_RANGE',
       GrpcKit::StatusCodes::UNIMPLEMENTED       => Unimplemented,
-      # GrpcKit::StatusCode::INTERNAL            => 'INTERNAL',
+      GrpcKit::StatusCodes::INTERNAL            => Internal,
       # GrpcKit::StatusCode::UNAVAILABLE         => 'UNAVAILABLE',
       # GrpcKit::StatusCode::DATA_LOSS           => 'DATA_LOSS',
       # GrpcKit::StatusCode::UNAUTHENTICATED     => 'UNAUTHENTICATED',
