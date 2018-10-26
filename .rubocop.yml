@@ -35,6 +35,9 @@ Style/TrailingCommaInArguments:
 Style/SafeNavigation:
   Enabled: false
 
+Style/WhileUntilModifier:
+  Enabled: false
+
 Naming/PredicateName:
   NamePrefixBlacklist:
     - "is_"

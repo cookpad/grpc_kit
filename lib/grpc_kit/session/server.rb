@@ -36,7 +36,8 @@ module GrpcKit
 
           run_once
         end
-      rescue Errno::ECONNRESET, IOError
+      rescue Errno::ECONNRESET, IOError => e
+        GrpcKit.logger.debug(e.message)
         finish
       end
 

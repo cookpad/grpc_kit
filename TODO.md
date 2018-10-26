@@ -59,6 +59,6 @@
 - [x] mutli process (griffin)
 - [ ] connection persistent (client, griffin)
 - [ ] send metadata in trailrs frame
-- [ ] tcp connection の keep alive
 - [ ] add server request spec
 - [ ] add client request spec
+- [ ] handle RST FRAME
