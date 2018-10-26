@@ -30,11 +30,7 @@ RSpec.describe GrpcKit::Session::Headers do
     end
 
     context 'when grpc-status is given' do
-      it { expect { headers.add('grpc-status', '0') }.to change { headers.grpc_status }.from(nil).to(0) }
-
-      context 'and grpc_status is not integer' do
-        it { expect { headers.add('grpc-status', 'not integer') }.to raise_error(ArgumentError) }
-      end
+      it { expect { headers.add('grpc-status', '0') }.to change { headers.grpc_status }.from(nil).to('0') }
     end
 
     context 'when user-agent is given' do

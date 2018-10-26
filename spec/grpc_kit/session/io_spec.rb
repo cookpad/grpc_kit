@@ -39,17 +39,5 @@ RSpec.describe GrpcKit::Session::IO do
       io.send_event(write_data)
       expect(inner_io.string).to eq(write_data)
     end
-
-    context 'when syswrite raise error' do
-      context 'which is IOError' do
-        before do
-          allow(inner_io).to receive(:syswrite).and_raise(IOError)
-        end
-
-        it '' do
-          expect { io.send_event(write_data) }.to raise_error(IOError)
-        end
-      end
-    end
   end
 end
