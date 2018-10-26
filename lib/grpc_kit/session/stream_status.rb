@@ -17,7 +17,7 @@ module GrpcKit
           @status = HALF_CLOSE_LOCAL
         elsif @status == HALF_CLOSE_REMOTE
           @status = CLOSE
-        elsif @status == HALF_CLOSE_REMOTE
+        elsif @status == HALF_CLOSE_LOCAL
         # nothing
         else
           raise 'stream is already closed'
@@ -40,12 +40,12 @@ module GrpcKit
         @status = CLOSE
       end
 
-      def close_remote?
-        (@status == HALF_CLOSE_REMOTE) || close?
-      end
-
       def close_local?
         (@status == HALF_CLOSE_LOCAL) || close?
+      end
+
+      def close_remote?
+        (@status == HALF_CLOSE_REMOTE) || close?
       end
 
       def close?
