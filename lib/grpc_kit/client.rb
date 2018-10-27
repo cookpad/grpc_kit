@@ -1,8 +1,8 @@
 # frozen_string_literal: false
 
 require 'socket'
+require 'grpc_kit/grpc_time'
 require 'grpc_kit/session/client'
-require 'grpc_kit/session/duration'
 require 'grpc_kit/session/io'
 require 'grpc_kit/rpcs'
 
@@ -13,12 +13,7 @@ module GrpcKit
       @port = port
       @authority = "#{host}:#{port}"
       @interceptors = interceptors
-      @timeout =
-        if timeout
-          GrpcKit::Session::Duration.from_numeric(timeout)
-        else
-          nil
-        end
+      @timeout = timeout && GrpcKit::GrpcTime.new(timeout)
     end
 
     def request_response(rpc, request, opts = {})

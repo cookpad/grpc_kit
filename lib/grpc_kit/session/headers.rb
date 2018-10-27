@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'grpc_kit/session/duration'
+require 'grpc_kit/grpc_time'
 
 module GrpcKit
   module Session
@@ -45,7 +45,7 @@ module GrpcKit
         when 'grpc-status'
           self.grpc_status = val
         when 'grpc-timeout'
-          self.timeout = Duration.decode(val)
+          self.timeout = GrpcTime.new(val)
         when 'grpc-message'
           self.status_message = val
         when 'grpc-status-details-bin'

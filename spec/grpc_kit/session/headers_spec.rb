@@ -18,7 +18,7 @@ RSpec.describe GrpcKit::Session::Headers do
     end
 
     context 'when grpc-timeout is given' do
-      it { expect { headers.add('grpc-timeout', '1S') }.to change { headers.timeout.class }.from(NilClass).to(GrpcKit::Session::Duration) }
+      it { expect { headers.add('grpc-timeout', '1S') }.to change { headers.timeout.class }.from(NilClass).to(GrpcKit::GrpcTime) }
     end
 
     context 'when content-type is given' do

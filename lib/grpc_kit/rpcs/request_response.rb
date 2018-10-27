@@ -13,8 +13,7 @@ module GrpcKit
           call = GrpcKit::Rpcs::Call.new(metadata, @config.method_name, @config.service_name, cs)
           @config.interceptor.intercept(request, call, metadata) do |r, c, m|
             if timeout
-              # XXX: when timeout.to_timeout is 0
-              Timeout.timeout(timeout.to_timeout, GrpcKit::Errors::DeadlineExceeded) do
+              Timeout.timeout(timeout.to_f, GrpcKit::Errors::DeadlineExceeded) do
                 c.send_msg(r, timeout: timeout.to_s, metadata: m, last: true)
                 c.recv(last: true)
               end

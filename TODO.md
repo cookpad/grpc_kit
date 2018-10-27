@@ -45,7 +45,7 @@
 - [x] resouce exhausted (body size is to large)
 - [x] internal
 - [ ] resouce exhausted (worker is exhausted)
-- [ ] duration parse in header
+- [x] duration parse in header
 - [ ] send `grpc-status` along with header frame if possible
    - need to support  https://nghttp2.org/documentation/nghttp2_submit_response.html, data_prd is not NULL
 - [x] unimplemented error
