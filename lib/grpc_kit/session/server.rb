@@ -13,13 +13,14 @@ module GrpcKit
       delegate %i[send_event recv_event] => :@io
 
       # @params io [GrpcKit::Session::IO]
-      def initialize(io, handler)
+      # @params dispatcher [GrpcKit::Server]
+      def initialize(io, dispatcher)
         super() # initialize DS9::Session
 
         @io = io
         @streams = {}
         @stop = false
-        @handler = handler
+        @dispatcher = dispatcher
         @peer_shutdowned = false
         @inflights = []
       end
@@ -27,7 +28,7 @@ module GrpcKit
       def start
         @io.wait_readable
         loop do
-          invoke_handler
+          invoke
 
           if !want_read? && !want_write?
             break
@@ -65,10 +66,10 @@ module GrpcKit
         @stop = true
       end
 
-      def invoke_handler
+      def invoke
         while (stream = @inflights.pop)
           s = GrpcKit::Stream.new(session: self, stream: stream)
-          @handler.dispatch(s)
+          @dispatcher.dispatch(s)
         end
       end
 
