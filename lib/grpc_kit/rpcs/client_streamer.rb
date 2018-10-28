@@ -8,9 +8,8 @@ module GrpcKit
   module Rpcs
     module Client
       class ClientStreamer < Base
-        def invoke(session, _request, authority:, metadata: {}, timeout: nil, **opts)
-          cs = GrpcKit::Streams::Client.new(config: @config, session: session, authority: authority)
-          call = GrpcKit::Calls::Client::ClientStreamer.new(metadata: metadata, config: @config, timeout: timeout, stream: cs)
+        def invoke(stream, _request, metadata: {}, timeout: nil)
+          call = GrpcKit::Calls::Client::ClientStreamer.new(metadata: metadata, config: @config, timeout: timeout, stream: stream)
           @config.interceptor.intercept(call, metadata) do |s|
             s
           end

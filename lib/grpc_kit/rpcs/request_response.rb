@@ -9,19 +9,17 @@ module GrpcKit
   module Rpcs
     module Client
       class RequestResponse < Base
-        def invoke(session, request, authority:, metadata: {}, timeout: nil, **opts)
-          cs = GrpcKit::Streams::Client.new(config: @config, session: session, authority: authority)
-          call = GrpcKit::Calls::Client::RequestResponse.new(metadata: metadata, config: @config, timeout: timeout, stream: cs)
-
+        def invoke(stream, request, metadata: {}, timeout: nil)
+          call = GrpcKit::Calls::Client::RequestResponse.new(metadata: metadata, config: @config, timeout: timeout, stream: stream)
           @config.interceptor.intercept(request, call, metadata) do |r, c, m|
             if timeout
               Timeout.timeout(timeout.to_f, GrpcKit::Errors::DeadlineExceeded) do
-                c.send_msg(r, timeout: timeout.to_s, metadata: m, last: true)
-                c.recv(last: true)
+                call.send_msg(r, timeout: timeout.to_s, metadata: c.metadata, last: true)
+                call.recv(last: true)
               end
             else
-              c.send_msg(r, metadata: m, last: true)
-              c.recv(last: true)
+              call.send_msg(r, metadata: c.metadata, last: true)
+              call.recv(last: true)
             end
           end
         end

@@ -47,8 +47,8 @@ module GrpcKit
       session = GrpcKit::Session::Client.new(GrpcKit::Session::IO.new(sock))
       session.submit_settings([])
 
-      default = { timeout: @timeout, authority: @authority }.compact
-      rpc.invoke(session, request, opts.merge(default))
+      client_stream = GrpcKit::Streams::Client.new(session: session, config: rpc.config, authority: @authority)
+      rpc.invoke(client_stream, request, opts.merge(timeout: @timeout))
     end
   end
 end
