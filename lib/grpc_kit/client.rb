@@ -44,7 +44,7 @@ module GrpcKit
 
     def do_request(rpc, request, **opts)
       sock = TCPSocket.new(@host, @port) # XXX
-      session = GrpcKit::Session::Client.new(GrpcKit::Session::IO.new(sock), rpc)
+      session = GrpcKit::Session::Client.new(GrpcKit::Session::IO.new(sock))
       session.submit_settings([])
 
       default = { timeout: @timeout, authority: @authority }.compact

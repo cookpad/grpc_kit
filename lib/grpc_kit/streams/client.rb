@@ -13,8 +13,8 @@ module GrpcKit
       def initialize(session:, config:, authority:)
         @config = config
         @session = session
-        @stream = nil
         @authority = authority
+        @stream = nil
       end
 
       def send_msg(data, metadata: {}, timeout: nil, last: false)

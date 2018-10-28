@@ -13,12 +13,11 @@ module GrpcKit
       delegate %i[send_event recv_event] => :@io
 
       # @params io [GrpcKit::Session::IO]
-      def initialize(io, handler, opts = {})
+      def initialize(io, opts = {})
         super() # initialize DS9::Session
 
         @io = io
         @streams = {}
-        @handler = handler
         @opts = opts
       end
 
