@@ -42,25 +42,19 @@ module GrpcKit
       end
 
       def each
-        unless @stream
-          raise 'You should call `send` method to send data'
-        end
+        validate_if_request_start!
 
         loop { yield(do_recv) }
       end
 
       def recv_msg(last: false)
-        unless @stream
-          raise 'You should call `send` method to send data'
-        end
+        validate_if_request_start!
 
         do_recv(last: last)
       end
 
       def close_and_recv
-        unless @stream
-          raise 'You should call `send` method to send data'
-        end
+        validate_if_request_start!
 
         unless @stream.end_write?
           @session.resume_data(@stream.stream_id)
@@ -78,6 +72,12 @@ module GrpcKit
       end
 
       private
+
+      def validate_if_request_start!
+        unless @stream
+          raise 'You should call `send_msg` method to send data'
+        end
+      end
 
       def do_recv(last: false)
         buf = @stream.recv(last: last, limit_size: @config.max_receive_message_size)
