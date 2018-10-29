@@ -10,7 +10,7 @@ module GrpcKit
     class Server
       extend Forwardable
 
-      delegate %i[each recv] => :@stream
+      delegate %i[each] => :@stream
 
       def initialize(stream:, session:, config:)
         @stream = GrpcKit::Stream.new(protobuf: config.protobuf, session: session, stream: stream)
@@ -18,20 +18,20 @@ module GrpcKit
         @sent_first_msg = false
       end
 
-      def send_msg(data, last: false)
+      def send_msg(data, protobuf, last: false, limit_size: nil)
         if last
           @stream.send_trailer # TODO: pass trailer metadata
         end
 
-        @stream.send(data, last: last, limit_size: @config.max_send_message_size)
+        @stream.send(data, last: last, limit_size: limit_size)
         return if @sent_first_msg
 
         @stream.submit_response
         @sent_first_msg = true
       end
 
-      def recv(last: false)
-        data = @stream.recv(last: last, limit_size: @config.max_receive_message_size)
+      def recv_msg(protobuf, last: false, limit_size: nil)
+        data = @stream.recv(last: last, limit_size: limit_size)
         raise StopIteration if data.nil?
 
         data

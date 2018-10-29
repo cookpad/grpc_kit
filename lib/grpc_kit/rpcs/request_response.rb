@@ -2,6 +2,8 @@
 
 require 'grpc_kit/rpcs/base'
 require 'grpc_kit/status_codes'
+require 'grpc_kit/calls/server_request_response'
+require 'grpc_kit/calls/client_request_response'
 
 module GrpcKit
   module Rpcs
@@ -9,8 +11,8 @@ module GrpcKit
       class RequestResponse < Base
         def invoke(session, request, authority:, metadata: {}, timeout: nil, **opts)
           cs = GrpcKit::Streams::Client.new(config: @config, session: session, authority: authority)
+          call = GrpcKit::Calls::Client::RequestResponse.new(metadata: metadata, config: @config, timeout: timeout, stream: cs)
 
-          call = GrpcKit::Rpcs::Call.new(metadata, @config.method_name, @config.service_name, cs)
           @config.interceptor.intercept(request, call, metadata) do |r, c, m|
             if timeout
               Timeout.timeout(timeout.to_f, GrpcKit::Errors::DeadlineExceeded) do
@@ -30,7 +32,7 @@ module GrpcKit
       class RequestResponse < Base
         def invoke(stream, session)
           ss = GrpcKit::Streams::Server.new(stream: stream, session: session, config: @config)
-          call = GrpcKit::Rpcs::Call.new(stream.headers.metadata, @config.method_name, @config.service_name, ss)
+          call = GrpcKit::Calls::Server::RequestResponse.new(metadata: stream.headers.metadata, config: @config, stream: ss)
 
           begin
             do_invoke(ss, call)
@@ -44,7 +46,7 @@ module GrpcKit
         private
 
         def do_invoke(ss, call)
-          request = ss.recv(last: true)
+          request = ss.recv_msg(nil, last: true)
 
           resp =
             if @config.interceptor
@@ -55,7 +57,7 @@ module GrpcKit
               @handler.send(@config.ruby_style_method_name, request, call)
             end
 
-          ss.send_msg(resp, last: true)
+          ss.send_msg(resp, nil, last: true)
         end
       end
     end

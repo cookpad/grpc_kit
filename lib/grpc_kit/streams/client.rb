@@ -41,7 +41,7 @@ module GrpcKit
         @stream.each(&block)
       end
 
-      def recv(last: false)
+      def recv_msg(last: false)
         unless @stream
           raise 'You should call `send` method to send data'
         end
@@ -92,21 +92,29 @@ module GrpcKit
       end
 
       def build_headers(metadata: {}, timeout: nil, **headers)
-        hdrs = metadata.merge(headers).merge(
+        # TODO: an order of Headers is important?
+        hdrs = {
           ':method' => 'POST',
           ':scheme' => 'http',
           ':path' => @config.path,
           ':authority' => @authority,
+          'grpc-timeout' => timeout,
           'te' => 'trailers',
           'content-type' => 'application/grpc',
           'user-agent' => "grpc-ruby/#{GrpcKit::VERSION} (grpc_kit)",
           'grpc-accept-encoding' => 'identity,deflate,gzip',
-        )
-        if timeout
-          hdrs['grpc-timeout'] = timeout
+        }.merge(headers)
+
+        metadata.each do |k, v|
+          if k.start_with?('grpc-')
+            # https://github.com/grpc/grpc/blob/ffac9d90b18cb076b1c952faa55ce4e049cbc9a6/doc/PROTOCOL-HTTP2.md
+            GrpcKit.logger.info("metadata name wich starts with 'grpc-' is reserved for future GRPC")
+          else
+            hdrs[k] = v
+          end
         end
 
-        hdrs
+        hdrs.compact
       end
     end
   end
