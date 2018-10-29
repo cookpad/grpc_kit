@@ -22,7 +22,7 @@ def get_feature(stub)
   ]
 
   points.each do |pt|
-    feature = stub.get_feature(pt, metadata: { 'metadata' => 'data1' })
+    feature = stub.get_feature(pt)
     if feature.name == ''
       $logger.info("Found nothing at #{feature.inspect}")
     else
