@@ -1,16 +1,11 @@
 # frozen_string_literal: true
 
-require 'forwardable'
 require 'grpc_kit/streams/packable'
 
 module GrpcKit
   module Transports
     class ClientTransport
       include GrpcKit::Streams::Packable
-
-      extend Forwardable
-
-      delegate %i[stream_id end_write end_read end_write? end_read? close_remote? headers] => :@stream
 
       # @params session [GrpcKit::Session::Server|GrpcKit::Session::Client]
       def initialize(session:)
