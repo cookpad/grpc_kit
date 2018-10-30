@@ -28,8 +28,7 @@ module GrpcKit
       end
     end
 
-
-    def send(buf, last: false, limit_size: nil)
+    def write_data(buf, last: false, limit_size: nil)
       if limit_size && buf.bytesize > limit_size
         raise GrpcKit::Errors::ResourceExhausted, "Sending message is too large: send=#{req.bytesize}, max=#{limit_size}"
       end
@@ -37,7 +36,7 @@ module GrpcKit
       @stream.write_send_data(pack(buf), last: last)
     end
 
-    def recv(last: false, limit_size: nil)
+    def read_data(last: false, limit_size: nil)
       data = unpack(read(last: last))
 
       return nil unless data

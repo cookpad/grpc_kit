@@ -25,7 +25,7 @@ module GrpcKit
           rescue ArgumentError => e
             raise GrpcKit::Errors::Internal, "Error while encoding in server: #{e}"
           end
-        @stream.send(buf, last: last, limit_size: limit_size)
+        @stream.write_data(buf, last: last, limit_size: limit_size)
         return if @sent_first_msg
 
         @stream.submit_response
@@ -33,7 +33,7 @@ module GrpcKit
       end
 
       def recv_msg(protobuf, last: false, limit_size: nil)
-        buf = @stream.recv(last: last, limit_size: limit_size)
+        buf = @stream.read_data(last: last, limit_size: limit_size)
         raise StopIteration if buf.nil?
 
         begin

@@ -37,7 +37,7 @@ module GrpcKit
           rescue ArgumentError => e
             raise GrpcKit::Errors::Internal, "Error while encoding in client: #{e}"
           end
-        @stream.send(buf, last: last, limit_size: @config.max_send_message_size)
+        @stream.write_data(buf, last: last, limit_size: @config.max_send_message_size)
         @session.run_once
       end
 
@@ -80,7 +80,7 @@ module GrpcKit
       end
 
       def do_recv(last: false)
-        buf = @stream.recv(last: last, limit_size: @config.max_receive_message_size)
+        buf = @stream.read_data(last: last, limit_size: @config.max_receive_message_size)
         if buf.nil?
           check_status!
           raise StopIteration
