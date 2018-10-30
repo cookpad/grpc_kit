@@ -11,6 +11,8 @@ require 'logger'
 require 'routeguide_services_pb'
 
 RESOURCE_PATH = './examples/routeguide/routeguide.json'
+HOST = 'localhost'
+PORT = 50051
 
 $logger = Logger.new(STDOUT)
 
@@ -74,7 +76,8 @@ elsif ENV['GRPC_TIMEOUT']
   opts[:timeout] = Integer(ENV['GRPC_TIMEOUT'])
 end
 
-stub = Routeguide::RouteGuide::Stub.new('localhost', 50051, **opts)
+sock = TCPSocket.new(HOST, PORT)
+stub = Routeguide::RouteGuide::Stub.new(sock, **opts)
 
 get_feature(stub)
 list_features(stub)

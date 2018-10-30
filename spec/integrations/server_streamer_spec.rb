@@ -28,7 +28,7 @@ RSpec.describe 'server_streamer' do
 
   it 'returns valid response' do
     expect(call).to receive(:call).once.and_call_original
-    stub = Hello::Greeter::Stub.new('localhost', 50051)
+    stub = Hello::Greeter::Stub.new(ServerHelper.connect)
     stream = stub.hello_server_streamer(Hello::Request.new(msg: request))
     3.times do |i|
       expect(stream.recv.msg).to eq("message #{i}")
@@ -46,7 +46,7 @@ RSpec.describe 'server_streamer' do
     it 'returns valid response' do
       expect(call).to receive(:call).once.and_call_original
       expect(server_streamer_interceptor).to receive(:call).once.and_call_original
-      stub = Hello::Greeter::Stub.new('localhost', 50051)
+      stub = Hello::Greeter::Stub.new(ServerHelper.connect)
       stream = stub.hello_server_streamer(Hello::Request.new(msg: request))
       3.times do |i|
         expect(stream.recv.msg).to eq("message #{i}")
@@ -57,7 +57,7 @@ RSpec.describe 'server_streamer' do
   context 'when unimplmented method call' do
     it 'raises and unimplmented error' do
       expect(call).not_to receive(:call)
-      stub = Hello2::Greeter::Stub.new('localhost', 50051)
+      stub = Hello2::Greeter::Stub.new(ServerHelper.connect)
       stream = stub.hello_server_streamer(Hello2::Request.new(msg: request))
       expect { stream.recv }.to raise_error(GrpcKit::Errors::Unimplemented)
     end
@@ -66,7 +66,7 @@ RSpec.describe 'server_streamer' do
   context 'when diffirent type argument passed' do
     it 'raises an internal error' do
       expect(call).not_to receive(:call)
-      stub = Hello::Greeter::Stub.new('localhost', 50051)
+      stub = Hello::Greeter::Stub.new(ServerHelper.connect)
       expect { stub.hello_server_streamer(Hello2::Request.new(msg: request)) }.to raise_error(GrpcKit::Errors::Internal)
     end
   end

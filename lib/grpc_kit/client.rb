@@ -1,6 +1,5 @@
 # frozen_string_literal: false
 
-require 'socket'
 require 'grpc_kit/grpc_time'
 require 'grpc_kit/session/io'
 require 'grpc_kit/sessions/client_session'
@@ -9,10 +8,15 @@ require 'grpc_kit/transports/client_transport'
 
 module GrpcKit
   class Client
-    def initialize(host, port, interceptors: [], timeout: nil)
-      @host = host
-      @port = port
-      @authority = "#{host}:#{port}"
+    def initialize(sock, authority: nil, interceptors: [], timeout: nil)
+      @sock = sock
+      @authority =
+        if authority
+          authority
+        else
+          addr = sock.addr
+          "#{addr[3]}:#{addr[1]}"
+        end
       @interceptors = interceptors
       @timeout = timeout && GrpcKit::GrpcTime.new(timeout)
     end
@@ -44,8 +48,7 @@ module GrpcKit
     private
 
     def do_request(rpc, request, **opts)
-      sock = TCPSocket.new(@host, @port) # XXX
-      session = GrpcKit::Sessions::ClientSession.new(GrpcKit::Session::IO.new(sock))
+      session = GrpcKit::Sessions::ClientSession.new(GrpcKit::Session::IO.new(@sock))
       session.submit_settings([])
 
       t = GrpcKit::Transports::ClientTransport.new(session)

@@ -1,5 +1,7 @@
 # frozen_string_literal: false
 
+require 'socket'
+
 class ServerHelper
   def self.build_server(port = 50051, service, interceptors: [])
     s =
@@ -15,5 +17,9 @@ class ServerHelper
       s.run(sock.accept)
     end
     sock
+  end
+
+  def self.connect(host = 'localhost', port = 50051)
+    TCPSocket.new(host, port)
   end
 end

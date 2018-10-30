@@ -7,6 +7,10 @@ require 'socket'
 require 'pry'
 require 'helloworld_services_pb'
 
-stub = Helloworld::Greeter::Stub.new('localhost', 50051)
+HOST = 'localhost'
+PORT = 50051
+
+sock = TCPSocket.new(HOST, PORT)
+stub = Helloworld::Greeter::Stub.new(sock)
 message = stub.say_hello(Helloworld::HelloRequest.new(name: 'ganmacs')).message
 p message

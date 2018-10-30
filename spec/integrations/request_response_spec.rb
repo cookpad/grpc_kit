@@ -27,7 +27,7 @@ RSpec.describe 'request_response' do
 
   it 'returns valid response' do
     expect(call).to receive(:call).once.and_call_original
-    stub = Hello::Greeter::Stub.new('localhost', 50051)
+    stub = Hello::Greeter::Stub.new(ServerHelper.connect)
     resp = stub.hello_request_response(Hello::Request.new(msg: request))
     expect(resp.msg).to eq(response + request)
   end
@@ -43,7 +43,7 @@ RSpec.describe 'request_response' do
     it 'returns valid response' do
       expect(call).to receive(:call).once.and_call_original
       expect(request_response_interceptor).to receive(:call).once.and_call_original
-      stub = Hello::Greeter::Stub.new('localhost', 50051)
+      stub = Hello::Greeter::Stub.new(ServerHelper.connect)
       resp = stub.hello_request_response(Hello::Request.new(msg: request))
       expect(resp.msg).to eq(response + request)
     end
@@ -52,7 +52,7 @@ RSpec.describe 'request_response' do
   context 'when unimplmented method call' do
     it 'raises and unimplmented error' do
       expect(call).not_to receive(:call)
-      stub = Hello2::Greeter::Stub.new('localhost', 50051)
+      stub = Hello2::Greeter::Stub.new(ServerHelper.connect)
       expect { stub.hello_request_response(Hello2::Request.new(msg: 'message')) }.to raise_error(GrpcKit::Errors::Unimplemented)
     end
   end
@@ -60,7 +60,7 @@ RSpec.describe 'request_response' do
   context 'when diffirent type argument passed' do
     it 'raises an internal error' do
       expect(call).not_to receive(:call)
-      stub = Hello::Greeter::Stub.new('localhost', 50051)
+      stub = Hello::Greeter::Stub.new(ServerHelper.connect)
       expect { stub.hello_request_response(Hello2::Request.new(msg: 'message')) }.to raise_error(GrpcKit::Errors::Internal)
     end
   end
