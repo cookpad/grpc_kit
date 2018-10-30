@@ -6,13 +6,13 @@ require 'grpc_kit/status_codes'
 module GrpcKit
   module Streams
     class Client
-      # @params session [GrpcKit::Session::Client]
+      # @params transport [GrpcKit::Transports::ClientTransport]
       # @params config [GrpcKit::MethodConfig]
       # @params authority [String]
-      def initialize(session:, config:, authority:)
+      def initialize(transport:, config:, authority:)
         @config = config
         @authority = authority
-        @stream = session
+        @transport = transport
         @sent_first_msg = false
       end
 
@@ -22,10 +22,10 @@ module GrpcKit
           #   raise 'You can attach metadata at first send_msg' # XXX
           # end
 
-          @stream.resume_if_need
+          @transport.resume_if_need
         else
           headers = build_headers(metadata: metadata, timeout: timeout)
-          @stream.send_request(GrpcKit::Streams::SendBuffer.new, headers)
+          @transport.send_request(GrpcKit::Streams::SendBuffer.new, headers)
           @sent_first_msg = true
         end
 
@@ -41,8 +41,8 @@ module GrpcKit
           raise GrpcKit::Errors::ResourceExhausted, "Sending message is too large: send=#{req.bytesize}, max=#{limit_size}"
         end
 
-        @stream.write_data(buf, last: last)
-        @stream.run_once
+        @transport.write_data(buf, last: last)
+        @transport.run_once
       end
 
       def each
@@ -60,8 +60,8 @@ module GrpcKit
       def close_and_recv
         validate_if_request_start!
 
-        @stream.resume_if_need
-        @stream.start(@stream.stream_id)
+        @transport.resume_if_need
+        @transport.start(@transport.stream_id)
 
         check_status!
 
@@ -79,7 +79,7 @@ module GrpcKit
       end
 
       def do_recv(last: false)
-        data = @stream.read_data(last: last)
+        data = @transport.read_data(last: last)
 
         if data.nil?
           check_status!
@@ -109,10 +109,10 @@ module GrpcKit
       end
 
       def check_status!
-        @stream.wait_close
+        @transport.wait_close
 
-        if @stream.headers.grpc_status != GrpcKit::StatusCodes::OK
-          raise GrpcKit::Errors.from_status_code(@stream.headers.grpc_status, @stream.headers.status_message)
+        if @transport.headers.grpc_status != GrpcKit::StatusCodes::OK
+          raise GrpcKit::Errors.from_status_code(@transport.headers.grpc_status, @transport.headers.status_message)
         else
           GrpcKit.logger.debug('request is success')
         end

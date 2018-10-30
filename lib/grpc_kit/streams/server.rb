@@ -5,10 +5,10 @@ require 'grpc_kit/status_codes'
 module GrpcKit
   module Streams
     class Server
-      # @params stream [GrpcKit::Session::Stream]
+      # @params transport [GrpcKit::Transports::ServerTransport]
       # @params config [GrpcKit::MethodConfig]
-      def initialize(stream:, config:)
-        @stream = stream
+      def initialize(transport:, config:)
+        @transport = transport
         @config = config
         @sent_first_msg = false
       end
@@ -29,7 +29,7 @@ module GrpcKit
           raise GrpcKit::Errors::ResourceExhausted, "Sending message is too large: send=#{req.bytesize}, max=#{limit_size}"
         end
 
-        @stream.write_data(buf, last: last)
+        @transport.write_data(buf, last: last)
         return if @sent_first_msg
 
         send_response({})
@@ -37,7 +37,7 @@ module GrpcKit
       end
 
       def recv_msg(protobuf, last: false, limit_size: nil)
-        data = @stream.read_data(last: last)
+        data = @transport.read_data(last: last)
 
         return nil unless data
 
@@ -83,14 +83,14 @@ module GrpcKit
           trailer['grpc-message'] = msg
         end
 
-        @stream.write_trailers_data(trailer)
+        @transport.write_trailers_data(trailer)
       end
 
       def send_response(headers)
         h = { ':status' => '200', 'content-type' => 'application/grpc' }.merge(headers)
         h['accept-encoding'] = 'identity'
 
-        @stream.send_response(h)
+        @transport.send_response(h)
       end
     end
   end

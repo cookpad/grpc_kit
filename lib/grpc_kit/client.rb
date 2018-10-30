@@ -50,7 +50,7 @@ module GrpcKit
       session.submit_settings([])
 
       t = GrpcKit::Transports::ClientTransport.new(session: session)
-      client_stream = GrpcKit::Streams::Client.new(session: t, config: rpc.config, authority: @authority)
+      client_stream = GrpcKit::Streams::Client.new(transport: t, config: rpc.config, authority: @authority)
       rpc.invoke(client_stream, request, opts.merge(timeout: @timeout))
     end
   end

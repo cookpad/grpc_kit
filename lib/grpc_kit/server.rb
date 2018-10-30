@@ -45,13 +45,13 @@ module GrpcKit
 
     # @params path [String]
     # @params stream [GrpcKit::Stream]
-    def dispatch(path, stream)
+    def dispatch(path, transport)
       rpc = @rpc_descs[path]
       unless rpc
         return @error_rpc.send_bad_status(transport, session, GrpcKit::Errors::Unimplemented.new(path))
       end
 
-      s = GrpcKit::Streams::Server.new(stream: stream, config: rpc.config)
+      s = GrpcKit::Streams::Server.new(transport: transport, config: rpc.config)
       rpc.invoke(s)
     end
 
