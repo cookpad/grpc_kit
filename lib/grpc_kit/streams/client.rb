@@ -110,9 +110,10 @@ module GrpcKit
 
       def check_status!
         @transport.wait_close
+        headers = @transport.recv_headers
 
-        if @transport.headers.grpc_status != GrpcKit::StatusCodes::OK
-          raise GrpcKit::Errors.from_status_code(@transport.headers.grpc_status, @transport.headers.status_message)
+        if headers.grpc_status != GrpcKit::StatusCodes::OK
+          raise GrpcKit::Errors.from_status_code(headers.grpc_status, headers.status_message)
         else
           GrpcKit.logger.debug('request is success')
         end

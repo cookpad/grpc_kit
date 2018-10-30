@@ -63,6 +63,10 @@ module GrpcKit
         unpack(read(last: last))
       end
 
+      def recv_headers
+        @stream.headers
+      end
+
       private
 
       def read(last: false)
