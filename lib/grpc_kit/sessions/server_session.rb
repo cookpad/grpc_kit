@@ -6,8 +6,8 @@ require 'grpc_kit/session/stream'
 require 'grpc_kit/transports/server_transport'
 
 module GrpcKit
-  module Session
-    class Server < DS9::Server
+  module Sessions
+    class ServerSession < DS9::Server
       extend Forwardable
 
       delegate %i[send_event recv_event] => :@io

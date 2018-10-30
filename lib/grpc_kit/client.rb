@@ -3,7 +3,7 @@
 require 'socket'
 require 'grpc_kit/grpc_time'
 require 'grpc_kit/streams/client_stream'
-require 'grpc_kit/session/client'
+require 'grpc_kit/sessions/client_session'
 require 'grpc_kit/session/io'
 require 'grpc_kit/rpcs'
 require 'grpc_kit/transports/client_transport'
@@ -46,7 +46,7 @@ module GrpcKit
 
     def do_request(rpc, request, **opts)
       sock = TCPSocket.new(@host, @port) # XXX
-      session = GrpcKit::Session::Client.new(GrpcKit::Session::IO.new(sock))
+      session = GrpcKit::Sessions::ClientSession.new(GrpcKit::Session::IO.new(sock))
       session.submit_settings([])
 
       t = GrpcKit::Transports::ClientTransport.new(session: session)
