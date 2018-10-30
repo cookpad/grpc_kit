@@ -9,10 +9,9 @@ module GrpcKit
 
       # @params session [GrpcKit::Session::Server|GrpcKit::Session::Client]
       # @params stream [GrpcKit::Session::Stream] primitive H2 stream id
-      def initialize(session:, stream:, config: nil)
+      def initialize(session:, stream:)
         @session = session
         @stream = stream
-        @config = config
       end
 
       def each

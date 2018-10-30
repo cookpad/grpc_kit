@@ -7,9 +7,8 @@ module GrpcKit
     class ServerStream
       # @params transport [GrpcKit::Transports::ServerTransport]
       # @params config [GrpcKit::MethodConfig]
-      def initialize(transport:, config:)
+      def initialize(transport:)
         @transport = transport
-        @config = config
         @sent_first_msg = false
       end
 
@@ -20,7 +19,7 @@ module GrpcKit
 
         buf =
           begin
-            @config.protobuf.encode(data)
+            protobuf.encode(data)
           rescue ArgumentError => e
             raise GrpcKit::Errors::Internal, "Error while encoding in server: #{e}"
           end
@@ -58,7 +57,7 @@ module GrpcKit
         raise StopIteration if buf.nil?
 
         begin
-          @config.protobuf.decode(buf)
+          protobuf.decode(buf)
         rescue ArgumentError => e
           raise GrpcKit::Errors::Internal, "Error while decoding in Server: #{e}"
         end

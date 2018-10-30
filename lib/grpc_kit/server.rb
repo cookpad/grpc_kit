@@ -51,7 +51,7 @@ module GrpcKit
         return @error_rpc.send_bad_status(transport, session, GrpcKit::Errors::Unimplemented.new(path))
       end
 
-      s = GrpcKit::Streams::ServerStream.new(transport: transport, config: rpc.config)
+      s = GrpcKit::Streams::ServerStream.new(transport: transport)
       rpc.invoke(s)
     end
 
