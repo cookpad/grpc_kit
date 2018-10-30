@@ -4,6 +4,7 @@ require 'grpc_kit/server'
 require 'support/test_greeter_server'
 require 'support/server_helper'
 require 'support/test_interceptors'
+require 'support/hello2_services_pb'
 
 RSpec.describe 'request_response' do
   let(:request) { 'request_name' }
@@ -45,6 +46,22 @@ RSpec.describe 'request_response' do
       stub = Hello::Greeter::Stub.new('localhost', 50051)
       resp = stub.hello_request_response(Hello::Request.new(msg: request))
       expect(resp.msg).to eq(response + request)
+    end
+  end
+
+  context 'when unimplmented method call' do
+    it 'raises and unimplmented error' do
+      expect(call).not_to receive(:call)
+      stub = Hello2::Greeter::Stub.new('localhost', 50051)
+      expect { stub.hello_request_response(Hello2::Request.new(msg: 'message')) }.to raise_error(GrpcKit::Errors::Unimplemented)
+    end
+  end
+
+  context 'when diffirent type argument passed' do
+    it 'raises an internal error' do
+      expect(call).not_to receive(:call)
+      stub = Hello::Greeter::Stub.new('localhost', 50051)
+      expect { stub.hello_request_response(Hello2::Request.new(msg: 'message')) }.to raise_error(GrpcKit::Errors::Internal)
     end
   end
 end

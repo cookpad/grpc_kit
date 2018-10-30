@@ -4,6 +4,7 @@ require 'grpc_kit/server'
 require 'support/test_greeter_server'
 require 'support/server_helper'
 require 'support/test_interceptors'
+require 'support/hello2_services_pb'
 
 RSpec.describe 'client_streamer' do
   let(:interceptors) { [] }
@@ -26,7 +27,7 @@ RSpec.describe 'client_streamer' do
   end
 
   it 'returns valid response' do
-    # expect(call).to receive(:call).once.and_call_original
+    expect(call).to receive(:call).once.and_call_original
     stub = Hello::Greeter::Stub.new('localhost', 50051)
     stream = stub.hello_client_streamer({})
     3.times do |i|
@@ -54,6 +55,25 @@ RSpec.describe 'client_streamer' do
       end
       resp = stream.close_and_recv
       expect(resp[0].msg).to eq('response')
+    end
+  end
+
+  context 'when unimplmented method call' do
+    it 'raises and unimplmented error' do
+      expect(call).not_to receive(:call)
+      stub = Hello2::Greeter::Stub.new('localhost', 50051)
+      stream = stub.hello_client_streamer({})
+      stream.send_msg(Hello2::Request.new(msg: 'message'))
+      expect { stream.close_and_recv }.to raise_error(GrpcKit::Errors::Unimplemented)
+    end
+  end
+
+  context 'when diffirent type argument passed' do
+    it 'raises and internal error' do
+      expect(call).not_to receive(:call)
+      stub = Hello::Greeter::Stub.new('localhost', 50051)
+      stream = stub.hello_client_streamer({})
+      expect { stream.send_msg(Hello2::Request.new(msg: 'message')) }.to raise_error(GrpcKit::Errors::Internal)
     end
   end
 end

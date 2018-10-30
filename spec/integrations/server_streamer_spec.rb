@@ -53,4 +53,21 @@ RSpec.describe 'server_streamer' do
       end
     end
   end
+
+  context 'when unimplmented method call' do
+    it 'raises and unimplmented error' do
+      expect(call).not_to receive(:call)
+      stub = Hello2::Greeter::Stub.new('localhost', 50051)
+      stream = stub.hello_server_streamer(Hello2::Request.new(msg: request))
+      expect { stream.recv }.to raise_error(GrpcKit::Errors::Unimplemented)
+    end
+  end
+
+  context 'when diffirent type argument passed' do
+    it 'raises an internal error' do
+      expect(call).not_to receive(:call)
+      stub = Hello::Greeter::Stub.new('localhost', 50051)
+      expect { stub.hello_server_streamer(Hello2::Request.new(msg: request)) }.to raise_error(GrpcKit::Errors::Internal)
+    end
+  end
 end
