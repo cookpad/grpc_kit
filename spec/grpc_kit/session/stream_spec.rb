@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'grpc_kit/streams/packable'
-
 RSpec.describe GrpcKit::Session::Stream do
   let(:stream) { described_class.new(stream_id: 1, send_data: send_data, recv_data: recv_data) }
   let(:send_data) { double(:send_data, 'end_write?': false) }

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'grpc_kit/streams/packable'
+require 'grpc_kit/transport/packable'
 
-RSpec.describe GrpcKit::Streams::Packable do
+RSpec.describe GrpcKit::Transport::Packable do
   let(:packable) do
     c = Class.new
     c.include described_class

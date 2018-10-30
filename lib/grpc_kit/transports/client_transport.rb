@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require 'grpc_kit/streams/packable'
+require 'grpc_kit/transport/packable'
 
 module GrpcKit
   module Transports
     class ClientTransport
-      include GrpcKit::Streams::Packable
+      include GrpcKit::Transport::Packable
 
       # @params session [GrpcKit::Session::Server|GrpcKit::Session::Client]
       def initialize(session:)
