@@ -3,7 +3,7 @@
 require 'grpc_kit/session/io'
 require 'grpc_kit/session/server'
 require 'grpc_kit/rpcs/error'
-require 'grpc_kit/streams/server'
+require 'grpc_kit/streams/server_stream'
 
 module GrpcKit
   class Server
@@ -51,7 +51,7 @@ module GrpcKit
         return @error_rpc.send_bad_status(transport, session, GrpcKit::Errors::Unimplemented.new(path))
       end
 
-      s = GrpcKit::Streams::Server.new(transport: transport, config: rpc.config)
+      s = GrpcKit::Streams::ServerStream.new(transport: transport, config: rpc.config)
       rpc.invoke(s)
     end
 

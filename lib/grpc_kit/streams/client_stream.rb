@@ -5,7 +5,7 @@ require 'grpc_kit/status_codes'
 
 module GrpcKit
   module Streams
-    class Client
+    class ClientStream
       # @params transport [GrpcKit::Transports::ClientTransport]
       # @params config [GrpcKit::MethodConfig]
       # @params authority [String]

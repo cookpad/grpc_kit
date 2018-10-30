@@ -4,7 +4,7 @@ require 'grpc_kit/status_codes'
 
 module GrpcKit
   module Streams
-    class Server
+    class ServerStream
       # @params transport [GrpcKit::Transports::ServerTransport]
       # @params config [GrpcKit::MethodConfig]
       def initialize(transport:, config:)

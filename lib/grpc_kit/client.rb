@@ -2,7 +2,7 @@
 
 require 'socket'
 require 'grpc_kit/grpc_time'
-require 'grpc_kit/streams/client'
+require 'grpc_kit/streams/client_stream'
 require 'grpc_kit/session/client'
 require 'grpc_kit/session/io'
 require 'grpc_kit/rpcs'
@@ -50,7 +50,7 @@ module GrpcKit
       session.submit_settings([])
 
       t = GrpcKit::Transports::ClientTransport.new(session: session)
-      client_stream = GrpcKit::Streams::Client.new(transport: t, config: rpc.config, authority: @authority)
+      client_stream = GrpcKit::Streams::ClientStream.new(transport: t, config: rpc.config, authority: @authority)
       rpc.invoke(client_stream, request, opts.merge(timeout: @timeout))
     end
   end
