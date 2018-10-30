@@ -38,9 +38,9 @@ RSpec.describe 'client_streamer' do
   end
 
   context 'with interceptor' do
-    let(:interceptors) { [TestInterceptor.new(client_streamer: client_streamer_interceptor)] }
+    let(:interceptors) { [TestServerInterceptor.new(client_streamer: client_streamer_interceptor)] }
     let(:client_streamer_interceptor) do
-      lambda do |req, call, method, metadata|
+      lambda do |call, method|
         # expect(req.msg).to eq(request)
       end
     end

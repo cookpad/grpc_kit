@@ -33,9 +33,9 @@ RSpec.describe 'request_response' do
   end
 
   context 'with interceptor' do
-    let(:interceptors) { [TestInterceptor.new(request_response: request_response_interceptor)] }
+    let(:interceptors) { [TestServerInterceptor.new(request_response: request_response_interceptor)] }
     let(:request_response_interceptor) do
-      lambda do |req, call, method, metadata|
+      lambda do |req, call, method|
         expect(req.msg).to eq(request)
       end
     end
