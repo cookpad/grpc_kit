@@ -1,9 +1,7 @@
 # frozen_string_literal: true
 
 require 'grpc_kit/method_config'
-require 'grpc_kit/rpcs'
 require 'grpc_kit/protobuffer'
-
 
 require 'grpc_kit/interceptors/client_request_response'
 require 'grpc_kit/interceptors/client_client_streamer'

@@ -5,8 +5,7 @@ require 'grpc_kit/status_codes'
 module GrpcKit
   module Streams
     class ServerStream
-      # @params transport [GrpcKit::Transports::ServerTransport]
-      # @params config [GrpcKit::MethodConfig]
+      # @params transport [GrpcKit::transports::ServerTransport]
       def initialize(transport)
         @transport = transport
         @sent_first_msg = false

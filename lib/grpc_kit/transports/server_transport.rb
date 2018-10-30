@@ -7,9 +7,9 @@ module GrpcKit
     class ServerTransport
       include GrpcKit::Transport::Packable
 
-      # @params session [GrpcKit::Session::Server|GrpcKit::Session::Client]
-      # @params stream [GrpcKit::Session::Stream] primitive H2 stream id
-      def initialize(session:, stream:)
+      # @params session [GrpcKit::Sessions::ServerSession]
+      # @params stream [GrpcKit::Session::Stream]
+      def initialize(session, stream)
         @session = session
         @stream = stream
       end

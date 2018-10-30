@@ -17,8 +17,6 @@ module GrpcKit
     end
 
     class ServerRpc
-      attr_reader :config
-
       def initialize(handler, config)
         @handler = handler
         @config = config

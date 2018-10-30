@@ -2,10 +2,9 @@
 
 require 'socket'
 require 'grpc_kit/grpc_time'
-require 'grpc_kit/streams/client_stream'
-require 'grpc_kit/sessions/client_session'
 require 'grpc_kit/session/io'
-require 'grpc_kit/rpcs'
+require 'grpc_kit/sessions/client_session'
+require 'grpc_kit/streams/client_stream'
 require 'grpc_kit/transports/client_transport'
 
 module GrpcKit

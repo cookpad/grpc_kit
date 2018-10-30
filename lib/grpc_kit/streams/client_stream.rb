@@ -10,11 +10,13 @@ module GrpcKit
       # @params config [GrpcKit::MethodConfig]
       # @params authority [String]
       def initialize(transport, config, authority:, timeout: nil)
-        @config = config
-        @authority = authority
         @transport = transport
-        @sent_first_msg = false
+        @config = config
+
+        @authority = authority
         @timeout = timeout
+
+        @sent_first_msg = false
       end
 
       def send_msg(data, metadata: {}, timeout: nil, last: false)

@@ -1,9 +1,8 @@
 # frozen_string_literal: true
 
-require 'forwardable'
 require 'ds9'
+require 'forwardable'
 require 'grpc_kit/session/stream'
-require 'grpc_kit/transports/client_transport'
 
 module GrpcKit
   module Sessions
