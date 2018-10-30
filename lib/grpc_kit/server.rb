@@ -43,11 +43,12 @@ module GrpcKit
       end
     end
 
+    # @params path [String]
     # @params stream [GrpcKit::Stream]
-    def dispatch(stream)
-      rpc = @rpc_descs[stream.headers.path]
+    def dispatch(path, stream)
+      rpc = @rpc_descs[path]
       unless rpc
-        return @error_rpc.send_bad_status(stream, session, GrpcKit::Errors::Unimplemented.new(stream.headers.path))
+        return @error_rpc.send_bad_status(transport, session, GrpcKit::Errors::Unimplemented.new(path))
       end
 
       s = GrpcKit::Streams::Server.new(stream: stream, config: rpc.config)

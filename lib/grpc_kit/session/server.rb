@@ -69,7 +69,7 @@ module GrpcKit
       def invoke
         while (stream = @inflights.pop)
           s = GrpcKit::Stream.new(session: self, stream: stream)
-          @dispatcher.dispatch(s)
+          @dispatcher.dispatch(stream.headers.path, s)
         end
       end
 
