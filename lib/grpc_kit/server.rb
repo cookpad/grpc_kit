@@ -2,7 +2,6 @@
 
 require 'grpc_kit/session/io'
 require 'grpc_kit/sessions/server_session'
-require 'grpc_kit/rpcs/error'
 require 'grpc_kit/streams/server_stream'
 
 module GrpcKit
@@ -10,7 +9,6 @@ module GrpcKit
     def initialize(interceptors: [])
       @sessions = []
       @rpc_descs = {}
-      @error_rpc = GrpcKit::Rpcs::Server::Error.new
       @interceptors = interceptors
       @mutex = Mutex.new
 
@@ -47,12 +45,15 @@ module GrpcKit
     # @params stream [GrpcKit::Stream]
     def dispatch(path, transport)
       rpc = @rpc_descs[path]
+      stream = GrpcKit::Streams::ServerStream.new(transport: transport)
+
       unless rpc
-        return @error_rpc.send_bad_status(transport, session, GrpcKit::Errors::Unimplemented.new(path))
+        e = GrpcKit::Errors::Unimplemented.new(path)
+        stream.send_status(status: e.code, msg: e.message)
+        return
       end
 
-      s = GrpcKit::Streams::ServerStream.new(transport: transport)
-      rpc.invoke(s)
+      rpc.invoke(stream)
     end
 
     private
