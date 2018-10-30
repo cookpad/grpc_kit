@@ -37,32 +37,6 @@ module GrpcKit
         unpack(read(last: last))
       end
 
-      def send_trailer(status: GrpcKit::StatusCodes::OK, msg: nil, metadata: {})
-        trailer = metadata.dup
-        trailer['grpc-status'] = status.to_s
-        if msg
-          trailer['grpc-message'] = msg
-        end
-
-        @stream.write_trailers_data(trailer)
-        @stream.end_write
-      end
-
-      # TODO: use actual data
-      def submit_response(_header = nil, piggyback_trailer: false)
-        headers = { ':status' => '200', 'content-type' => 'application/grpc' }
-
-        # ds9 does not support nthttp2_submit_{response|request} without body
-        # if piggyback_trailer
-        #   headers.merge!(@stream.trailer_data)
-        #   @stream.need_trailer = false
-        # else
-        headers['accept-encoding'] = 'identity'
-        # end
-
-        @session.submit_response(@stream.stream_id, headers)
-      end
-
       private
 
       def read(last: false)

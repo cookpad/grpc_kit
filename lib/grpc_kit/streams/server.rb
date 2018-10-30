@@ -15,7 +15,7 @@ module GrpcKit
 
       def send_msg(data, protobuf, last: false, limit_size: nil)
         if last
-          @stream.send_trailer # TODO: pass trailer metadata
+          send_trailer # TODO: pass trailer metadata
         end
 
         buf =
@@ -32,7 +32,7 @@ module GrpcKit
         @stream.write_data(buf, last: last)
         return if @sent_first_msg
 
-        @stream.submit_response
+        send_response({})
         @sent_first_msg = true
       end
 
@@ -68,17 +68,29 @@ module GrpcKit
         loop { yield(recv) }
       end
 
-      def send_trailer
-        @stream.send_trailer # TODO: pass trailer metadata
-        @stream.end_write
-      end
-
       def send_status(status: GrpcKit::StatusCodes::INTERNAL, msg: nil, metadata: {})
-        @stream.send_trailer(status: status, msg: msg, metadata: metadata)
+        send_trailer(status: status, msg: msg, metadata: metadata)
         return if @sent_first_msg
 
-        @stream.submit_response(piggyback_trailer: true)
+        send_response({})
         @sent_first_msg = true
+      end
+
+      def send_trailer(status: GrpcKit::StatusCodes::OK, msg: nil, metadata: {})
+        trailer = metadata.dup
+        trailer['grpc-status'] = status.to_s
+        if msg
+          trailer['grpc-message'] = msg
+        end
+
+        @stream.write_trailers_data(trailer)
+      end
+
+      def send_response(headers)
+        h = { ':status' => '200', 'content-type' => 'application/grpc' }.merge(headers)
+        h['accept-encoding'] = 'identity'
+
+        @stream.send_response(h)
       end
     end
   end
