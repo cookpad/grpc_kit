@@ -3,6 +3,7 @@
 require 'forwardable'
 require 'ds9'
 require 'grpc_kit/session/stream'
+require 'grpc_kit/streams/server_stream'
 require 'grpc_kit/transports/server_transport'
 
 module GrpcKit
@@ -68,8 +69,9 @@ module GrpcKit
 
       def invoke
         while (stream = @inflights.pop)
-          s = GrpcKit::Transports::ServerTransport.new(session: self, stream: stream)
-          @dispatcher.dispatch(stream.headers.path, s)
+          t = GrpcKit::Transports::ServerTransport.new(session: self, stream: stream)
+          ss = GrpcKit::Streams::ServerStream.new(t)
+          @dispatcher.dispatch(stream.headers.path, ss)
         end
       end
 

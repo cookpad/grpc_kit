@@ -2,7 +2,6 @@
 
 require 'grpc_kit/session/io'
 require 'grpc_kit/sessions/server_session'
-require 'grpc_kit/streams/server_stream'
 
 module GrpcKit
   class Server
@@ -42,18 +41,16 @@ module GrpcKit
     end
 
     # @params path [String]
-    # @params stream [GrpcKit::Stream]
-    def dispatch(path, transport)
+    # @params stream [GrpcKit::Streams::ServerStream]
+    def dispatch(path, stream)
       rpc = @rpc_descs[path]
-      stream = GrpcKit::Streams::ServerStream.new(transport: transport)
-
       unless rpc
         e = GrpcKit::Errors::Unimplemented.new(path)
         stream.send_status(status: e.code, msg: e.message)
         return
       end
 
-      rpc.invoke(stream)
+      stream.invoke(rpc)
     end
 
     private

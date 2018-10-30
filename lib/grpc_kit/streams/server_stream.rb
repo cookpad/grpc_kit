@@ -7,9 +7,19 @@ module GrpcKit
     class ServerStream
       # @params transport [GrpcKit::Transports::ServerTransport]
       # @params config [GrpcKit::MethodConfig]
-      def initialize(transport:)
+      def initialize(transport)
         @transport = transport
         @sent_first_msg = false
+      end
+
+      def invoke(rpc)
+        rpc.invoke(self, metadata: @transport.recv_headers.metadata)
+      rescue GrpcKit::Errors::BadStatus => e
+        GrpcKit.logger.debug(e)
+        send_status(status: e.code, msg: e.reason, metadata: {}) # TODO: metadata should be set
+      rescue StandardError => e
+        GrpcKit.logger.debug(e)
+        send_status(status: GrpcKit::StatusCodes::UNKNOWN, msg: e.message, metadata: {})
       end
 
       def send_msg(data, protobuf, last: false, limit_size: nil)
