@@ -64,4 +64,36 @@ RSpec.describe 'request_response' do
       expect { stub.hello_request_response(Hello2::Request.new(msg: 'message')) }.to raise_error(GrpcKit::Errors::Internal)
     end
   end
+
+  context 'when metada given' do
+    let(:interceptors) { [TestServerInterceptor.new(request_response: request_response_interceptor)] }
+    let(:metadata) { { 'a' => 'b' } }
+    let(:request_response_interceptor) do
+      lambda do |req, call, method|
+        expect(call.incoming_metadata['a']).to eq('b')
+        expect(call.incoming_metadata['c']).to eq('d')
+        expect(call.incoming_metadata['d']).to eq('e')
+        expect(call.metadata).to eq(call.incoming_metadata)
+        expect(req.msg).to eq(request)
+        call.outgoing_trailing_metadata['b'] = 'c'
+        call.outgoing_initial_metadata['c'] = 'd'
+      end
+    end
+
+    let(:client_request_response) do |x|
+      lambda do |req, call, method, metadata|
+        expect(call.metadata['a']).to eq('b')
+        metadata['c'] = 'd'
+        call.metadata['d'] = 'e'
+      end
+    end
+
+    it 'returns valid response' do
+      expect(call).to receive(:call).once.and_call_original
+      expect(request_response_interceptor).to receive(:call).once.and_call_original
+      stub = Hello::Greeter::Stub.new(ServerHelper.connect, interceptors: [TestClientInterceptor.new(request_response: client_request_response)])
+      resp = stub.hello_request_response(Hello::Request.new(msg: request), metadata: metadata)
+      expect(resp.msg).to eq(response + request)
+    end
+  end
 end

@@ -21,9 +21,9 @@ module GrpcKit
         send_status(status: GrpcKit::StatusCodes::UNKNOWN, msg: e.message, metadata: {})
       end
 
-      def send_msg(data, protobuf, last: false, limit_size: nil)
+      def send_msg(data, protobuf, last: false, limit_size: nil, initial_metadata: {}, trailing_metadata: {})
         if last
-          send_trailer # TODO: pass trailer metadata
+          send_trailer(metadata: trailing_metadata)
         end
 
         buf =
@@ -40,7 +40,7 @@ module GrpcKit
         @transport.write_data(buf, last: last)
         return if @sent_first_msg
 
-        send_response({})
+        send_response(initial_metadata)
         @sent_first_msg = true
       end
 
@@ -85,20 +85,18 @@ module GrpcKit
       end
 
       def send_trailer(status: GrpcKit::StatusCodes::OK, msg: nil, metadata: {})
-        trailer = metadata.dup
-        trailer['grpc-status'] = status.to_s
+        trailer = { 'grpc-status' => status.to_s }
         if msg
           trailer['grpc-message'] = msg
         end
 
-        @transport.write_trailers_data(trailer)
+        @transport.write_trailers_data(trailer.merge(metadata))
       end
 
-      def send_response(headers)
-        h = { ':status' => '200', 'content-type' => 'application/grpc' }.merge(headers)
+      def send_response(metadata = {})
+        h = { ':status' => '200', 'content-type' => 'application/grpc' }
         h['accept-encoding'] = 'identity'
-
-        @transport.send_response(h)
+        @transport.send_response(h.merge(metadata))
       end
     end
   end

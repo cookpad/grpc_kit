@@ -8,6 +8,9 @@ module GrpcKit
       Klass = Struct.new(:service_name)
       attr_reader :method
 
+      # @params stream [GrpcKit::Streams::ServerStream|GrpcKit::Streams::ClientStream]
+      # @params config [GrpcKit::MethodConfig]
+      # @params metadata [Hash]
       def initialize(stream:, config:, metadata:, timeout: nil)
         @config = config
         @metadata = metadata
