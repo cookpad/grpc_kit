@@ -27,6 +27,11 @@ module GrpcKit
         @inflight = false
         @trailer_data = {}
         @status = GrpcKit::Session::StreamStatus.new
+        @draining = false
+      end
+
+      def drain
+        @draining = true
       end
 
       def write_trailers_data(tariler)

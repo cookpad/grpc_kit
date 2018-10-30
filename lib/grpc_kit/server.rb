@@ -40,6 +40,12 @@ module GrpcKit
       end
     end
 
+    def graceful_shutdown
+      @mutex.synchronize do
+        @sessions.each(&:drain)
+      end
+    end
+
     # @params path [String]
     # @params stream [GrpcKit::Streams::ServerStream]
     def dispatch(path, stream)

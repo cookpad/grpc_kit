@@ -56,6 +56,14 @@ module GrpcKit
         end
       end
 
+      def drain
+        # could be race condition
+        @streams.each do |s|
+          GrpcKit.logger.debug("#{s.stream_id} is draining")
+          s.drain
+        end
+      end
+
       def finish
         stop
         @io.close
