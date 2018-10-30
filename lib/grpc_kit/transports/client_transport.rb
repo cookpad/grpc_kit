@@ -13,11 +13,37 @@ module GrpcKit
       delegate %i[stream_id end_write end_read end_write? end_read? close_remote? headers] => :@stream
 
       # @params session [GrpcKit::Session::Server|GrpcKit::Session::Client]
-      # @params stream [GrpcKit::Session::Stream] primitive H2 stream id
-      def initialize(session:, stream:, config: nil)
+      def initialize(session:)
         @session = session
-        @stream = stream
-        @config = config
+        @stream = nil # set later
+      end
+
+      def send_request(buf, headers)
+        @stream = @session.send_request(buf, headers)
+        self
+      end
+
+      def resume_if_need
+        unless @stream.end_write?
+          @session.resume_data(@stream.stream_id)
+        end
+      end
+
+      def start(stream_id)
+        @stream.end_write
+        @session.start(stream_id)
+        @stream.end_read
+      end
+
+      def wait_close
+        # XXX: wait until half close (remote) to get grpc-status
+        until @stream.close_remote?
+          @session.run_once
+        end
+      end
+
+      def run_once
+        @session.run_once
       end
 
       def each

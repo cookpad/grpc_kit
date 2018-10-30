@@ -6,6 +6,7 @@ require 'grpc_kit/streams/client'
 require 'grpc_kit/session/client'
 require 'grpc_kit/session/io'
 require 'grpc_kit/rpcs'
+require 'grpc_kit/transports/client_transport'
 
 module GrpcKit
   class Client
@@ -48,7 +49,8 @@ module GrpcKit
       session = GrpcKit::Session::Client.new(GrpcKit::Session::IO.new(sock))
       session.submit_settings([])
 
-      client_stream = GrpcKit::Streams::Client.new(session: session, config: rpc.config, authority: @authority)
+      t = GrpcKit::Transports::ClientTransport.new(session: session)
+      client_stream = GrpcKit::Streams::Client.new(session: t, config: rpc.config, authority: @authority)
       rpc.invoke(client_stream, request, opts.merge(timeout: @timeout))
     end
   end

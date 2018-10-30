@@ -21,12 +21,12 @@ module GrpcKit
         @opts = opts
       end
 
-      def start_request(data, headers)
+      def send_request(data, headers)
         stream_id = submit_request(headers, data)
         stream = GrpcKit::Session::Stream.new(stream_id: stream_id, send_data: data)
         stream.stream_id = stream_id
         @streams[stream_id] = stream
-        GrpcKit::Transports::ClientTransport.new(session: self, stream: stream)
+        stream
       end
 
       def start(stream_id)

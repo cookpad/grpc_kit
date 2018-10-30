@@ -11,23 +11,22 @@ module GrpcKit
       # @params authority [String]
       def initialize(session:, config:, authority:)
         @config = config
-        @session = session
         @authority = authority
-        @stream = nil
+        @stream = session
+        @sent_first_msg = false
       end
 
       def send_msg(data, metadata: {}, timeout: nil, last: false)
-        if @stream
+        if @sent_first_msg
           # unless metadata.empty?
           #   raise 'You can attach metadata at first send_msg' # XXX
           # end
 
-          unless @stream.end_write?
-            @session.resume_data(@stream.stream_id)
-          end
+          @stream.resume_if_need
         else
           headers = build_headers(metadata: metadata, timeout: timeout)
-          @stream = @session.start_request(GrpcKit::Streams::SendBuffer.new, headers)
+          @stream.send_request(GrpcKit::Streams::SendBuffer.new, headers)
+          @sent_first_msg = true
         end
 
         buf =
@@ -43,7 +42,7 @@ module GrpcKit
         end
 
         @stream.write_data(buf, last: last)
-        @session.run_once
+        @stream.run_once
       end
 
       def each
@@ -61,13 +60,8 @@ module GrpcKit
       def close_and_recv
         validate_if_request_start!
 
-        unless @stream.end_write?
-          @session.resume_data(@stream.stream_id)
-        end
-
-        @stream.end_write
-        @session.start(@stream.stream_id)
-        @stream.end_read
+        @stream.resume_if_need
+        @stream.start(@stream.stream_id)
 
         check_status!
 
@@ -79,7 +73,7 @@ module GrpcKit
       private
 
       def validate_if_request_start!
-        unless @stream
+        unless @sent_first_msg
           raise 'You should call `send_msg` method to send data'
         end
       end
@@ -115,10 +109,7 @@ module GrpcKit
       end
 
       def check_status!
-        # XXX: wait until half close (remote) to get grpc-status
-        until @stream.close_remote?
-          @session.run_once
-        end
+        @stream.wait_close
 
         if @stream.headers.grpc_status != GrpcKit::StatusCodes::OK
           raise GrpcKit::Errors.from_status_code(@stream.headers.grpc_status, @stream.headers.status_message)
