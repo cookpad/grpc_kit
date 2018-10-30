@@ -23,10 +23,13 @@ module GrpcKit
         'grpc-message',
         'grpc-status',
         'grpc-status-details-bin',
+        'grpc-accept-encoding',
         'te'
       ].freeze
 
-      METADATA_ACCEPTABLE_HEADER = %w[authority user-agent].freeze
+      IGNORE_HEADERS = [':method', ':scheme'].freeze
+
+      METADATA_ACCEPTABLE_HEADER = %w[:authority user-agent].freeze
       def initialize
         super({}) # set metadata empty hash
       end
@@ -38,8 +41,7 @@ module GrpcKit
         when ':status'
           self.http_status = Integer(val)
         when 'content-type'
-          # TODO
-          metadata[key] = val
+          # self.grpc_encoding = val
         when 'grpc-encoding'
           self.grpc_encoding = val
         when 'grpc-status'
@@ -52,6 +54,10 @@ module GrpcKit
           # TODO
           GrpcKit.logger.warn('grpc-status-details-bin is unsupported header now')
         else
+          if IGNORE_HEADERS.include?(key)
+            return
+          end
+
           if RESERVED_HEADERS.include?(key) && !METADATA_ACCEPTABLE_HEADER.include?(key)
             return
           end

@@ -21,7 +21,7 @@ RSpec.describe GrpcKit::Session::Headers do
       it { expect { headers.add('grpc-timeout', '1S') }.to change { headers.timeout.class }.from(NilClass).to(GrpcKit::GrpcTime) }
     end
 
-    context 'when content-type is given' do
+    xcontext 'when content-type is given' do
       it { expect { headers.add('content-type', 'application/grpc+proto') }.to change { headers.metadata['content-type'] }.from(nil).to('application/grpc+proto') }
     end
 
