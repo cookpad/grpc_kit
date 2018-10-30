@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'grpc_kit/streams/send_buffer'
 require 'grpc_kit/status_codes'
 
 module GrpcKit
@@ -20,18 +19,6 @@ module GrpcKit
       end
 
       def send_msg(data, metadata: {}, timeout: nil, last: false)
-        if @sent_first_msg
-          # unless metadata.empty?
-          #   raise 'You can attach metadata at first send_msg' # XXX
-          # end
-
-          @transport.resume_if_need
-        else
-          headers = build_headers(metadata: metadata)
-          @transport.send_request(GrpcKit::Streams::SendBuffer.new, headers)
-          @sent_first_msg = true
-        end
-
         buf =
           begin
             @config.protobuf.encode(data)
@@ -44,8 +31,16 @@ module GrpcKit
           raise GrpcKit::Errors::ResourceExhausted, "Sending message is too large: send=#{req.bytesize}, max=#{limit_size}"
         end
 
-        @transport.write_data(buf, last: last)
-        @transport.run_once
+        if @sent_first_msg
+          # unless metadata.empty?
+          #   raise 'You can attach metadata at first send_msg' # XXX
+          # end
+          @transport.write_data(buf, last: last)
+        else
+          headers = build_headers(metadata: metadata)
+          @transport.send_request(buf, headers, last: last)
+          @sent_first_msg = true
+        end
       end
 
       def each
@@ -63,9 +58,7 @@ module GrpcKit
       def close_and_recv
         validate_if_request_start!
 
-        @transport.resume_if_need
-        @transport.start
-
+        @transport.close_and_flush
         check_status!
 
         data = []
@@ -114,7 +107,6 @@ module GrpcKit
       end
 
       def check_status!
-        @transport.wait_close
         headers = @transport.recv_headers
 
         if headers.grpc_status != GrpcKit::StatusCodes::OK

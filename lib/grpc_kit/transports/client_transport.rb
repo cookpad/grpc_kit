@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'grpc_kit/transport/packable'
+require 'grpc_kit/transport/send_buffer'
 
 module GrpcKit
   module Transports
@@ -11,34 +12,21 @@ module GrpcKit
       def initialize(session)
         @session = session
         @stream = nil # set later
+        @deferred = false
       end
 
-      def send_request(buf, headers)
-        @stream = @session.send_request(buf, headers)
-        self
+      def send_request(data, header, last: false)
+        @stream = @session.send_request(GrpcKit::Transport::SendBuffer.new, header)
+        write_data(data, last: last)
       end
 
-      def resume_if_need
-        unless @stream.end_write?
-          @session.resume_data(@stream.stream_id)
-        end
-      end
+      def close_and_flush
+        resume_if_need
 
-      def start
         @stream.end_write
         @session.start(@stream.stream_id)
         @stream.end_read
-      end
-
-      def wait_close
-        # XXX: wait until half close (remote) to get grpc-status
-        until @stream.close_remote?
-          @session.run_once
-        end
-      end
-
-      def run_once
-        @session.run_once
+        @deferred = false
       end
 
       def each
@@ -51,7 +39,11 @@ module GrpcKit
       end
 
       def write_data(buf, last: false)
-        @stream.write_send_data(pack(buf), last: last)
+        resume_if_need
+
+        write(@stream.pending_send_data, pack(buf), last: last)
+        @session.run_once
+        @deferred = true unless last
       end
 
       def read_data(last: false)
@@ -59,10 +51,28 @@ module GrpcKit
       end
 
       def recv_headers
+        wait_close
         @stream.headers
       end
 
       private
+
+      def resume_if_need
+        if !@stream.end_write? && @deferred
+          @session.resume_data(@stream.stream_id)
+        end
+      end
+
+      def wait_close
+        # XXX: wait until half close (remote) to get grpc-status
+        until @stream.close_remote?
+          @session.run_once
+        end
+      end
+
+      def write(stream, buf, last: false)
+        stream.write(buf, last: last)
+      end
 
       def read(last: false)
         loop do
