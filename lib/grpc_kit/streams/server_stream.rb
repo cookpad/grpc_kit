@@ -48,7 +48,7 @@ module GrpcKit
       def recv_msg(protobuf, last: false, limit_size: nil)
         data = @transport.read_data(last: last)
 
-        return nil unless data
+        raise StopIteration if data.nil?
 
         compressed, size, buf = *data
 

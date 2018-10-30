@@ -102,6 +102,8 @@ module GrpcKit
           raise 'compress option is unsupported'
         end
 
+        raise StopIteration if buf.nil?
+
         begin
           @config.protobuf.decode(buf)
         rescue ArgumentError => e
