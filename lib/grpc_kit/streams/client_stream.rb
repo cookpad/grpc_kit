@@ -9,11 +9,12 @@ module GrpcKit
       # @params transport [GrpcKit::Transports::ClientTransport]
       # @params config [GrpcKit::MethodConfig]
       # @params authority [String]
-      def initialize(transport:, config:, authority:)
+      def initialize(transport, config, authority:, timeout: nil)
         @config = config
         @authority = authority
         @transport = transport
         @sent_first_msg = false
+        @timeout = timeout
       end
 
       def send_msg(data, metadata: {}, timeout: nil, last: false)
@@ -24,7 +25,7 @@ module GrpcKit
 
           @transport.resume_if_need
         else
-          headers = build_headers(metadata: metadata, timeout: timeout)
+          headers = build_headers(metadata: metadata)
           @transport.send_request(GrpcKit::Streams::SendBuffer.new, headers)
           @sent_first_msg = true
         end
@@ -119,14 +120,14 @@ module GrpcKit
         end
       end
 
-      def build_headers(metadata: {}, timeout: nil, **headers)
+      def build_headers(metadata: {}, **headers)
         # TODO: an order of Headers is important?
         hdrs = {
           ':method' => 'POST',
           ':scheme' => 'http',
           ':path' => @config.path,
           ':authority' => @authority,
-          'grpc-timeout' => timeout,
+          'grpc-timeout' => @timeout,
           'te' => 'trailers',
           'content-type' => 'application/grpc',
           'user-agent' => "grpc-ruby/#{GrpcKit::VERSION} (grpc_kit)",

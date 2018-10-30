@@ -8,7 +8,7 @@ module GrpcKit
       include GrpcKit::Transport::Packable
 
       # @params session [GrpcKit::Session::Server|GrpcKit::Session::Client]
-      def initialize(session:)
+      def initialize(session)
         @session = session
         @stream = nil # set later
       end
