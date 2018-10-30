@@ -29,9 +29,9 @@ module GrpcKit
         end
       end
 
-      def start(stream_id)
+      def start
         @stream.end_write
-        @session.start(stream_id)
+        @session.start(@stream.stream_id)
         @stream.end_read
       end
 

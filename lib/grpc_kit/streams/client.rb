@@ -61,7 +61,7 @@ module GrpcKit
         validate_if_request_start!
 
         @transport.resume_if_need
-        @transport.start(@transport.stream_id)
+        @transport.start
 
         check_status!
 
