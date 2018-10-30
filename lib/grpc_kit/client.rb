@@ -2,6 +2,7 @@
 
 require 'socket'
 require 'grpc_kit/grpc_time'
+require 'grpc_kit/streams/client'
 require 'grpc_kit/session/client'
 require 'grpc_kit/session/io'
 require 'grpc_kit/rpcs'

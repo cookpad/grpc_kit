@@ -2,6 +2,8 @@
 
 require 'grpc_kit/session/io'
 require 'grpc_kit/session/server'
+require 'grpc_kit/rpcs/error'
+require 'grpc_kit/streams/server'
 
 module GrpcKit
   class Server
@@ -48,7 +50,8 @@ module GrpcKit
         return @error_rpc.send_bad_status(stream, session, GrpcKit::Errors::Unimplemented.new(stream.headers.path))
       end
 
-      rpc.invoke(stream)
+      s = GrpcKit::Streams::Server.new(stream: stream, config: rpc.config)
+      rpc.invoke(s)
     end
 
     private

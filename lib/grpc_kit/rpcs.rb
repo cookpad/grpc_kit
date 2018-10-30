@@ -1,12 +1,30 @@
 # frozen_string_literal: true
 
-require 'grpc_kit/rpcs/request_response'
-require 'grpc_kit/rpcs/client_streamer'
-require 'grpc_kit/rpcs/server_streamer'
-require 'grpc_kit/rpcs/bidi_streamer'
-require 'grpc_kit/rpcs/error'
+require 'timeout'
+require 'grpc_kit/errors'
+require 'grpc_kit/status_codes'
 
 module GrpcKit
   module Rpcs
+    class ClientRpc
+      attr_reader :config
+
+      def initialize(config)
+        @config = config
+      end
+
+      def invoke(stream, request, metadata: {}, timeout: nil); end
+    end
+
+    class ServerRpc
+      attr_reader :config
+
+      def initialize(handler, config)
+        @handler = handler
+        @config = config
+      end
+
+      def invoke(stream, metadata: {}); end
+    end
   end
 end
