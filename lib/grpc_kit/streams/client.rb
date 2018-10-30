@@ -36,7 +36,13 @@ module GrpcKit
           rescue ArgumentError => e
             raise GrpcKit::Errors::Internal, "Error while encoding in client: #{e}"
           end
-        @stream.write_data(buf, last: last, limit_size: @config.max_send_message_size)
+
+        limit_size = @config.max_send_message_size
+        if limit_size && buf.bytesize > limit_size
+          raise GrpcKit::Errors::ResourceExhausted, "Sending message is too large: send=#{req.bytesize}, max=#{limit_size}"
+        end
+
+        @stream.write_data(buf, last: last)
         @session.run_once
       end
 
@@ -79,10 +85,26 @@ module GrpcKit
       end
 
       def do_recv(last: false)
-        buf = @stream.read_data(last: last, limit_size: @config.max_receive_message_size)
-        if buf.nil?
+        data = @stream.read_data(last: last)
+
+        if data.nil?
           check_status!
           raise StopIteration
+        end
+
+        compressed, size, buf = *data
+
+        unless size == buf.size
+          raise "inconsistent data: #{buf}"
+        end
+
+        limit_size = @config.max_receive_message_size
+        if limit_size && size > limit_size
+          raise GrpcKit::Errors::ResourceExhausted, "Receving message is too large: recevied=#{size}, max=#{limit_size}"
+        end
+
+        if compressed
+          raise 'compress option is unsupported'
         end
 
         begin

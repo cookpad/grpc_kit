@@ -29,34 +29,12 @@ module GrpcKit
         end
       end
 
-      def write_data(buf, last: false, limit_size: nil)
-        if limit_size && buf.bytesize > limit_size
-          raise GrpcKit::Errors::ResourceExhausted, "Sending message is too large: send=#{req.bytesize}, max=#{limit_size}"
-        end
-
+      def write_data(buf, last: false)
         @stream.write_send_data(pack(buf), last: last)
       end
 
-      def read_data(last: false, limit_size: nil)
-        data = unpack(read(last: last))
-
-        return nil unless data
-
-        compressed, size, buf = *data
-
-        unless size == buf.size
-          raise "inconsistent data: #{buf}"
-        end
-
-        if limit_size && size > limit_size
-          raise GrpcKit::Errors::ResourceExhausted, "Receving message is too large: recevied=#{size}, max=#{limit_size}"
-        end
-
-        if compressed
-          raise 'compress option is unsupported'
-        end
-
-        buf
+      def read_data(last: false)
+        unpack(read(last: last))
       end
 
       def send_trailer(status: GrpcKit::StatusCodes::OK, msg: nil, metadata: {})
