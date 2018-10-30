@@ -22,8 +22,8 @@ module GrpcKit
 
     module Server
       class ServerStreamer < Base
-        def invoke(stream, session)
-          ss = GrpcKit::Streams::Server.new(stream: stream, session: session, config: @config)
+        def invoke(stream)
+          ss = GrpcKit::Streams::Server.new(stream: stream, config: @config)
           call = GrpcKit::Calls::Server::ServerStreamer.new(metadata: stream.headers.metadata, config: @config, stream: ss)
 
           if @config.interceptor

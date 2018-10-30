@@ -3,6 +3,7 @@
 require 'forwardable'
 require 'ds9'
 require 'grpc_kit/session/stream'
+require 'grpc_kit/stream'
 
 module GrpcKit
   module Session
@@ -26,7 +27,7 @@ module GrpcKit
         stream = GrpcKit::Session::Stream.new(stream_id: stream_id, send_data: data)
         stream.stream_id = stream_id
         @streams[stream_id] = stream
-        stream
+        GrpcKit::Stream.new(session: self, stream: stream)
       end
 
       def start(stream_id)

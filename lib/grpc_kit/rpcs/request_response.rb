@@ -30,15 +30,17 @@ module GrpcKit
 
     module Server
       class RequestResponse < Base
-        def invoke(stream, session)
-          ss = GrpcKit::Streams::Server.new(stream: stream, session: session, config: @config)
+        def invoke(stream)
+          ss = GrpcKit::Streams::Server.new(stream: stream, config: @config)
           call = GrpcKit::Calls::Server::RequestResponse.new(metadata: stream.headers.metadata, config: @config, stream: ss)
 
           begin
             do_invoke(ss, call)
           rescue GrpcKit::Errors::BadStatus => e
+            GrpcKit.logger.debug(e)
             ss.send_status(status: e.code, msg: e.reason, metadata: {}) # TODO: metadata should be set
           rescue StandardError => e
+            GrpcKit.logger.debug(e)
             ss.send_status(status: GrpcKit::StatusCodes::UNKNOWN, msg: e.message, metadata: {})
           end
         end

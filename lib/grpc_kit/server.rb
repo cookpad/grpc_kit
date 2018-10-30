@@ -41,13 +41,14 @@ module GrpcKit
       end
     end
 
-    def dispatch(stream, session)
+    # @params stream [GrpcKit::Stream]
+    def dispatch(stream)
       rpc = @rpc_descs[stream.headers.path]
       unless rpc
         return @error_rpc.send_bad_status(stream, session, GrpcKit::Errors::Unimplemented.new(stream.headers.path))
       end
 
-      rpc.invoke(stream, session)
+      rpc.invoke(stream)
     end
 
     private

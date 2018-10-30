@@ -7,6 +7,9 @@ require 'grpc_kit/status_codes'
 module GrpcKit
   module Streams
     class Client
+      # @params session [GrpcKit::Session::Client]
+      # @params config [GrpcKit::MethodConfig]
+      # @params authority [String]
       def initialize(session:, config:, authority:)
         @config = config
         @session = session
@@ -25,20 +28,25 @@ module GrpcKit
           end
         else
           headers = build_headers(metadata: metadata, timeout: timeout)
-          stream = @session.start_request(GrpcKit::Streams::SendBuffer.new, headers)
-          @stream = GrpcKit::Stream.new(protobuf: @config.protobuf, session: @session, stream: stream)
+          @stream = @session.start_request(GrpcKit::Streams::SendBuffer.new, headers)
         end
 
-        @stream.send(data, last: last, limit_size: @config.max_send_message_size)
+        buf =
+          begin
+            @config.protobuf.encode(data)
+          rescue ArgumentError => e
+            raise GrpcKit::Errors::Internal, "Error while encoding in client: #{e}"
+          end
+        @stream.send(buf, last: last, limit_size: @config.max_send_message_size)
         @session.run_once
       end
 
-      def each(&block)
+      def each
         unless @stream
           raise 'You should call `send` method to send data'
         end
 
-        @stream.each(&block)
+        loop { yield(do_recv) }
       end
 
       def recv_msg(last: false)
@@ -46,14 +54,7 @@ module GrpcKit
           raise 'You should call `send` method to send data'
         end
 
-        data = @stream.recv(last: last, limit_size: @config.max_receive_message_size)
-
-        if data.nil?
-          check_status!
-          raise StopIteration
-        end
-
-        data
+        do_recv(last: last)
       end
 
       def close_and_recv
@@ -72,11 +73,25 @@ module GrpcKit
         check_status!
 
         data = []
-        @stream.each { |d| data.push(d) }
+        loop { data.push(do_recv) }
         data
       end
 
       private
+
+      def do_recv(last: false)
+        buf = @stream.recv(last: last, limit_size: @config.max_receive_message_size)
+        if buf.nil?
+          check_status!
+          raise StopIteration
+        end
+
+        begin
+          @config.protobuf.decode(buf)
+        rescue ArgumentError => e
+          raise GrpcKit::Errors::Internal, "Error while decoding in Client: #{e}"
+        end
+      end
 
       def check_status!
         # XXX: wait until half close (remote) to get grpc-status

@@ -3,6 +3,7 @@
 require 'forwardable'
 require 'ds9'
 require 'grpc_kit/session/stream'
+require 'grpc_kit/stream'
 
 module GrpcKit
   module Session
@@ -66,7 +67,8 @@ module GrpcKit
 
       def invoke_handler
         while (stream = @inflights.pop)
-          @handler.dispatch(stream, self)
+          s = GrpcKit::Stream.new(session: self, stream: stream)
+          @handler.dispatch(s)
         end
       end
 

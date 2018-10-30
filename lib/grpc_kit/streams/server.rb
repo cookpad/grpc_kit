@@ -1,19 +1,15 @@
 # frozen_string_literal: true
 
-require 'forwardable'
-
 require 'grpc_kit/stream'
 require 'grpc_kit/status_codes'
 
 module GrpcKit
   module Streams
     class Server
-      extend Forwardable
-
-      delegate %i[each] => :@stream
-
-      def initialize(stream:, session:, config:)
-        @stream = GrpcKit::Stream.new(protobuf: config.protobuf, session: session, stream: stream)
+      # @params stream [GrpcKit::Session::Stream]
+      # @params config [GrpcKit::MethodConfig]
+      def initialize(stream:, config:)
+        @stream = stream
         @config = config
         @sent_first_msg = false
       end
@@ -23,7 +19,13 @@ module GrpcKit
           @stream.send_trailer # TODO: pass trailer metadata
         end
 
-        @stream.send(data, last: last, limit_size: limit_size)
+        buf =
+          begin
+            @config.protobuf.encode(data)
+          rescue ArgumentError => e
+            raise GrpcKit::Errors::Internal, "Error while encoding in server: #{e}"
+          end
+        @stream.send(buf, last: last, limit_size: limit_size)
         return if @sent_first_msg
 
         @stream.submit_response
@@ -31,10 +33,18 @@ module GrpcKit
       end
 
       def recv_msg(protobuf, last: false, limit_size: nil)
-        data = @stream.recv(last: last, limit_size: limit_size)
-        raise StopIteration if data.nil?
+        buf = @stream.recv(last: last, limit_size: limit_size)
+        raise StopIteration if buf.nil?
 
-        data
+        begin
+          @config.protobuf.decode(buf)
+        rescue ArgumentError => e
+          raise GrpcKit::Errors::Internal, "Error while decoding in Server: #{e}"
+        end
+      end
+
+      def each
+        loop { yield(recv) }
       end
 
       def send_trailer

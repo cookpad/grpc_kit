@@ -11,13 +11,12 @@ module GrpcKit
 
     delegate %i[stream_id end_write end_read end_write? end_read? close_remote? headers] => :@stream
 
-    # @params protobuf [GrpcKit::Protobuffer]
     # @params session [GrpcKit::Session::Server|GrpcKit::Session::Client]
     # @params stream [GrpcKit::Session::Stream] primitive H2 stream id
-    def initialize(protobuf:, session:, stream:)
-      @protobuf = protobuf
+    def initialize(session:, stream:, config: nil)
       @session = session
       @stream = stream
+      @config = config
     end
 
     def each
@@ -29,20 +28,13 @@ module GrpcKit
       end
     end
 
-    def send(data, last: false, limit_size: nil)
-      b =
-        begin
-          @protobuf.encode(data)
-        rescue ArgumentError => e
-          raise GrpcKit::Errors::Internal, "Error while encoding: #{e}"
-        end
 
-      req = pack(b)
-      if limit_size && req.bytesize > limit_size
+    def send(buf, last: false, limit_size: nil)
+      if limit_size && buf.bytesize > limit_size
         raise GrpcKit::Errors::ResourceExhausted, "Sending message is too large: send=#{req.bytesize}, max=#{limit_size}"
       end
 
-      @stream.write_send_data(req, last: last)
+      @stream.write_send_data(pack(buf), last: last)
     end
 
     def recv(last: false, limit_size: nil)
@@ -64,11 +56,7 @@ module GrpcKit
         raise 'compress option is unsupported'
       end
 
-      begin
-        @protobuf.decode(buf)
-      rescue ArgumentError => e
-        raise GrpcKit::Errors::Internal, "Error while decoding #{e}"
-      end
+      buf
     end
 
     def send_trailer(status: GrpcKit::StatusCodes::OK, msg: nil, metadata: {})
