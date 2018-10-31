@@ -59,7 +59,6 @@ module GrpcKit
         validate_if_request_start!
 
         @transport.close_and_flush
-        check_status!
 
         data = []
         loop { data.push(do_recv) }
@@ -80,6 +79,8 @@ module GrpcKit
         if data.nil?
           check_status!
           raise StopIteration
+        elsif last
+          check_status!
         end
 
         compressed, size, buf = *data
@@ -107,13 +108,21 @@ module GrpcKit
       end
 
       def check_status!
-        headers = @transport.recv_headers
-
-        if headers.grpc_status != GrpcKit::StatusCodes::OK
-          raise GrpcKit::Errors.from_status_code(headers.grpc_status, headers.status_message)
+        if status.code != GrpcKit::StatusCodes::OK
+          raise GrpcKit::Errors.from_status_code(status.code, status.msg)
         else
           GrpcKit.logger.debug('request is success')
         end
+      end
+
+      Status = Struct.new(:code, :msg, :metadata)
+
+      def status
+        @status ||=
+          begin
+            headers = @transport.recv_headers
+            Status.new(headers.grpc_status, headers.status_message, headers.metadata)
+          end
       end
 
       def build_headers(metadata: {}, **headers)
