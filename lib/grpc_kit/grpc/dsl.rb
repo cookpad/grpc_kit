@@ -48,27 +48,40 @@ module GrpcKit
       end
 
       def rpc_stub_class
-        rpc_descs_ = rpc_descs
-        Class.new(GrpcKit::Client) do
-          rpc_descs_.each do |_, rpc_desc|
-            method_name = rpc_desc.ruby_style_name
-            rpc = rpc_desc.build_client
+        rpc_descs_ = {}
+        rpc_descs.each_value do |rpc_desc|
+          rpc_descs_[rpc_desc.ruby_style_name] = rpc_desc
+        end
 
+        Class.new(GrpcKit::Client) do
+          def initialize(*)
+            @rpcs = {}
+            super
+          end
+
+          define_method(:build_rpcs) do |interceptors|
+            rpc_descs_.each do |method_name, rpc_desc|
+              @rpcs[method_name] = rpc_desc.build_client(interceptors: interceptors)
+            end
+          end
+          private :build_rpcs
+
+          rpc_descs_.each do |method_name, rpc_desc|
             if rpc_desc.request_response?
               define_method(method_name) do |request, opts = {}|
-                request_response(rpc, request, opts)
+                request_response(@rpcs.fetch(method_name), request, opts)
               end
             elsif rpc_desc.client_streamer?
               define_method(method_name) do |opts = {}|
-                client_streamer(rpc, opts)
+                client_streamer(@rpcs.fetch(method_name), opts)
               end
             elsif rpc_desc.server_streamer?
               define_method(method_name) do |request, opts = {}|
-                server_streamer(rpc, request, opts)
+                server_streamer(@rpcs.fetch(method_name), request, opts)
               end
             elsif rpc_desc.bidi_streamer?
               define_method(method_name) do |requests, opts = {}, &blk|
-                bidi_streamer(rpc, requests, opts, &blk)
+                bidi_streamer(@rpcs.fetch(method_name), requests, opts, &blk)
               end
             else
               raise "unknown #{rpc_desc}"

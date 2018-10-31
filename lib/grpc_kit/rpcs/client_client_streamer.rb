@@ -14,8 +14,10 @@ module GrpcKit
           stream: stream,
         )
 
-        @config.interceptor.intercept(call, metadata) do |s|
-          s
+        if @config.interceptor
+          @config.interceptor.intercept(call, metadata) { |s| s }
+        else
+          call
         end
       end
     end

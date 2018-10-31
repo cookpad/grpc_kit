@@ -17,31 +17,28 @@ module GrpcKit
           addr = sock.addr
           "#{addr[3]}:#{addr[1]}"
         end
-      @interceptors = interceptors
+
       @timeout = timeout && GrpcKit::GrpcTime.new(timeout)
+
+      build_rpcs(interceptors)
     end
 
     def request_response(rpc, request, opts = {})
       GrpcKit.logger.debug('Calling request_respose')
-
-      rpc.config.interceptor.interceptors = @interceptors
       do_request(rpc, request, opts)
     end
 
     def client_streamer(rpc, opts = {})
       GrpcKit.logger.debug('Calling client_streamer')
-      rpc.config.interceptor.interceptors = @interceptors
       do_request(rpc, nil, opts)
     end
 
     def server_streamer(rpc, request, opts = {})
       GrpcKit.logger.debug('Calling server_streamer')
-      rpc.config.interceptor.interceptors = @interceptors
       do_request(rpc, request, opts)
     end
 
     def bidi_streamer(rpc, requests, opts = {})
-      rpc.config.interceptor.interceptors = @interceptors
       GrpcKit.logger.debug('Calling bidi_streamer')
     end
 

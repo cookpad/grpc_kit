@@ -5,11 +5,8 @@ require 'grpc_kit/interceptors'
 module GrpcKit
   module Interceptors::Client
     class RequestResponse
-      attr_writer :interceptors
-
-      def initialize
-        # Cant' get interceptor at definition time...
-        @interceptors = nil
+      def initialize(interceptors)
+        @interceptors = interceptors
       end
 
       def intercept(request, call, metadata, &block)

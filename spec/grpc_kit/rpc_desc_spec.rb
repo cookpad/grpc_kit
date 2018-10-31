@@ -99,7 +99,7 @@ RSpec.describe GrpcKit::RpcDesc do
   end
 
   describe '#build_client' do
-    let(:client) { rpc_desc.build_client }
+    let(:client) { rpc_desc.build_client(interceptors: [double(:interceptor)]) }
 
     context 'when request_response' do
       before do

@@ -14,16 +14,27 @@ module GrpcKit
           stream: stream,
         )
 
-        @config.interceptor.intercept(request, call, call.metadata) do |r, c, _|
-          if timeout
+        # TODO: DRY
+        if @config.interceptor && timeout
+          @config.interceptor.intercept(request, call, call.metadata) do |r, c, _|
             Timeout.timeout(timeout.to_f, GrpcKit::Errors::DeadlineExceeded) do
-              call.send_msg(r, timeout: timeout.to_s, last: true)
+              call.send_msg(request, timeout: timeout.to_s, last: true)
               call.recv(last: true)
             end
-          else
-            call.send_msg(r, last: true)
+          end
+        elsif @config.interceptor && !timeout
+          @config.interceptor.intercept(request, call, call.metadata) do |r, c, _|
+            call.send_msg(request, last: true)
             call.recv(last: true)
           end
+        elsif !@config.interceptor && timeout
+          Timeout.timeout(timeout.to_f, GrpcKit::Errors::DeadlineExceeded) do
+            call.send_msg(request, timeout: timeout.to_s, last: true)
+            call.recv(last: true)
+          end
+        else
+          call.send_msg(request, last: true)
+          call.recv(last: true)
         end
       end
     end

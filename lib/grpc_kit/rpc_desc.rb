@@ -46,14 +46,16 @@ module GrpcKit
       server.new(handler, config)
     end
 
-    def build_client
+    def build_client(interceptors: [])
+      inter = interceptors.empty? ? nil : client_interceptor.new(interceptors)
+
       config = GrpcKit::MethodConfig.build_for_client(
         path: path,
         ruby_style_method_name: ruby_style_name,
         protobuf: client_protobuf,
         service_name: @server_name,
         method_name: @name,
-        interceptor: client_interceptor.new,
+        interceptor: inter,
       )
       client.new(config)
     end

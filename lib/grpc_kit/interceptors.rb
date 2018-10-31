@@ -4,11 +4,8 @@ module GrpcKit
   module Interceptors
     module Client
       class Streaming
-        attr_writer :interceptors
-
-        def initialize
-          # Cant' get interceptor at definition time...
-          @interceptors = nil
+        def initialize(interceptors)
+          @interceptors = interceptors
         end
 
         def intercept(call, metadata, &block)

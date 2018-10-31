@@ -4,7 +4,7 @@ require 'grpc_kit/grpc/interceptor'
 require 'grpc_kit/interceptors/client_client_streamer'
 
 RSpec.describe GrpcKit::Interceptors::Client::ClientStreamer do
-  let(:interceptor) { described_class.new }
+  let(:interceptor) { described_class.new(interceptors) }
   let(:interceptors) { [interceptor1, interceptor2] }
   let(:method) { double(:method) }
   let(:call) { double(:call, method: method) }
@@ -35,10 +35,6 @@ RSpec.describe GrpcKit::Interceptors::Client::ClientStreamer do
         yield
       end
     end.new(queue)
-  end
-
-  before do
-    interceptor.interceptors = interceptors
   end
 
   it "call all interceptors's client_streamer" do
