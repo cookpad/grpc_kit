@@ -17,11 +17,11 @@ module GrpcKit
         @config.interceptor.intercept(request, call, call.metadata) do |r, c, _|
           if timeout
             Timeout.timeout(timeout.to_f, GrpcKit::Errors::DeadlineExceeded) do
-              call.send_msg(r, timeout: timeout.to_s, metadata: c.metadata, last: true)
+              call.send_msg(r, timeout: timeout.to_s, last: true)
               call.recv(last: true)
             end
           else
-            call.send_msg(r, metadata: c.metadata, last: true)
+            call.send_msg(r, last: true)
             call.recv(last: true)
           end
         end

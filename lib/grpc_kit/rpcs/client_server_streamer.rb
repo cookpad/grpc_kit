@@ -10,7 +10,7 @@ module GrpcKit
         call = GrpcKit::Calls::Client::ServerStreamer.new(metadata: metadata, config: @config, timeout: timeout, stream: stream)
 
         @config.interceptor.intercept(call, metadata) do |c, m|
-          c.send_msg(request, metadata: m, last: true)
+          c.send_msg(request, last: true)
           c
         end
       end

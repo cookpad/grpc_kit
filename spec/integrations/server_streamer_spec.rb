@@ -39,7 +39,6 @@ RSpec.describe 'server_streamer' do
     let(:interceptors) { [TestServerInterceptor.new(server_streamer: server_streamer_interceptor)] }
     let(:server_streamer_interceptor) do
       lambda do |req, call, method|
-        # expect(req.msg).to eq(request)
       end
     end
 
@@ -68,6 +67,41 @@ RSpec.describe 'server_streamer' do
       expect(call).not_to receive(:call)
       stub = Hello::Greeter::Stub.new(ServerHelper.connect)
       expect { stub.hello_server_streamer(Hello2::Request.new(msg: request)) }.to raise_error(GrpcKit::Errors::Internal)
+    end
+  end
+
+  context 'when metada given' do
+    let(:interceptors) { [TestServerInterceptor.new(server_streamer: server_streamer_interceptor)] }
+    let(:metadata) { { 'a' => 'b' } }
+    let(:server_streamer_interceptor) do
+      lambda do |req, call, method|
+        expect(call.incoming_metadata['a']).to eq('b')
+        expect(call.incoming_metadata['c']).to eq('d')
+        expect(call.incoming_metadata['d']).to eq('e')
+        expect(call.metadata).to eq(call.incoming_metadata)
+        call.outgoing_trailing_metadata['b'] = 'c'
+        call.outgoing_initial_metadata['c'] = 'd'
+      end
+    end
+
+    let(:client_server_streamer) do
+      lambda do |req, call, method, metadata|
+        expect(call.metadata['a']).to eq('b')
+        expect(call.metadata).to eq(metadata)
+
+        metadata['c'] = 'd'
+        call.metadata['d'] = 'e'
+      end
+    end
+
+    it 'returns valid response' do
+      expect(call).to receive(:call).once.and_call_original
+      expect(server_streamer_interceptor).to receive(:call).once.and_call_original
+      stub = Hello::Greeter::Stub.new(ServerHelper.connect, interceptors: [TestClientInterceptor.new(server_streamer: client_server_streamer)])
+      stream = stub.hello_server_streamer(Hello::Request.new(msg: request), metadata: { 'a' => 'b' })
+      3.times do |i|
+        expect(stream.recv.msg).to eq("message #{i}")
+      end
     end
   end
 end

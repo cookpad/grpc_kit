@@ -19,7 +19,14 @@ module GrpcKit
       def send_msg(data, last: false)
         raise 'No method error' if @restrict
 
-        @stream.send_msg(data, @protobuf, last: last, limit_size: @config.max_send_message_size)
+        @stream.send_msg(
+          data,
+          @protobuf,
+          last: last,
+          initial_metadata: @outgoing_initial_metadata,
+          trailing_metadata: @outgoing_trailing_metadata,
+          limit_size: @config.max_send_message_size,
+        )
       end
 
       def recv(last: false)

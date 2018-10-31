@@ -41,7 +41,6 @@ RSpec.describe 'client_streamer' do
     let(:interceptors) { [TestServerInterceptor.new(client_streamer: client_streamer_interceptor)] }
     let(:client_streamer_interceptor) do
       lambda do |call, method|
-        # expect(req.msg).to eq(request)
       end
     end
 
@@ -74,6 +73,43 @@ RSpec.describe 'client_streamer' do
       stub = Hello::Greeter::Stub.new(ServerHelper.connect)
       stream = stub.hello_client_streamer({})
       expect { stream.send_msg(Hello2::Request.new(msg: 'message')) }.to raise_error(GrpcKit::Errors::Internal)
+    end
+  end
+
+  context 'when metada given' do
+    let(:interceptors) { [TestServerInterceptor.new(client_streamer: client_streamer_interceptor)] }
+    let(:metadata) { { 'a' => 'b' } }
+    let(:client_streamer_interceptor) do
+      lambda do |call, method|
+        expect(call.incoming_metadata['a']).to eq('b')
+        expect(call.incoming_metadata['c']).to eq('d')
+        expect(call.incoming_metadata['d']).to eq('e')
+        expect(call.metadata).to eq(call.incoming_metadata)
+        call.outgoing_trailing_metadata['b'] = 'c'
+        call.outgoing_initial_metadata['c'] = 'd'
+      end
+    end
+
+    let(:client_client_streamer) do
+      lambda do |req, call, method, metadata|
+        expect(call.metadata['a']).to eq('b')
+        expect(call.metadata).to eq(metadata)
+
+        metadata['c'] = 'd'
+        call.metadata['d'] = 'e'
+      end
+    end
+
+    it 'returns valid response' do
+      expect(call).to receive(:call).once.and_call_original
+      expect(client_streamer_interceptor).to receive(:call).once.and_call_original
+      stub = Hello::Greeter::Stub.new(ServerHelper.connect, interceptors: [TestClientInterceptor.new(client_streamer: client_client_streamer)])
+      stream = stub.hello_client_streamer(metadata: { 'a' => 'b' })
+      3.times do |i|
+        stream.send_msg(Hello::Request.new(msg: "message #{i}"))
+      end
+      resp = stream.close_and_recv
+      expect(resp[0].msg).to eq('response')
     end
   end
 end
