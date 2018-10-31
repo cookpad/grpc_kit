@@ -2,7 +2,7 @@
 
 module GrpcKit
   class GrpcTime
-    MAX = 10**9-1
+    MAX = 10**9 - 1
 
     # @params value [String|Integer]
     def initialize(value)
@@ -67,12 +67,7 @@ module GrpcKit
     private
 
     def from_integer(value)
-      if value < 0
-        @value = MAX
-      else
-        @value = value
-      end
-
+      @value = value < 0 ? MAX : value
       @unit = 'S'
     end
 

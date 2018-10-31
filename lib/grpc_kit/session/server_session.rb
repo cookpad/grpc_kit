@@ -42,6 +42,8 @@ module GrpcKit
       rescue Errno::ECONNRESET, IOError => e
         GrpcKit.logger.debug(e.message)
         finish
+      ensure
+        GrpcKit.logger.debug('Finish server session')
       end
 
       def run_once
