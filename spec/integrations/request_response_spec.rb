@@ -80,9 +80,10 @@ RSpec.describe 'request_response' do
       end
     end
 
-    let(:client_request_response) do |x|
+    let(:client_request_response) do
       lambda do |req, call, method, metadata|
         expect(call.metadata['a']).to eq('b')
+        expect(call.metadata).to eq(metadata)
         metadata['c'] = 'd'
         call.metadata['d'] = 'e'
       end
