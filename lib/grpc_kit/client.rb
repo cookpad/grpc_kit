@@ -48,12 +48,18 @@ module GrpcKit
     private
 
     def do_request(rpc, request, **opts)
-      session = GrpcKit::Session::ClientSession.new(GrpcKit::Session::IO.new(@sock))
-      session.submit_settings([])
-
       t = GrpcKit::Transport::ClientTransport.new(session)
       cs = GrpcKit::Stream::ClientStream.new(t, rpc.config, authority: @authority, timeout: @timeout)
       rpc.invoke(cs, request, opts.merge(timeout: @timeout))
+    end
+
+    def session
+      @session ||=
+        begin
+          s = GrpcKit::Session::ClientSession.new(GrpcKit::Session::IO.new(@sock))
+          s.submit_settings([])
+          s
+        end
     end
   end
 end
