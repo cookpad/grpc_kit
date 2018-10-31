@@ -76,7 +76,7 @@ module GrpcKit
         loop { yield(recv) }
       end
 
-      def send_status(status: GrpcKit::StatusCodes::INTERNAL, msg: nil, metadata: {})
+      def send_status(status: GrpcKit::StatusCodes::OK, msg: nil, metadata: {})
         send_trailer(status: status, msg: msg, metadata: metadata)
         return if @sent_first_msg
 
