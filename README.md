@@ -47,7 +47,8 @@ end
 ##### Client
 
 ```ruby
-stub = Helloworld::Greeter::Stub.new('localhost', 50051)
+sock = TCPSocket.new('localhost', 50051)
+stub = Helloworld::Greeter::Stub.new(sock)
 message = stub.say_hello(Helloworld::HelloRequest.new(name: 'your name')).message
 puts message
 ```
