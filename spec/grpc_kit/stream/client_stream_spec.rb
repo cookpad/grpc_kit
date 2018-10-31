@@ -27,7 +27,7 @@ RSpec.describe GrpcKit::Stream::ClientStream do
 
     before do
       allow(transport).to receive(:read_data).and_return(body)
-      client_stream.instance_variable_set(:@sent_first_msg, true)
+      client_stream.instance_variable_set(:@started, true)
     end
 
     it 'reads data' do
@@ -53,7 +53,7 @@ RSpec.describe GrpcKit::Stream::ClientStream do
 
     context 'when stream never send a request' do
       before do
-        client_stream.instance_variable_set(:@sent_first_msg, false)
+        client_stream.instance_variable_set(:@started, false)
       end
 
       it { expect { client_stream.recv_msg }.to raise_error(StandardError) }
@@ -68,7 +68,7 @@ RSpec.describe GrpcKit::Stream::ClientStream do
       allow(transport).to receive(:close_and_flush).once
       v = [body, nil]
       allow(transport).to receive(:read_data) { v.shift }
-      client_stream.instance_variable_set(:@sent_first_msg, true)
+      client_stream.instance_variable_set(:@started, true)
     end
 
     it 'read data until no data' do

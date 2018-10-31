@@ -15,7 +15,7 @@ module GrpcKit
         @deferred = false
       end
 
-      def send_request(data, header, last: false)
+      def start_request(data, header, last: false)
         @stream = @session.send_request(GrpcKit::Transport::SendBuffer.new, header)
         write_data(data, last: last)
       end

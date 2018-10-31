@@ -8,7 +8,7 @@ module GrpcKit
       # @params transport [GrpcKit::transports::ServerTransport]
       def initialize(transport)
         @transport = transport
-        @sent_first_msg = false
+        @started = false
       end
 
       def invoke(rpc)
@@ -22,10 +22,6 @@ module GrpcKit
       end
 
       def send_msg(data, protobuf, last: false, limit_size: nil, initial_metadata: {}, trailing_metadata: {})
-        if last
-          send_trailer(metadata: trailing_metadata)
-        end
-
         buf =
           begin
             protobuf.encode(data)
@@ -37,11 +33,13 @@ module GrpcKit
           raise GrpcKit::Errors::ResourceExhausted, "Sending message is too large: send=#{req.bytesize}, max=#{limit_size}"
         end
 
-        @transport.write_data(buf, last: last)
-        return if @sent_first_msg
-
-        send_response(initial_metadata)
-        @sent_first_msg = true
+        if last
+          send_status(data: buf, metadata: trailing_metadata)
+        elsif @started
+          @transport.write_data(buf)
+        else
+          start_response(buf, metadata: initial_metadata)
+        end
       end
 
       def recv_msg(protobuf, last: false, limit_size: nil)
@@ -68,7 +66,7 @@ module GrpcKit
         begin
           protobuf.decode(buf)
         rescue ArgumentError => e
-          raise GrpcKit::Errors::Internal, "Error while decoding in Server: #{e}"
+          raise GrpcKit::Errors::Internal, "Error while decoding in server: #{e}"
         end
       end
 
@@ -76,27 +74,31 @@ module GrpcKit
         loop { yield(recv) }
       end
 
-      def send_status(status: GrpcKit::StatusCodes::OK, msg: nil, metadata: {})
-        send_trailer(status: status, msg: msg, metadata: metadata)
-        return if @sent_first_msg
+      def send_status(data: nil, status: GrpcKit::StatusCodes::OK, msg: nil, metadata: {})
+        @transport.write_data(data, last: true) if data
+        write_trailers(status, msg, metadata)
 
-        send_response({})
-        @sent_first_msg = true
+        start_response unless @started
       end
 
-      def send_trailer(status: GrpcKit::StatusCodes::OK, msg: nil, metadata: {})
-        trailer = { 'grpc-status' => status.to_s }
-        if msg
-          trailer['grpc-message'] = msg
-        end
+      private
 
-        @transport.write_trailers_data(trailer.merge(metadata))
-      end
-
-      def send_response(metadata = {})
+      def start_response(data = nil, metadata: {})
         h = { ':status' => '200', 'content-type' => 'application/grpc' }
         h['accept-encoding'] = 'identity'
-        @transport.send_response(h.merge(metadata))
+
+        @transport.write_data(data) if data
+        @transport.start_response(h.merge(metadata))
+        @started = true
+      end
+
+      def write_trailers(status, msg, metadata)
+        trailers = { 'grpc-status' => status.to_s }
+        if msg
+          trailers['grpc-message'] = msg
+        end
+
+        @transport.write_trailers(trailers.merge(metadata))
       end
     end
   end

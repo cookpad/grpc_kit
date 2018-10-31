@@ -15,7 +15,7 @@ module GrpcKit
         @authority = authority
         @timeout = timeout
 
-        @sent_first_msg = false
+        @started = false
       end
 
       def send_msg(data, metadata: {}, timeout: nil, last: false)
@@ -31,15 +31,10 @@ module GrpcKit
           raise GrpcKit::Errors::ResourceExhausted, "Sending message is too large: send=#{req.bytesize}, max=#{limit_size}"
         end
 
-        if @sent_first_msg
-          # unless metadata.empty?
-          #   raise 'You can attach metadata at first send_msg' # XXX
-          # end
+        if @started
           @transport.write_data(buf, last: last)
         else
-          headers = build_headers(metadata: metadata)
-          @transport.send_request(buf, headers, last: last)
-          @sent_first_msg = true
+          start_request(buf, metadata: metadata, last: last)
         end
       end
 
@@ -68,7 +63,7 @@ module GrpcKit
       private
 
       def validate_if_request_start!
-        unless @sent_first_msg
+        unless @started
           raise 'You should call `send_msg` method to send data'
         end
       end
@@ -125,30 +120,30 @@ module GrpcKit
           end
       end
 
-      def build_headers(metadata: {}, **headers)
-        # TODO: an order of Headers is important?
+      def start_request(buf = nil, last: nil, metadata: {}, timeout: @timeout, authority: @authority)
         hdrs = {
           ':method' => 'POST',
           ':scheme' => 'http',
           ':path' => @config.path,
-          ':authority' => @authority,
-          'grpc-timeout' => @timeout,
+          ':authority' => authority,
+          'grpc-timeout' => timeout,
           'te' => 'trailers',
           'content-type' => 'application/grpc',
           'user-agent' => "grpc-ruby/#{GrpcKit::VERSION} (grpc_kit)",
           'grpc-accept-encoding' => 'identity,deflate,gzip',
-        }.merge(headers)
+        }
 
         metadata.each do |k, v|
           if k.start_with?('grpc-')
             # https://github.com/grpc/grpc/blob/ffac9d90b18cb076b1c952faa55ce4e049cbc9a6/doc/PROTOCOL-HTTP2.md
-            GrpcKit.logger.info("metadata name wich starts with 'grpc-' is reserved for future GRPC")
+            GrpcKit.logger.info("metadata name wich starts with 'grpc-' is reserved for future GRPC metadata")
           else
             hdrs[k] = v
           end
         end
 
-        hdrs.compact
+        @transport.start_request(buf, hdrs.compact, last: last)
+        @started = true
       end
     end
   end
