@@ -2,9 +2,9 @@
 
 require 'grpc_kit/grpc_time'
 require 'grpc_kit/session/io'
-require 'grpc_kit/sessions/client_session'
-require 'grpc_kit/streams/client_stream'
-require 'grpc_kit/transports/client_transport'
+require 'grpc_kit/session/client_session'
+require 'grpc_kit/stream/client_stream'
+require 'grpc_kit/transport/client_transport'
 
 module GrpcKit
   class Client
@@ -48,11 +48,11 @@ module GrpcKit
     private
 
     def do_request(rpc, request, **opts)
-      session = GrpcKit::Sessions::ClientSession.new(GrpcKit::Session::IO.new(@sock))
+      session = GrpcKit::Session::ClientSession.new(GrpcKit::Session::IO.new(@sock))
       session.submit_settings([])
 
-      t = GrpcKit::Transports::ClientTransport.new(session)
-      cs = GrpcKit::Streams::ClientStream.new(t, rpc.config, authority: @authority, timeout: @timeout)
+      t = GrpcKit::Transport::ClientTransport.new(session)
+      cs = GrpcKit::Stream::ClientStream.new(t, rpc.config, authority: @authority, timeout: @timeout)
       rpc.invoke(cs, request, opts.merge(timeout: @timeout))
     end
   end

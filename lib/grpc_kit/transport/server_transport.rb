@@ -3,11 +3,11 @@
 require 'grpc_kit/transport/packable'
 
 module GrpcKit
-  module Transports
+  module Transport
     class ServerTransport
       include GrpcKit::Transport::Packable
 
-      # @params session [GrpcKit::Sessions::ServerSession]
+      # @params session [GrpcKit::Session::ServerSession]
       # @params stream [GrpcKit::Session::Stream]
       def initialize(session, stream)
         @session = session

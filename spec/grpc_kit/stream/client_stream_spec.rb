@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require 'grpc_kit/transport/packable'
-require 'grpc_kit/streams/client_stream'
+require 'grpc_kit/stream/client_stream'
 
-RSpec.describe GrpcKit::Streams::ClientStream do
+RSpec.describe GrpcKit::Stream::ClientStream do
   let(:client_stream) { described_class.new(transport, config, authority: authority) }
   let(:authority) { 'localhost:50051' }
   let(:transport) { double(:transport) }

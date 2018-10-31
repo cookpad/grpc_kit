@@ -4,11 +4,11 @@ require 'grpc_kit/transport/packable'
 require 'grpc_kit/transport/send_buffer'
 
 module GrpcKit
-  module Transports
+  module Transport
     class ClientTransport
       include GrpcKit::Transport::Packable
 
-      # @params session [GrpcKit::Session::Server|GrpcKit::Session::Client]
+      # @params session [GrpcKit::Session::ClientSession]
       def initialize(session)
         @session = session
         @stream = nil # set later

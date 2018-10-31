@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'grpc_kit/session/io'
-require 'grpc_kit/sessions/server_session'
+require 'grpc_kit/session/server_session'
 
 module GrpcKit
   class Server
@@ -62,7 +62,7 @@ module GrpcKit
     private
 
     def establish_session(conn)
-      session = GrpcKit::Sessions::ServerSession.new(GrpcKit::Session::IO.new(conn), self)
+      session = GrpcKit::Session::ServerSession.new(GrpcKit::Session::IO.new(conn), self)
       begin
         @mutex.synchronize { @sessions << session }
         yield(session)

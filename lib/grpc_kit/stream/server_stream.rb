@@ -3,7 +3,7 @@
 require 'grpc_kit/status_codes'
 
 module GrpcKit
-  module Streams
+  module Stream
     class ServerStream
       # @params transport [GrpcKit::transports::ServerTransport]
       def initialize(transport)

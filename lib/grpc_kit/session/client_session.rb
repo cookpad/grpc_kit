@@ -5,7 +5,7 @@ require 'forwardable'
 require 'grpc_kit/session/stream'
 
 module GrpcKit
-  module Sessions
+  module Session
     class ClientSession < DS9::Client
       extend Forwardable
 
