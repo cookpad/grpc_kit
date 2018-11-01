@@ -41,7 +41,7 @@ module GrpcKit
         end
       rescue Errno::ECONNRESET, IOError => e
         GrpcKit.logger.debug(e.message)
-        finish
+        shutdown
       ensure
         GrpcKit.logger.debug('Finish server session')
       end
@@ -66,7 +66,7 @@ module GrpcKit
         end
       end
 
-      def finish
+      def shutdown
         stop
         @io.close
       end
@@ -88,10 +88,10 @@ module GrpcKit
       def do_read
         receive
       rescue IOError => e
-        finish
+        shutdown
         raise e
       rescue DS9::Exception => e
-        finish
+        shutdown
         if DS9::ERR_EOF == e.code
           @peer_shutdowned = true
           return

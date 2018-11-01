@@ -10,6 +10,7 @@ module GrpcKit
       @rpc_descs = {}
       @interceptors = interceptors
       @mutex = Mutex.new
+      @stopping = false
 
       GrpcKit.logger.debug("Launched grpc_kit(v#{GrpcKit::VERSION})")
     end
@@ -26,23 +27,33 @@ module GrpcKit
     end
 
     def run(conn)
+      raise 'Stopping server' if @stopping
+
       establish_session(conn) do |s|
         s.submit_settings([])
         s.start
       end
     end
 
-    def shutdown
-      GrpcKit.logger.debug('Shutdown grpc_kit')
-
-      @mutex.synchronize do
-        @sessions.each(&:finish)
+    def force_shutdown
+      # expected to be called in trap context
+      Thread.new do
+        @mutex.synchronize do
+          GrpcKit.logger.debug('force shutdown')
+          @stopping = true
+          @sessions.each(&:shutdown)
+        end
       end
     end
 
     def graceful_shutdown
-      @mutex.synchronize do
-        @sessions.each(&:drain)
+      # expected to be called in trap context
+      Thread.new do
+        GrpcKit.logger.debug('graceful shutdown')
+        @mutex.synchronize do
+          @stopping = true
+          @sessions.each(&:drain)
+        end
       end
     end
 
