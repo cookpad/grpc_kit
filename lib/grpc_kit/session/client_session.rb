@@ -7,7 +7,11 @@ require 'grpc_kit/session/stream'
 module GrpcKit
   module Session
     class ClientSession < DS9::Client
+      class ConnectionClosing < StandardError; end
+
       extend Forwardable
+
+      MAX_STREAM_ID = 2**31 - 1
 
       delegate %i[send_event recv_event] => :@io
 
@@ -18,16 +22,24 @@ module GrpcKit
         @io = io
         @streams = {}
         @opts = opts
+        @draining = false
+        @stop = false
+        @last_stream_id = 0
       end
 
       def send_request(data, headers)
-        stream_id = submit_request(headers, data)
+        if @draining
+          raise ConnectionClosing, "You can't send new request. becuase this connection will shuting down"
+        end
+
+        stream_id = submit_request(headers, data).to_i
         stream = GrpcKit::Session::Stream.new(stream_id: stream_id, send_data: data)
         stream.stream_id = stream_id
         @streams[stream_id] = stream
         stream
       end
 
+      # @params stream_id [Integer]
       def start(stream_id)
         stream = @streams.fetch(stream_id)
 
@@ -40,11 +52,15 @@ module GrpcKit
         end
       rescue Errno::ECONNRESET, IOError => e
         GrpcKit.logger.debug(e.message)
-        finish
+        shutdown
       end
 
       def run_once
         return if @stop
+
+        if @draining && @drain_time < Time.now
+          raise 'trasport is closing'
+        end
 
         if want_read?
           do_read
@@ -57,17 +73,18 @@ module GrpcKit
 
       private
 
-      def finish
-        # @io.close
+      def shutdown
+        @stop = true
+        @io.close
       end
 
       def do_read
         receive
       rescue IOError => e
-        finish
+        shutdown
         raise e
       rescue DS9::Exception => e
-        finish
+        shutdown
         if DS9::ERR_EOF == e.code
           @peer_shutdowned = true
           return
@@ -98,9 +115,8 @@ module GrpcKit
           if frame.end_stream?
             stream.close_remote
           end
-
-          # when DS9::Frames::Goaway
-          # when DS9::Frames::RstStream
+        when DS9::Frames::Goaway
+          handle_goaway(frame)
         end
 
         true
@@ -159,6 +175,25 @@ module GrpcKit
       # # for nghttp2_session_callbacks_set_on_invalid_frame_recv_callback
       # def on_invalid_frame_recv(frame, error_code)
       # end
+
+      def handle_goaway(frame)
+        # shutdown notice
+        last_stream_id = frame.last_stream_id
+        if last_stream_id == MAX_STREAM_ID && frame.error_code == DS9::NO_ERROR
+          @draining = true
+          @drain_time = Time.now + 10 # XXX
+          @streams.each_value(&:drain)
+        end
+
+        @last_stream_id = last_stream_id
+        @streams.each do |id, stream|
+          if id > last_stream_id
+            stream.close
+          end
+        end
+
+        shutdown if @streams.empty?
+      end
     end
   end
 end

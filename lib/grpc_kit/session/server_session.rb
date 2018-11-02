@@ -3,6 +3,7 @@
 require 'ds9'
 require 'forwardable'
 require 'grpc_kit/session/stream'
+require 'grpc_kit/session/drain_controller'
 require 'grpc_kit/stream/server_stream'
 require 'grpc_kit/transport/server_transport'
 
@@ -24,11 +25,14 @@ module GrpcKit
         @dispatcher = dispatcher
         @peer_shutdowned = false
         @inflights = []
+        @drain = nil
       end
 
       def start
         @io.wait_readable
         loop do
+          break if @stop
+
           invoke
 
           if !want_read? && !want_write?
@@ -49,6 +53,15 @@ module GrpcKit
       def run_once
         return if @stop
 
+        if @drain
+          if @streams.empty?
+            shutdown
+            return
+          end
+
+          @drain.call(self)
+        end
+
         if want_read?
           do_read
         end
@@ -59,16 +72,14 @@ module GrpcKit
       end
 
       def drain
-        # could be race condition
-        @streams.each do |s|
-          GrpcKit.logger.debug("#{s.stream_id} is draining")
-          s.drain
-        end
+        @drain ||= GrpcKit::Session::DrainController.new
       end
 
       def shutdown
         stop
         @io.close
+      rescue StandardError => e
+        GrpcKit.logger.debug(e)
       end
 
       private
@@ -138,7 +149,15 @@ module GrpcKit
           if frame.end_stream?
             stream.close_remote
           end
+        when DS9::Frames::Ping
+          if frame.ping_ack?
+            GrpcKit.logger.debug('ping ack is received')
+            # nghttp2 can't send any data once server sent actaul GoAway(not shutdown notice) frame.
+            # We want to send data in this case when ClientStreamer or BidiBstreamer which they are sending data in same stream
+            # So we have to wait to send actual GoAway frame untill timeout or something
 
+            # @drain.recv_ping_ack if @drain
+          end
           # when DS9::Frames::Goaway
           # when DS9::Frames::RstStream
         end
@@ -194,9 +213,13 @@ module GrpcKit
       def on_stream_close(stream_id, error_code)
         GrpcKit.logger.debug("on_stream_close stream_id=#{stream_id}, error_code=#{error_code}")
         stream = @streams.delete(stream_id)
-        return unless stream
+        stream.close if stream
 
-        stream.close
+        if @drain
+          if @streams.empty?
+            shutdown
+          end
+        end
       end
 
       # nghttp2_session_callbacks_set_on_data_chunk_recv_callback

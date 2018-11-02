@@ -11,6 +11,7 @@ module GrpcKit
       @interceptors = interceptors
       @mutex = Mutex.new
       @stopping = false
+      @max_graceful_wait = 60
 
       GrpcKit.logger.debug("Launched grpc_kit(v#{GrpcKit::VERSION})")
     end
@@ -35,6 +36,14 @@ module GrpcKit
       end
     end
 
+    def wait_shutdown
+      loop do
+        return if @stopping
+
+        sleep 1
+      end
+    end
+
     def force_shutdown
       # expected to be called in trap context
       Thread.new do
@@ -50,10 +59,20 @@ module GrpcKit
       # expected to be called in trap context
       Thread.new do
         GrpcKit.logger.debug('graceful shutdown')
-        @mutex.synchronize do
-          @stopping = true
-          @sessions.each(&:drain)
+        @mutex.synchronize { @sessions.each(&:drain) }
+        begin
+          Timeout.timeout(@max_graceful_wait) do
+            loop do
+              break if @mutex.synchronize { @sessions.empty? }
+
+              sleep 1
+            end
+          end
+        rescue Timeout::Error => _
+          GrpcKit.logger.debug('Max wait time expired')
         end
+
+        @stopping = true
       end
     end
 

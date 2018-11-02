@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'grpc_kit/session/headers.rb'
+require 'grpc_kit/session/headers'
 
 RSpec.describe GrpcKit::Session::Headers do
   let(:headers) { described_class.new }
