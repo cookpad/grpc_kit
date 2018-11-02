@@ -13,8 +13,8 @@
 ### server streamer
 
 - [x] recv/send msg
-- [ ] metadata (client)
-- [ ] metadata (server)
+- [x] metadata (client)
+- [x] metadata (server)
 - [x] interceptor (client)
 - [x] interceptor (server)
 - [ ] deadline (client)
@@ -23,8 +23,8 @@
 ### client streamer
 
 - [x] recv/send msg
-- [ ] metadata (client)
-- [ ] metadata (server)
+- [x] metadata (client)
+- [x] metadata (server)
 - [x] interceptor (client)
 - [x] interceptor (server)
 - [ ] deadline (client)
@@ -62,3 +62,10 @@
 - [ ] add server request spec
 - [ ] add client request spec
 - [ ] handle RST FRAME
+
+## bugs
+
+- [x] status_check is invoked twice
+- [x] undefined local variable or method `finish' for #<GrpcKit::Sessions::ClientSession:0x00007f9ae3abf970> (NameError)
+- [x] clients don't use same object even if thier connections alive
+
