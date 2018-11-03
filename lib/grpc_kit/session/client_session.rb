@@ -24,7 +24,6 @@ module GrpcKit
         @opts = opts
         @draining = false
         @stop = false
-        @last_stream_id = 0
       end
 
       def send_request(data, headers)
@@ -185,7 +184,6 @@ module GrpcKit
           @streams.each_value(&:drain)
         end
 
-        @last_stream_id = last_stream_id
         @streams.each do |id, stream|
           if id > last_stream_id
             stream.close

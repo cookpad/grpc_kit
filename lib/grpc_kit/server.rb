@@ -36,14 +36,6 @@ module GrpcKit
       end
     end
 
-    def wait_shutdown
-      loop do
-        return if @stopping
-
-        sleep 1
-      end
-    end
-
     def force_shutdown
       # expected to be called in trap context
       Thread.new do
@@ -60,10 +52,12 @@ module GrpcKit
       Thread.new do
         GrpcKit.logger.debug('graceful shutdown')
         @mutex.synchronize { @sessions.each(&:drain) }
+        @stopping = true
+
         begin
           Timeout.timeout(@max_graceful_wait) do
             loop do
-              break if @mutex.synchronize { @sessions.empty? }
+              break if @sessions.empty?
 
               sleep 1
             end
@@ -71,9 +65,11 @@ module GrpcKit
         rescue Timeout::Error => _
           GrpcKit.logger.debug('Max wait time expired')
         end
-
-        @stopping = true
       end
+    end
+
+    def session_count
+      @mutex.synchronize { @sessions.size }
     end
 
     # @params path [String]
