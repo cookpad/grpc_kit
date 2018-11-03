@@ -31,17 +31,10 @@ module GrpcKit
       def start
         @io.wait_readable
         loop do
-          break if @stop
-
           invoke
 
-          if !want_read? && !want_write?
-            break
-          elsif @peer_shutdowned && !want_write?
-            break
-          end
-
-          run_once
+          continue = run_once
+          break unless continue
         end
       rescue Errno::ECONNRESET, IOError => e
         GrpcKit.logger.debug(e.message)
@@ -50,8 +43,13 @@ module GrpcKit
         GrpcKit.logger.debug('Finish server session')
       end
 
+      # @return [bool] return session can continue
       def run_once
-        return if @stop
+        if @peer_shutdowned || @stop || !(want_read? || want_write?)
+          # it could be called twice
+          @streams.each_value(&:close)
+          return false
+        end
 
         if @drain
           if @streams.empty?
@@ -69,6 +67,8 @@ module GrpcKit
         if want_write?
           send
         end
+
+        true
       end
 
       def drain
@@ -153,9 +153,8 @@ module GrpcKit
           if frame.ping_ack?
             GrpcKit.logger.debug('ping ack is received')
             # nghttp2 can't send any data once server sent actaul GoAway(not shutdown notice) frame.
-            # We want to send data in this case when ClientStreamer or BidiBstreamer which they are sending data in same stream
+            # We want to send data in case of ClientStreamer or BidiBstreamer which they are sending data in same stream
             # So we have to wait to send actual GoAway frame untill timeout or something
-
             # @drain.recv_ping_ack if @drain
           end
           # when DS9::Frames::Goaway
