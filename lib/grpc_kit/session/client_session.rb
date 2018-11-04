@@ -83,11 +83,9 @@ module GrpcKit
         shutdown
         raise e
       rescue DS9::Exception => e
-        shutdown
+        GrpcKit.logger.debug(e.message)
         if DS9::ERR_EOF == e.code
-          @peer_shutdowned = true
-          return
-          # raise EOFError
+          raise EOFError, e
         end
 
         raise e
