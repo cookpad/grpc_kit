@@ -36,9 +36,6 @@ module GrpcKit
           continue = run_once
           break unless continue
         end
-      rescue Errno::ECONNRESET, IOError => e
-        GrpcKit.logger.debug(e.message)
-        shutdown
       ensure
         GrpcKit.logger.debug('Finish server session')
       end
@@ -69,6 +66,10 @@ module GrpcKit
         end
 
         true
+      rescue Errno::ECONNRESET, IOError => e
+        GrpcKit.logger.debug(e.message)
+        shutdown
+        false
       end
 
       def drain
@@ -98,9 +99,6 @@ module GrpcKit
 
       def do_read
         receive
-      rescue IOError => e
-        shutdown
-        raise e
       rescue DS9::Exception => e
         shutdown
         if DS9::ERR_EOF == e.code
