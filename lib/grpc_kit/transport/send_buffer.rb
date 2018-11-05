@@ -5,7 +5,6 @@ module GrpcKit
     class SendBuffer
       def initialize
         @buffer = nil
-        @pos = 0
         @end_write = false
       end
 
@@ -17,8 +16,6 @@ module GrpcKit
         else
           @buffer = data
         end
-
-        data.size
       end
 
       def end_write
