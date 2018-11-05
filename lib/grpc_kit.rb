@@ -7,11 +7,16 @@ require 'grpc_kit/server'
 require 'grpc_kit/client'
 
 module GrpcKit
-  def self.logger
-    @logger ||= Logger.new(STDOUT, level: :debug)
-  end
+  class << self
+    attr_writer :logger
 
-  def self.logger=(logger)
-    @logger = logger
+    def logger
+      @logger ||= Logger.new(STDOUT, level: ENV['GRPC_KIT_LOGLEVEL'] || :info)
+    end
+
+    # @params level [String] :debug, :info, :warn, :error, :fatal or :unknown
+    def self.loglevel=(level)
+      logger.level = level
+    end
   end
 end
