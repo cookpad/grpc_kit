@@ -16,14 +16,18 @@ module GrpcKit
       GrpcKit.logger.debug("Launched grpc_kit(v#{GrpcKit::VERSION})")
     end
 
-    # @params handler [object]
     def handle(handler)
-      handler.class.rpc_descs.each do |path, rpc_desc|
+      klass = handler.is_a?(Class) ? handler : handler.class
+      unless klass.include?(GrpcKit::GRPC::GenericService)
+        raise "#{klass} must include GRPC::GenericService"
+      end
+
+      klass.rpc_descs.each do |path, rpc_desc|
         if @rpc_descs[path]
-          raise "Duplicated method registered #{path}, class: #{handler}"
+          raise "Duplicated method registered #{path}, class: #{klass}"
         end
 
-        @rpc_descs[path] = rpc_desc.build_server(handler, interceptors: @interceptors)
+        @rpc_descs[path] = rpc_desc.build_server(klass, interceptors: @interceptors)
       end
     end
 
