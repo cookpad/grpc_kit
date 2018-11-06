@@ -27,7 +27,8 @@ module GrpcKit
           raise "Duplicated method registered #{path}, class: #{klass}"
         end
 
-        @rpc_descs[path] = rpc_desc.build_server(klass, interceptors: @interceptors)
+        s = handler.is_a?(Class) ? handler.new : handler
+        @rpc_descs[path] = rpc_desc.build_server(s, interceptors: @interceptors)
       end
     end
 
