@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'grpc_kit/status_codes'
+require 'grpc_kit/errors'
 
 module GrpcKit
   module Stream
@@ -61,8 +61,6 @@ module GrpcKit
           raise 'compress option is unsupported'
         end
 
-        raise StopIteration if buf.nil?
-
         begin
           protobuf.decode(buf)
         rescue ArgumentError => e
@@ -70,8 +68,8 @@ module GrpcKit
         end
       end
 
-      def each
-        loop { yield(recv) }
+      def each(protobuf)
+        loop { yield(recv_msg(protobuf)) }
       end
 
       def send_status(data: nil, status: GrpcKit::StatusCodes::OK, msg: nil, metadata: {})
