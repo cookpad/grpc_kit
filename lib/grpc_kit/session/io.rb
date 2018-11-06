@@ -38,7 +38,10 @@ module GrpcKit
       end
 
       def wait_readable
-        @io.wait_writable
+        ::IO.select([@io], [], [])
+        true
+      rescue IOError
+        false
       end
 
       def flush

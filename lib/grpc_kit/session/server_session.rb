@@ -29,9 +29,15 @@ module GrpcKit
       end
 
       def start
-        @io.wait_readable
         loop do
           invoke
+
+          if @streams.count == 0
+            unless @io.wait_readable
+              shutdown
+              break
+            end
+          end
 
           continue = run_once
           break unless continue
