@@ -37,14 +37,14 @@ RSpec.describe GrpcKit::Transport::SendBuffer do
     end
 
     context 'when no one wrote data yet' do
-      it { expect(buffer.read(10)).to eq(false) }
+      it { expect(buffer.read(10)).to eq(DS9::ERR_DEFERRED) }
     end
 
     context 'when stored data is nothing' do
       it 'return false' do
         buffer.write(+'abcd')
         expect(buffer.read(10)).to eq('abcd')
-        expect(buffer.read(10)).to eq(false)
+        expect(buffer.read(10)).to eq(DS9::ERR_DEFERRED)
       end
 
       context 'when end_write is true' do

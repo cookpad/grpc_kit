@@ -28,7 +28,7 @@ module GrpcKit
 
       def read(size)
         if @buffer.nil?
-          return false
+          return DS9::ERR_DEFERRED
         end
 
         data = @buffer.slice!(0, size)
@@ -37,7 +37,7 @@ module GrpcKit
         elsif end_write?
           nil # EOF
         else
-          false # deferred
+          DS9::ERR_DEFERRED
         end
       end
     end
