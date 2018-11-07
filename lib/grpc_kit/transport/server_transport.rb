@@ -27,6 +27,10 @@ module GrpcKit
         @session.submit_response(@stream.stream_id, headers)
       end
 
+      def submit_headers(headers)
+        @session.submit_headers(@stream.stream_id, headers)
+      end
+
       def write_data(buf, last: false)
         @stream.write_send_data(pack(buf), last: last)
       end
@@ -37,6 +41,9 @@ module GrpcKit
 
       def write_trailers(trailer)
         @stream.write_trailers_data(trailer)
+      end
+
+      def end_write
         @stream.end_write
       end
 

@@ -46,7 +46,7 @@
 - [x] internal
 - [ ] resouce exhausted (worker is exhausted)
 - [x] duration parse in header
-- [ ] send `grpc-status` along with header frame if possible
+- [x] send `grpc-status` along with header frame if possible
    - need to support  https://nghttp2.org/documentation/nghttp2_submit_response.html, data_prd is not NULL
 - [x] unimplemented error
 - [ ] goaway
