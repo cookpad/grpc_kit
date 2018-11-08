@@ -11,7 +11,6 @@ module GrpcKit
       def initialize(session)
         @session = session
         @stream = nil # set later
-        @deferred = false
       end
 
       def start_request(data, header, last: false)
@@ -20,9 +19,9 @@ module GrpcKit
       end
 
       def close_and_flush
-        resume_if_need
-
         @stream.end_write
+        send_data
+
         @session.start(@stream.stream_id)
         @stream.end_read
         @deferred = false
@@ -38,11 +37,8 @@ module GrpcKit
       end
 
       def write_data(buf, last: false)
-        resume_if_need
-
         write(@stream.pending_send_data, pack(buf), last: last)
-        @session.run_once
-        @deferred = true unless last
+        send_data
       end
 
       def read_data(last: false)
@@ -55,12 +51,6 @@ module GrpcKit
       end
 
       private
-
-      def resume_if_need
-        if !@stream.end_write? && @deferred
-          @session.resume_data(@stream.stream_id)
-        end
-      end
 
       def wait_close
         # XXX: wait until half close (remote) to get grpc-status
@@ -89,6 +79,14 @@ module GrpcKit
 
           @session.run_once
         end
+      end
+
+      def send_data
+        if @stream.pending_send_data.need_resume?
+          @session.resume_data(@stream.stream_id)
+        end
+
+        @session.run_once
       end
     end
   end
