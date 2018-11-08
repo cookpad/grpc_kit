@@ -3,6 +3,7 @@
 require 'ds9'
 require 'forwardable'
 require 'grpc_kit/session/stream'
+require 'grpc_kit/session/send_buffer'
 
 module GrpcKit
   module Session
@@ -26,11 +27,12 @@ module GrpcKit
         @stop = false
       end
 
-      def send_request(data, headers)
+      def send_request(headers)
         if @draining
           raise ConnectionClosing, "You can't send new request. becuase this connection will shuting down"
         end
 
+        data = GrpcKit::Session::SendBuffer.new
         stream_id = submit_request(headers, data).to_i
         stream = GrpcKit::Session::Stream.new(stream_id: stream_id, send_data: data)
         stream.stream_id = stream_id

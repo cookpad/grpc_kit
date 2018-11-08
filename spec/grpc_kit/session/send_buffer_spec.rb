@@ -2,7 +2,7 @@
 
 require 'grpc_kit/transport/packable'
 
-RSpec.describe GrpcKit::Transport::SendBuffer do
+RSpec.describe GrpcKit::Session::SendBuffer do
   let(:buffer) { described_class.new }
 
   describe '#write' do
