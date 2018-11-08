@@ -6,7 +6,7 @@ require 'grpc_kit/session/stream'
 require 'grpc_kit/session/drain_controller'
 require 'grpc_kit/stream/server_stream'
 require 'grpc_kit/transport/server_transport'
-require 'grpc_kit/transport/send_buffer'
+require 'grpc_kit/session/send_buffer'
 
 module GrpcKit
   module Session
@@ -198,7 +198,7 @@ module GrpcKit
           raise "#{stream_id} is already existed"
         end
 
-        @streams[stream_id] = GrpcKit::Session::Stream.new(stream_id: stream_id, send_data: GrpcKit::Transport::SendBuffer.new)
+        @streams[stream_id] = GrpcKit::Session::Stream.new(stream_id: stream_id, send_data: GrpcKit::Session::SendBuffer.new)
       end
 
       # nghttp2_session_callbacks_set_on_header_callback

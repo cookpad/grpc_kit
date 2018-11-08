@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module GrpcKit
-  module Transport
+  module Session
     class SendBuffer
       def initialize
         @buffer = nil
