@@ -25,4 +25,21 @@ class TestTransport
   def get_start_response
     @start_response
   end
+
+  def end_write
+    @end_wirte ||= true
+  end
+
+  def get_end_write
+    @end_wirte
+  end
+
+  def submit_headers(d)
+    @submit_headers ||= {}
+    @submit_headers.merge!(d)
+  end
+
+  def get_submit_headers
+    @submit_headers
+  end
 end

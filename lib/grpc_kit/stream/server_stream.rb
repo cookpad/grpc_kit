@@ -73,13 +73,29 @@ module GrpcKit
       end
 
       def send_status(data: nil, status: GrpcKit::StatusCodes::OK, msg: nil, metadata: {})
-        @transport.write_data(data, last: true) if data
-        write_trailers(status, msg, metadata)
+        t = build_trailers(status, msg, metadata)
+        @transport.write_data(data) if data
 
-        start_response unless @started
+        @transport.end_write
+        if @started
+          @transport.write_trailers(t)
+        elsif data
+          @transport.write_trailers(t)
+          start_response
+        else
+          send_headers(trailers: t)
+        end
       end
 
       private
+
+      def send_headers(trailers: {})
+        h = { ':status' => '200', 'content-type' => 'application/grpc' }
+        h['accept-encoding'] = 'identity'
+
+        @transport.submit_headers(h.merge(trailers))
+        @started = true
+      end
 
       def start_response(data = nil, metadata: {})
         h = { ':status' => '200', 'content-type' => 'application/grpc' }
@@ -90,13 +106,13 @@ module GrpcKit
         @started = true
       end
 
-      def write_trailers(status, msg, metadata)
+      def build_trailers(status, msg, metadata)
         trailers = { 'grpc-status' => status.to_s }
         if msg
           trailers['grpc-message'] = msg
         end
 
-        @transport.write_trailers(trailers.merge(metadata))
+        trailers.merge(metadata)
       end
     end
   end

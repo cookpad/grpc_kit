@@ -30,6 +30,7 @@ RSpec.describe GrpcKit::Stream::ServerStream do
           server_stream.send_msg(data, protobuf)
           expect(transport.get_start_response[':status']).to eq('200')
           expect(transport.get_write_data).to eq(data)
+          expect(transport.get_end_write).to eq(nil)
           expect(transport.get_write_trailers).to eq(nil)
         end
 
@@ -38,6 +39,7 @@ RSpec.describe GrpcKit::Stream::ServerStream do
             server_stream.send_msg(data, protobuf, last: true)
             expect(transport.get_start_response[':status']).to eq('200')
             expect(transport.get_write_data).to eq(data)
+            expect(transport.get_end_write).to eq(true)
             expect(transport.get_write_trailers['grpc-status']).to eq(GrpcKit::StatusCodes::OK.to_s)
           end
         end
@@ -49,6 +51,7 @@ RSpec.describe GrpcKit::Stream::ServerStream do
           server_stream.send_msg(data, protobuf)
           expect(transport.get_start_response[':status']).to eq('200')
           expect(transport.get_write_data).to eq(data + data)
+          expect(transport.get_end_write).to eq(nil)
           expect(transport.get_write_trailers).to eq(nil)
         end
       end
@@ -105,6 +108,101 @@ RSpec.describe GrpcKit::Stream::ServerStream do
     it 'reads data' do
       expect(server_stream.recv_msg(protobuf)).to eq(data)
       expect { server_stream.recv_msg(protobuf) }.to raise_error(StopIteration)
+    end
+  end
+
+  describe '#send_status' do
+    let(:transport) { TestTransport.new }
+
+    context 'when it has not sent any data' do
+      it 'call submit_headers' do
+        server_stream.send_status
+        expect(transport.get_submit_headers[':status']).to eq('200')
+        expect(transport.get_submit_headers['grpc-status']).to eq(GrpcKit::StatusCodes::OK.to_s)
+        expect(transport.get_write_data).to eq(nil)
+        expect(transport.get_end_write).to eq(true)
+        expect(transport.get_write_trailers).to eq(nil)
+      end
+
+      context 'with metadata' do
+        it do
+          server_stream.send_status(metadata: { 'a' => 'b' })
+          expect(transport.get_submit_headers['a']).to eq('b')
+        end
+      end
+
+      context 'with msg' do
+        it do
+          server_stream.send_status(msg: 'hello')
+          expect(transport.get_submit_headers['grpc-message']).to eq('hello')
+        end
+      end
+
+      context 'with status' do
+        it do
+          server_stream.send_status(status: GrpcKit::StatusCodes::UNIMPLEMENTED)
+          expect(transport.get_submit_headers['grpc-status']).to eq(GrpcKit::StatusCodes::UNIMPLEMENTED)
+        end
+      end
+
+      context 'with data' do
+        it do
+          server_stream.send_status(data: data)
+          expect(transport.get_write_data).to eq(data)
+          expect(transport.get_start_response[':status']).to eq('200')
+          expect(transport.get_write_trailers['grpc-status']).to eq(GrpcKit::StatusCodes::OK)
+          expect(transport.get_submit_headers).to eq(nil)
+        end
+      end
+    end
+
+    context 'when it has sent data' do
+      before do
+        server_stream.send_msg(data, protobuf)
+      end
+
+      it 'call start_response' do
+        server_stream.send_status
+        expect(transport.get_start_response[':status']).to eq('200')
+        expect(transport.get_write_trailers['grpc-status']).to eq(GrpcKit::StatusCodes::OK)
+        expect(transport.get_write_data).to eq(data)
+        expect(transport.get_end_write).to eq(true)
+        expect(transport.get_submit_headers).to eq(nil)
+      end
+
+      context 'with metadata' do
+        it do
+          server_stream.send_status(metadata: { 'a' => 'b' })
+          expect(transport.get_submit_headers).to eq(nil)
+          expect(transport.get_write_trailers['a']).to eq('b')
+        end
+      end
+
+      context 'with msg' do
+        it do
+          server_stream.send_status(msg: 'hello')
+          expect(transport.get_submit_headers).to eq(nil)
+          expect(transport.get_write_trailers['grpc-message']).to eq('hello')
+        end
+      end
+
+      context 'with status' do
+        it do
+          server_stream.send_status(status: GrpcKit::StatusCodes::UNIMPLEMENTED)
+          expect(transport.get_submit_headers).to eq(nil)
+          expect(transport.get_write_trailers['grpc-status']).to eq(GrpcKit::StatusCodes::UNIMPLEMENTED)
+        end
+      end
+
+      context 'with data' do
+        it do
+          server_stream.send_status(data: data)
+          expect(transport.get_write_data).to eq(data + data)
+          expect(transport.get_start_response[':status']).to eq('200')
+          expect(transport.get_write_trailers['grpc-status']).to eq(GrpcKit::StatusCodes::OK)
+          expect(transport.get_submit_headers).to eq(nil)
+        end
+      end
     end
   end
 end
