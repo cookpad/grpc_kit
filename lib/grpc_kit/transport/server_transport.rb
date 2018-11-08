@@ -38,7 +38,7 @@ module GrpcKit
       end
 
       def read_data(last: false)
-        unpack(read(last: last))
+        unpack(recv_data(last: last))
       end
 
       def write_trailers(trailer)
@@ -56,7 +56,7 @@ module GrpcKit
 
       private
 
-      def read(last: false)
+      def recv_data(last: false)
         loop do
           data = @stream.read_recv_data(last: last)
           return data unless data.empty?
