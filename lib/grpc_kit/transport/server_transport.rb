@@ -25,6 +25,7 @@ module GrpcKit
 
       def start_response(headers)
         @session.submit_response(@stream.stream_id, headers)
+        send_data
       end
 
       def submit_headers(headers)
@@ -33,6 +34,7 @@ module GrpcKit
 
       def write_data(buf, last: false)
         @stream.write_send_data(pack(buf), last: last)
+        send_data
       end
 
       def read_data(last: false)
@@ -41,6 +43,7 @@ module GrpcKit
 
       def write_trailers(trailer)
         @stream.write_trailers_data(trailer)
+        send_data
       end
 
       def end_write
@@ -69,6 +72,14 @@ module GrpcKit
 
           @session.run_once
         end
+      end
+
+      def send_data
+        if @stream.pending_send_data.need_resume?
+          @session.resume_data(@stream.stream_id)
+        end
+
+        @session.run_once
       end
     end
   end

@@ -6,6 +6,7 @@ module GrpcKit
       def initialize
         @buffer = nil
         @end_write = false
+        @deferred_read = false
       end
 
       def write(data, last: false)
@@ -18,6 +19,10 @@ module GrpcKit
         end
       end
 
+      def need_resume?
+        @deferred_read
+      end
+
       def end_write
         @end_write = true
       end
@@ -28,15 +33,19 @@ module GrpcKit
 
       def read(size)
         if @buffer.nil?
+          @deferred_read = true
           return DS9::ERR_DEFERRED
         end
 
         data = @buffer.slice!(0, size)
         if !data.empty?
+          @deferred_read = false
           data
         elsif end_write?
+          @deferred_read = false
           nil # EOF
         else
+          @deferred_read = true
           DS9::ERR_DEFERRED
         end
       end
