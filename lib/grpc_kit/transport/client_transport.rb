@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'grpc_kit/transport/packable'
-require 'grpc_kit/session/send_buffer'
 
 module GrpcKit
   module Transport
@@ -16,7 +15,7 @@ module GrpcKit
       end
 
       def start_request(data, header, last: false)
-        @stream = @session.send_request(GrpcKit::Session::SendBuffer.new, header)
+        @stream = @session.send_request(header)
         write_data(data, last: last)
       end
 
