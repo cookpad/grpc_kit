@@ -14,15 +14,6 @@ module GrpcKit
         @stream = stream
       end
 
-      def each
-        loop do
-          data = recv
-          return if data.nil?
-
-          yield(data)
-        end
-      end
-
       def start_response(headers)
         @session.submit_response(@stream.stream_id, headers)
         send_data

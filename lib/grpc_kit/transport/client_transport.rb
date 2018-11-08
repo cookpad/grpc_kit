@@ -27,15 +27,6 @@ module GrpcKit
         @deferred = false
       end
 
-      def each
-        loop do
-          data = recv
-          return if data.nil?
-
-          yield(data)
-        end
-      end
-
       def write_data(buf, last: false)
         write(@stream.pending_send_data, pack(buf), last: last)
         send_data
