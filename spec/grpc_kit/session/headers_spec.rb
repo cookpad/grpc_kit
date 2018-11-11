@@ -10,11 +10,7 @@ RSpec.describe GrpcKit::Session::Headers do
     end
 
     context 'when :status is given' do
-      it { expect { headers.add(':status', '200') }.to change { headers.http_status }.from(nil).to(200) }
-
-      context 'and :status is not integer' do
-        it { expect { headers.add(':status', 'not integer') }.to raise_error(ArgumentError) }
-      end
+      it { expect { headers.add(':status', '200') }.to change { headers.http_status }.from(nil).to('200') }
     end
 
     context 'when grpc-timeout is given' do
