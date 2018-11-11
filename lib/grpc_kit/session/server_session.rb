@@ -64,11 +64,13 @@ module GrpcKit
           @drain.call(self)
         end
 
-        if want_read?
+        rs, ws = @io.select
+
+        if !rs.empty? && want_read?
           do_read
         end
 
-        if want_write?
+        if !ws.empty? && want_write?
           send
         end
 
