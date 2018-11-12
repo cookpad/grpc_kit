@@ -50,6 +50,14 @@ module GrpcKit
         do_recv(last: last)
       end
 
+
+      def close_and_send
+        validate_if_request_start!
+
+        # send?
+        @transport.close_and_flush
+      end
+
       def close_and_recv
         validate_if_request_start!
 
