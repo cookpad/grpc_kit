@@ -44,6 +44,10 @@ module GrpcKit
         false
       end
 
+      def select(timeout = 1)
+        ::IO.select([@io], [@io], [], timeout)
+      end
+
       def flush
         @io.flush
       end

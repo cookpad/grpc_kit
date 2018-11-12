@@ -33,7 +33,7 @@ module GrpcKit
         loop do
           invoke
 
-          if @streams.count == 0
+          if @streams.size == 0
             unless @io.wait_readable
               shutdown
               break
@@ -64,11 +64,13 @@ module GrpcKit
           @drain.call(self)
         end
 
-        if want_read?
+        rs, ws = @io.select
+
+        if !rs.empty? && want_read?
           do_read
         end
 
-        if want_write?
+        if !ws.empty? && want_write?
           send
         end
 
@@ -134,7 +136,7 @@ module GrpcKit
 
       # nghttp2_session_callbacks_set_on_frame_recv_callback
       def on_frame_recv(frame)
-        GrpcKit.logger.debug("on_frame_recv #{frame}")
+        # GrpcKit.logger.debug("on_frame_recv #{frame}") # Too many call
 
         case frame
         when DS9::Frames::Data
@@ -149,9 +151,8 @@ module GrpcKit
             @inflights << stream
           end
         when DS9::Frames::Headers
-          stream = @streams[frame.stream_id]
-
           if frame.end_stream?
+            stream = @streams[frame.stream_id]
             stream.close_remote
           end
         when DS9::Frames::Ping
@@ -171,11 +172,11 @@ module GrpcKit
 
       # nghttp2_session_callbacks_set_on_frame_send_callback
       def on_frame_send(frame)
-        GrpcKit.logger.debug("on_frame_send #{frame}")
+        # GrpcKit.logger.debug("on_frame_send #{frame}") # Too many call
         case frame
         when DS9::Frames::Data, DS9::Frames::Headers
-          stream = @streams[frame.stream_id]
           if frame.end_stream?
+            stream = @streams[frame.stream_id]
             stream.close_local
           end
         end
@@ -203,7 +204,7 @@ module GrpcKit
 
       # nghttp2_session_callbacks_set_on_header_callback
       def on_header(name, value, frame, _flags)
-        GrpcKit.logger.debug("#{name} => #{value}")
+        # GrpcKit.logger.debug("#{name} => #{value}") # Too many call
         stream = @streams[frame.stream_id]
         stream.add_header(name, value)
       end
@@ -215,7 +216,10 @@ module GrpcKit
 
       # nghttp2_session_callbacks_set_on_stream_close_callback
       def on_stream_close(stream_id, error_code)
-        GrpcKit.logger.debug("on_stream_close stream_id=#{stream_id}, error_code=#{error_code}")
+        if error_code != DS9::NO_ERROR
+          GrpcKit.logger.debug("on_stream_close stream_id=#{stream_id}, error_code=#{error_code}")
+        end
+
         stream = @streams.delete(stream_id)
         stream.close if stream
 
