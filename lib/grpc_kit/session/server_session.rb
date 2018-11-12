@@ -216,7 +216,10 @@ module GrpcKit
 
       # nghttp2_session_callbacks_set_on_stream_close_callback
       def on_stream_close(stream_id, error_code)
-        GrpcKit.logger.debug("on_stream_close stream_id=#{stream_id}, error_code=#{error_code}")
+        if error_code != DS9::NO_ERROR
+          GrpcKit.logger.debug("on_stream_close stream_id=#{stream_id}, error_code=#{error_code}")
+        end
+
         stream = @streams.delete(stream_id)
         stream.close if stream
 
