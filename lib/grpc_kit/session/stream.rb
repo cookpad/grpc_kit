@@ -4,6 +4,7 @@ require 'forwardable'
 require 'grpc_kit/session/buffer'
 require 'grpc_kit/session/headers'
 require 'grpc_kit/session/stream_status'
+require 'grpc_kit/session/recv_buffer'
 
 module GrpcKit
   module Session
@@ -22,7 +23,7 @@ module GrpcKit
         @end_read_stream = false
         @headers = GrpcKit::Session::Headers.new
         @pending_send_data = send_data || GrpcKit::Session::Buffer.new
-        @pending_recv_data = recv_data || GrpcKit::Session::Buffer.new
+        @pending_recv_data = recv_data || GrpcKit::Session::RecvBuffer.new
 
         @inflight = false
         @trailer_data = {}
