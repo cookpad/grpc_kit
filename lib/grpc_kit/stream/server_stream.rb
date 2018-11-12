@@ -74,7 +74,7 @@ module GrpcKit
 
       def send_status(data: nil, status: GrpcKit::StatusCodes::OK, msg: nil, metadata: {})
         t = build_trailers(status, msg, metadata)
-        @transport.write_data(data) if data
+        @transport.write_data(data, last: true) if data
 
         @transport.end_write
         if @started

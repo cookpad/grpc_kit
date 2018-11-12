@@ -25,7 +25,7 @@ module GrpcKit
 
       def write_data(buf, last: false)
         @stream.write_send_data(pack(buf), last: last)
-        send_data
+        send_data(last: last)
       end
 
       def read_data(last: false)
@@ -34,7 +34,7 @@ module GrpcKit
 
       def write_trailers(trailer)
         @stream.write_trailers_data(trailer)
-        send_data
+        send_data(last: true)
       end
 
       def end_write
@@ -65,12 +65,14 @@ module GrpcKit
         end
       end
 
-      def send_data
+      def send_data(last: false)
         if @stream.pending_send_data.need_resume?
           @session.resume_data(@stream.stream_id)
         end
 
-        @session.run_once
+        unless last
+          @session.run_once
+        end
       end
     end
   end
