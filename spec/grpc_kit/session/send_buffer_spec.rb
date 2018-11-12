@@ -6,13 +6,10 @@ RSpec.describe GrpcKit::Session::SendBuffer do
   let(:buffer) { described_class.new }
 
   describe '#write' do
-    let(:b) { +'test' }
-
     it 'writes data to inner buffer' do
-      buffer.write(b)
       buffer.write('abc')
 
-      expect(b).to eq('testabc')
+      expect(buffer.instance_variable_get(:@buffer)).to eq('abc')
     end
 
     context 'when last is true' do
@@ -32,7 +29,7 @@ RSpec.describe GrpcKit::Session::SendBuffer do
 
   describe '#read' do
     it 'read stored data' do
-      buffer.write(+'abcd')
+      buffer.write('abcd')
       expect(buffer.read(10)).to eq('abcd')
     end
 
@@ -42,14 +39,14 @@ RSpec.describe GrpcKit::Session::SendBuffer do
 
     context 'when stored data is nothing' do
       it 'return false' do
-        buffer.write(+'abcd')
+        buffer.write('abcd')
         expect(buffer.read(10)).to eq('abcd')
         expect(buffer.read(10)).to eq(DS9::ERR_DEFERRED)
       end
 
       context 'when end_write is true' do
         it 'return nil' do
-          buffer.write(+'abcd', last: true)
+          buffer.write('abcd', last: true)
           expect(buffer.read(10)).to eq('abcd')
           expect(buffer.read(10)).to eq(nil)
         end

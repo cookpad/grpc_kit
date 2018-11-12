@@ -50,7 +50,7 @@ module GrpcKit
       def recv_data(last: false)
         loop do
           data = @stream.read_recv_data(last: last)
-          return data unless data.empty?
+          return data unless data.nil?
 
           if @stream.close_remote?
             # it do not receive data which we need, it may receive invalid grpc-status

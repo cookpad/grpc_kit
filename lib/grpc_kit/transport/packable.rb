@@ -12,15 +12,9 @@ module GrpcKit
 
       # @params data [String]
       def unpack(data)
-        if data
-          unpacker.feed(data)
-        end
+        unpacker.feed(data) if data
 
-        if unpacker.readable?
-          return unpacker.read
-        end
-
-        nil
+        unpacker.read
       end
 
       def unpacker
@@ -32,27 +26,25 @@ module GrpcKit
         METADATA_SIZE = 5
 
         def initialize
-          @i = 0
-          @data = nil
+          @data = +''.b
         end
 
-        def readable?
-          @data && !@data.empty?
+        def data_exist?
+          !@data.empty?
         end
 
         def feed(data)
-          if @data
-            @data << data
-          else
-            @data = data
-          end
+          @data << data
         end
 
         def read
-          metadata = @data.slice!(0, METADATA_SIZE)
+          return nil if @data.empty?
+
+          d = @data.freeze
+          metadata = d.byteslice(0, METADATA_SIZE)
           c, size = metadata.unpack('CN')
-          # TODO: more efficient code
-          data = @data.slice!(0, size)
+          data = @data.byteslice(METADATA_SIZE, size)
+          @data = @data.byteslice(METADATA_SIZE + size, @data.bytesize)
           [c != 0, size, data]
         end
       end
