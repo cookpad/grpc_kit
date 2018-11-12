@@ -1,10 +1,10 @@
 # frozen_string_literal: false
 
 require 'forwardable'
-require 'grpc_kit/session/buffer'
 require 'grpc_kit/session/headers'
 require 'grpc_kit/session/stream_status'
 require 'grpc_kit/session/recv_buffer'
+require 'grpc_kit/session/send_buffer'
 
 module GrpcKit
   module Session
@@ -22,7 +22,7 @@ module GrpcKit
         @stream_id = stream_id
         @end_read_stream = false
         @headers = GrpcKit::Session::Headers.new
-        @pending_send_data = send_data || GrpcKit::Session::Buffer.new
+        @pending_send_data = send_data || GrpcKit::Session::SendBuffer.new
         @pending_recv_data = recv_data || GrpcKit::Session::RecvBuffer.new
 
         @inflight = false
