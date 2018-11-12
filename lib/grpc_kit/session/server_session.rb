@@ -151,9 +151,8 @@ module GrpcKit
             @inflights << stream
           end
         when DS9::Frames::Headers
-          stream = @streams[frame.stream_id]
-
           if frame.end_stream?
+            stream = @streams[frame.stream_id]
             stream.close_remote
           end
         when DS9::Frames::Ping
@@ -176,8 +175,8 @@ module GrpcKit
         # GrpcKit.logger.debug("on_frame_send #{frame}") # Too many call
         case frame
         when DS9::Frames::Data, DS9::Frames::Headers
-          stream = @streams[frame.stream_id]
           if frame.end_stream?
+            stream = @streams[frame.stream_id]
             stream.close_local
           end
         end
