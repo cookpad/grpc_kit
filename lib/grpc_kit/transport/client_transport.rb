@@ -36,6 +36,16 @@ module GrpcKit
         unpack(recv_data(last: last))
       end
 
+      def read_data_nonblock(last: false)
+        data = nonblock_recv_data(last: last)
+        if data == :wait_readable
+          unpack(nil) # nil is needed read buffered data
+          :wait_readable
+        else
+          unpack(data)
+        end
+      end
+
       def recv_headers
         wait_close
         @stream.headers
@@ -52,6 +62,19 @@ module GrpcKit
 
       def write(stream, buf, last: false)
         stream.write(buf, last: last)
+      end
+
+      def nonblock_recv_data(last: false)
+        data = @stream.read_recv_data(last: last)
+        return data unless data.nil?
+
+        if @stream.close_remote?
+          return nil
+        end
+
+        @session.run_once
+
+        :wait_readable
       end
 
       def recv_data(last: false)

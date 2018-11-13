@@ -73,7 +73,7 @@ ROUTE_CHAT_NOTES = [
   Routeguide::RouteNote.new(message: 'First message', location: Routeguide::Point.new(latitude: 0, longitude: 1)),
   Routeguide::RouteNote.new(message: 'Second message', location: Routeguide::Point.new(latitude: 0, longitude: 2)),
   Routeguide::RouteNote.new(message: 'Third message', location: Routeguide::Point.new(latitude: 0, longitude: 3)),
-  Routeguide::RouteNote.new(message: 'Fifth message', location: Routeguide::Point.new(latitude: 0, longitude: 1)),
+  Routeguide::RouteNote.new(message: 'Fourth message', location: Routeguide::Point.new(latitude: 0, longitude: 1)),
   Routeguide::RouteNote.new(message: 'Fifth message', location: Routeguide::Point.new(latitude: 0, longitude: 2)),
   Routeguide::RouteNote.new(message: 'Sixth message', location: Routeguide::Point.new(latitude: 0, longitude: 3)),
 ].freeze
@@ -83,28 +83,19 @@ def route_chat(stub)
 
   call = stub.route_chat({})
 
-  # t = Thread.new do
-  #   loop do
-  #     begin
-  #       rn = call.recv
-  #     rescue => e
-  #       retry
-  #     end
-  #     $logger.info("Got message #{rn.message} at point point(#{rn.location.latitude}, #{rn.location.longitude})")
-  #   end
-  # end
+  t = Thread.new do
+    loop do
+      rn = call.recv
+      $logger.info("Got message #{rn.message} at point point(#{rn.location.latitude}, #{rn.location.longitude})")
+    end
+  end
 
-  # thread?
   ROUTE_CHAT_NOTES.each do |rcn|
     call.send_msg(rcn)
     sleep 1
-
-    # multiple call...
   end
 
-  puts nil, '<============================================================ OUTPUT START HERE'
   call.close_and_send
-  puts '<============================================================ OUTPUT CLOSE HERE', nil
   t.join
 end
 

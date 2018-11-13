@@ -9,20 +9,44 @@ module GrpcKit
       attr_reader :metadata
       alias outgoing_metadata metadata
 
+      def initialize(*)
+        super
+        @mutex = Mutex.new
+        @send = false
+      end
+
       def send_msg(data, timeout: nil, last: false)
         raise 'No method error' if @restrict
 
-        @stream.send_msg(data, last: last, timeout: timeout, metadata: outgoing_metadata)
+        @mutex.synchronize do
+          @stream.send_msg(data, last: last, timeout: timeout, metadata: outgoing_metadata)
+        end
+
+        @send = true
       end
+
+      class WouldBlock < StandardError; end
 
       def recv(last: false)
         raise 'No method error' if @restrict
 
-        @stream.recv_msg(last: last)
+        sleep 0.1 until @send
+
+        msg = @mutex.synchronize do
+          @stream.recv_msg(last: last, blocking: false)
+        end
+
+        raise WouldBlock if msg == :wait_readable
+
+        msg
+      rescue WouldBlock => _
+        retry
       end
 
       def close_and_send
-        @stream.close_and_send
+        @mutex.synchronize do
+          @stream.close_and_send
+        end
       end
     end
   end
