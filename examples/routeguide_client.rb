@@ -111,9 +111,9 @@ end
 sock = TCPSocket.new(HOST, PORT)
 stub = Routeguide::RouteGuide::Stub.new(sock, **opts)
 
-# get_feature(stub)
-# list_features(stub)
-# record_route(stub, 10)
+get_feature(stub)
+list_features(stub)
+record_route(stub, 10)
 route_chat(stub)
 
 # rubocop:enable Style/GlobalVars
