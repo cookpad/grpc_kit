@@ -44,10 +44,17 @@ module GrpcKit
         loop { yield(do_recv) }
       end
 
-      def recv_msg(last: false)
+      def recv_msg(last: false, blocking: true)
         validate_if_request_start!
 
-        do_recv(last: last)
+        do_recv(last: last, blocking: blocking)
+      end
+
+      def close_and_send
+        validate_if_request_start!
+
+        # send?
+        @transport.close_and_flush
       end
 
       def close_and_recv
@@ -68,8 +75,18 @@ module GrpcKit
         end
       end
 
-      def do_recv(last: false)
-        data = @transport.read_data(last: last)
+      def do_recv(last: false, blocking: true)
+        data =
+          if blocking
+            @transport.read_data(last: last)
+          else
+            v = @transport.read_data_nonblock(last: last)
+            if v == :wait_readable
+              return v
+            end
+
+            v
+          end
 
         if data.nil?
           check_status!

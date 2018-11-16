@@ -32,11 +32,11 @@
 
 ### bidi_streamer
 
-- [ ] recv/send msg
-- [ ] metadata (client)
-- [ ] metadata (server)
-- [ ] interceptor (client)
-- [ ] interceptor (server)
+- [x] recv/send msg
+- [x] metadata (client)
+- [x] metadata (server)
+- [x] interceptor (client)
+- [x] interceptor (server)
 - [ ] deadline (client)
 - [ ] deadline (server)
 

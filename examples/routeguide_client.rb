@@ -49,6 +49,8 @@ def list_features(stub)
 end
 
 def record_route(stub, size)
+  $logger.info('===== record_route =====')
+
   features = File.open(RESOURCE_PATH) do |f|
     JSON.parse(f.read)
   end
@@ -67,6 +69,36 @@ def record_route(stub, size)
   puts "summary: #{resp[0].inspect}"
 end
 
+ROUTE_CHAT_NOTES = [
+  Routeguide::RouteNote.new(message: 'First message', location: Routeguide::Point.new(latitude: 0, longitude: 1)),
+  Routeguide::RouteNote.new(message: 'Second message', location: Routeguide::Point.new(latitude: 0, longitude: 2)),
+  Routeguide::RouteNote.new(message: 'Third message', location: Routeguide::Point.new(latitude: 0, longitude: 3)),
+  Routeguide::RouteNote.new(message: 'Fourth message', location: Routeguide::Point.new(latitude: 0, longitude: 1)),
+  Routeguide::RouteNote.new(message: 'Fifth message', location: Routeguide::Point.new(latitude: 0, longitude: 2)),
+  Routeguide::RouteNote.new(message: 'Sixth message', location: Routeguide::Point.new(latitude: 0, longitude: 3)),
+].freeze
+
+def route_chat(stub)
+  $logger.info('===== route_chat =====')
+
+  call = stub.route_chat({})
+
+  t = Thread.new do
+    loop do
+      rn = call.recv
+      $logger.info("Got message #{rn.message} at point point(#{rn.location.latitude}, #{rn.location.longitude})")
+    end
+  end
+
+  ROUTE_CHAT_NOTES.each do |rcn|
+    call.send_msg(rcn)
+    sleep 1
+  end
+
+  call.close_and_send
+  t.join
+end
+
 opts = {}
 
 if ENV['GRPC_INTERCEPTOR']
@@ -82,5 +114,6 @@ stub = Routeguide::RouteGuide::Stub.new(sock, **opts)
 get_feature(stub)
 list_features(stub)
 record_route(stub, 10)
+route_chat(stub)
 
 # rubocop:enable Style/GlobalVars

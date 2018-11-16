@@ -6,7 +6,7 @@ require 'grpc_kit/protobuffer'
 require 'grpc_kit/interceptors/client_request_response'
 require 'grpc_kit/interceptors/client_client_streamer'
 require 'grpc_kit/interceptors/client_server_streamer'
-# require 'grpc_kit/client_interceptors/bidi_streamer'
+require 'grpc_kit/interceptors/client_bidi_streamer'
 require 'grpc_kit/rpcs/client_request_response'
 require 'grpc_kit/rpcs/client_client_streamer'
 require 'grpc_kit/rpcs/client_server_streamer'
@@ -15,7 +15,7 @@ require 'grpc_kit/rpcs/client_bidi_streamer'
 require 'grpc_kit/interceptors/server_request_response'
 require 'grpc_kit/interceptors/server_client_streamer'
 require 'grpc_kit/interceptors/server_server_streamer'
-# require 'grpc_kit/server_interceptors/bidi_streamer'
+require 'grpc_kit/interceptors/server_bidi_streamer'
 require 'grpc_kit/rpcs/server_request_response'
 require 'grpc_kit/rpcs/server_client_streamer'
 require 'grpc_kit/rpcs/server_server_streamer'
@@ -138,7 +138,7 @@ module GrpcKit
       elsif server_streamer?
         GrpcKit::Interceptors::Server::ServerStreamer
       elsif bidi_streamer?
-        GrpcKit::Interceptors::Server::RequestResponse # TODO
+        GrpcKit::Interceptors::Server::BidiStreamer
       end
     end
 
@@ -150,7 +150,7 @@ module GrpcKit
       elsif server_streamer?
         GrpcKit::Interceptors::Client::ServerStreamer
       elsif bidi_streamer?
-        GrpcKit::Interceptors::Client::RequestResponse # TODO
+        GrpcKit::Interceptors::Client::BidiStreamer
       end
     end
 

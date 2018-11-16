@@ -40,6 +40,7 @@ module GrpcKit
 
     def bidi_streamer(rpc, requests, opts = {})
       GrpcKit.logger.debug('Calling bidi_streamer')
+      do_request(rpc, nil, opts)
     end
 
     private

@@ -17,6 +17,8 @@ class Server < Routeguide::RouteGuide::Service
       features = JSON.parse(f.read)
       @features = Hash[features.map { |x| [x['location'], x['name']] }]
     end
+
+    @route_notes = Hash.new { |h, k| h[k] = [] }
   end
 
   def get_feature(point, ctx)
@@ -68,6 +70,21 @@ class Server < Routeguide::RouteGuide::Service
       distance: distance,
       elapsed_time: Time.now.to_i - start_at,
     )
+  end
+
+  def route_chat(call)
+    loop do
+      rn = call.recv
+      @logger.info("route_note location=#{rn.location.inspect}, message=#{rn.message}")
+      key = "#{rn.location.latitude} #{rn.location.longitude}"
+      saved_msgs = @route_notes[key]
+      @route_notes[key] << rn.message
+
+      saved_msgs.each do |m|
+        n = Routeguide::RouteNote.new(location: rn.location, message: m)
+        call.send_msg(n)
+      end
+    end
   end
 
   private
