@@ -53,6 +53,23 @@ RSpec.describe 'server_streamer' do
     end
   end
 
+  context 'when timeout is set' do
+    let(:call) do
+      lambda do |req, call|
+        expect(req.msg).to eq(request)
+        sleep 2
+        call.send_msg(Hello::Response.new(msg: "message"))
+      end
+    end
+
+    it 'raise DeadlineExceeded' do
+      stub = Hello::Greeter::Stub.new(ServerHelper.connect)
+      stream = stub.hello_server_streamer(Hello::Request.new(msg: request), timeout: 1)
+
+      expect { stream.recv }.to raise_error(GrpcKit::Errors::DeadlineExceeded)
+    end
+  end
+
   context 'when unimplmented method call' do
     it 'raises and unimplmented error' do
       expect(call).not_to receive(:call)

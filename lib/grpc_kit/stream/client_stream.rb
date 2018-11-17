@@ -13,7 +13,8 @@ module GrpcKit
         @config = config
 
         @authority = authority
-        @timeout = timeout&.to_s
+        @timeout = timeout
+        @deadline = timeout&.to_absolute_time
 
         @started = false
       end
@@ -29,6 +30,10 @@ module GrpcKit
         limit_size = @config.max_send_message_size
         if limit_size && buf.bytesize > limit_size
           raise GrpcKit::Errors::ResourceExhausted, "Sending message is too large: send=#{req.bytesize}, max=#{limit_size}"
+        end
+
+        if @deadline && Time.now > @deadline
+          raise GrpcKit::Errors::DeadlineExceeded, @deadline
         end
 
         if @started
@@ -47,11 +52,21 @@ module GrpcKit
       def recv_msg(last: false, blocking: true)
         validate_if_request_start!
 
-        do_recv(last: last, blocking: blocking)
+        ret = do_recv(last: last, blocking: blocking)
+
+        if @deadline && Time.now > @deadline
+          raise GrpcKit::Errors::DeadlineExceeded, @deadline
+        end
+
+        ret
       end
 
       def close_and_send
         validate_if_request_start!
+
+        if @deadline && Time.now > @deadline
+          raise GrpcKit::Errors::DeadlineExceeded, @deadline
+        end
 
         # send?
         @transport.close_and_flush
@@ -62,8 +77,13 @@ module GrpcKit
 
         @transport.close_and_flush
 
+
         data = []
         loop { data.push(do_recv) }
+
+        if @deadline && Time.now > @deadline
+          raise GrpcKit::Errors::DeadlineExceeded, @deadline
+        end
         data
       end
 
@@ -143,7 +163,7 @@ module GrpcKit
           ':scheme' => 'http',
           ':path' => @config.path,
           ':authority' => authority,
-          'grpc-timeout' => timeout,
+          'grpc-timeout' => timeout&.to_s,
           'te' => 'trailers',
           'content-type' => 'application/grpc',
           'user-agent' => "grpc-ruby/#{GrpcKit::VERSION} (grpc_kit)",

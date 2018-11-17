@@ -49,6 +49,21 @@ RSpec.describe 'request_response' do
     end
   end
 
+  context 'when timeout is set' do
+    let(:call) do
+      lambda do |req, _call|
+        expect(req.msg).to eq(request)
+        sleep 1.5
+        Hello::Response.new(msg: response + req.msg)
+      end
+    end
+
+    it 'raise DeadlineExceeded' do
+      stub = Hello::Greeter::Stub.new(ServerHelper.connect)
+      expect { stub.hello_request_response(Hello::Request.new(msg: request), timeout: 1) }.to raise_error(GrpcKit::Errors::DeadlineExceeded)
+    end
+  end
+
   context 'when unimplmented method call' do
     it 'raises and unimplmented error' do
       expect(call).not_to receive(:call)

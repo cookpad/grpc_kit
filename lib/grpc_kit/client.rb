@@ -50,7 +50,7 @@ module GrpcKit
       timeout = (opts[:timeout] && GrpcKit::GrpcTime.new(opts[:timeout])) || @timeout
 
       cs = GrpcKit::Stream::ClientStream.new(t, rpc.config, authority: @authority, timeout: timeout)
-      rpc.invoke(cs, request, opts.merge(timeout: timeout))
+      rpc.invoke(cs, request, timeout: timeout, **opts)
     end
 
     def session

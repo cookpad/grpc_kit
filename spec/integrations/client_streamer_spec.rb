@@ -57,6 +57,42 @@ RSpec.describe 'client_streamer' do
     end
   end
 
+  context 'when timeout is set' do
+    it 'raise DeadlineExceeded' do
+      stub = Hello::Greeter::Stub.new(ServerHelper.connect, timeout: 1)
+      stream = stub.hello_client_streamer({})
+
+      sleep 0.5
+      stream.send_msg(Hello::Request.new(msg: "message 0"))
+      sleep 1
+      expect { stream.send_msg(Hello::Request.new(msg: "message 1")) }.to raise_error(GrpcKit::Errors::DeadlineExceeded)
+    end
+
+    context do
+      let(:call) do
+        lambda do |c|
+          3.times do |i|
+            expect(c.recv.msg).to eq("message #{i}")
+          end
+          sleep 2
+
+          Hello::Response.new(msg: 'response')
+        end
+      end
+
+      it 'raise DeadlineExceeded' do
+        stub = Hello::Greeter::Stub.new(ServerHelper.connect, timeout: 1)
+        stream = stub.hello_client_streamer({})
+
+        3.times do |i|
+          stream.send_msg(Hello::Request.new(msg: "message #{i}"))
+        end
+
+        expect { stream.close_and_recv }.to raise_error(GrpcKit::Errors::DeadlineExceeded)
+      end
+    end
+  end
+
   context 'when unimplmented method call' do
     it 'raises and unimplmented error' do
       expect(call).not_to receive(:call)
