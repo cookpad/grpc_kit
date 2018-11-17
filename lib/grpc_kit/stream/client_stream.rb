@@ -13,12 +13,12 @@ module GrpcKit
         @config = config
 
         @authority = authority
-        @timeout = timeout
+        @timeout = timeout&.to_s
 
         @started = false
       end
 
-      def send_msg(data, metadata: {}, timeout: nil, last: false)
+      def send_msg(data, metadata: {}, last: false)
         buf =
           begin
             @config.protobuf.encode(data)

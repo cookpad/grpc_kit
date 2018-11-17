@@ -9,10 +9,10 @@ module GrpcKit
       attr_reader :metadata
       alias outgoing_metadata metadata
 
-      def send_msg(data, timeout: nil, last: false)
+      def send_msg(data, last: false)
         raise 'No method error' if @restrict
 
-        @stream.send_msg(data, last: last, timeout: timeout, metadata: outgoing_metadata)
+        @stream.send_msg(data, last: last, metadata: outgoing_metadata)
       end
 
       def recv(last: false)

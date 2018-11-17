@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'grpc_kit/rpcs'
-require 'grpc_kit/calls/client_client_streamer'
+ require 'grpc_kit/calls/client_client_streamer'
 
 module GrpcKit
   module Rpcs::Client

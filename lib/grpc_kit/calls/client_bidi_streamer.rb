@@ -15,11 +15,11 @@ module GrpcKit
         @send = false
       end
 
-      def send_msg(data, timeout: nil, last: false)
+      def send_msg(data, last: false)
         raise 'No method error' if @restrict
 
         @mutex.synchronize do
-          @stream.send_msg(data, last: last, timeout: timeout, metadata: outgoing_metadata)
+          @stream.send_msg(data, last: last, metadata: outgoing_metadata)
         end
 
         @send = true
