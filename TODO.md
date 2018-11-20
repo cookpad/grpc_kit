@@ -18,7 +18,7 @@
 - [x] interceptor (client)
 - [x] interceptor (server)
 - [ ] deadline (client)
-- [ ] deadline (server)
+- [x] deadline (server)
 
 ### client streamer
 
@@ -28,7 +28,7 @@
 - [x] interceptor (client)
 - [x] interceptor (server)
 - [ ] deadline (client)
-- [ ] deadline (server)
+- [x] deadline (server)
 
 ### bidi_streamer
 

@@ -47,8 +47,10 @@ module GrpcKit
 
     def do_request(rpc, request, **opts)
       t = GrpcKit::Transport::ClientTransport.new(session)
-      cs = GrpcKit::Stream::ClientStream.new(t, rpc.config, authority: @authority, timeout: @timeout)
-      rpc.invoke(cs, request, opts.merge(timeout: @timeout))
+      timeout = (opts[:timeout] && GrpcKit::GrpcTime.new(opts[:timeout])) || @timeout
+
+      cs = GrpcKit::Stream::ClientStream.new(t, rpc.config, authority: @authority, timeout: timeout)
+      rpc.invoke(cs, request, timeout: timeout, **opts)
     end
 
     def session

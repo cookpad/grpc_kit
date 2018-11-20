@@ -136,7 +136,7 @@ module GrpcKit
 
       # nghttp2_session_callbacks_set_on_frame_recv_callback
       def on_frame_recv(frame)
-        # GrpcKit.logger.debug("on_frame_recv #{frame}") # Too many call
+        GrpcKit.logger.debug("on_frame_recv #{frame}") # Too many call
 
         case frame
         when DS9::Frames::Data
@@ -172,7 +172,7 @@ module GrpcKit
 
       # nghttp2_session_callbacks_set_on_frame_send_callback
       def on_frame_send(frame)
-        # GrpcKit.logger.debug("on_frame_send #{frame}") # Too many call
+        GrpcKit.logger.debug("on_frame_send #{frame}") # Too many call
         case frame
         when DS9::Frames::Data, DS9::Frames::Headers
           if frame.end_stream?
@@ -204,7 +204,7 @@ module GrpcKit
 
       # nghttp2_session_callbacks_set_on_header_callback
       def on_header(name, value, frame, _flags)
-        # GrpcKit.logger.debug("#{name} => #{value}") # Too many call
+        GrpcKit.logger.debug("#{name} => #{value}") # Too many call
         stream = @streams[frame.stream_id]
         stream.add_header(name, value)
       end
