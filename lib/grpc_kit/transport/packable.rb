@@ -3,14 +3,14 @@
 module GrpcKit
   module Transport
     module Packable
-      # @params data [String]
-      # @params compress [Boolean]
+      # @param data [String]
+      # @param compress [Boolean]
       def pack(data, compress = false)
         c = compress ? 1 : 0
         [c, data.bytesize, data].pack('CNa*')
       end
 
-      # @params data [String]
+      # @param data [String]
       def unpack(data)
         unpacker.feed(data) if data
 

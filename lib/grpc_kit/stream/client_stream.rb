@@ -5,9 +5,9 @@ require 'grpc_kit/status_codes'
 module GrpcKit
   module Stream
     class ClientStream
-      # @params transport [GrpcKit::Transport::ClientTransport]
-      # @params config [GrpcKit::MethodConfig]
-      # @params authority [String]
+      # @param transport [GrpcKit::Transport::ClientTransport]
+      # @param config [GrpcKit::MethodConfig]
+      # @param authority [String]
       def initialize(transport, config, authority:, timeout: nil)
         @transport = transport
         @config = config

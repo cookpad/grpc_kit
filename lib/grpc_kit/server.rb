@@ -77,8 +77,8 @@ module GrpcKit
       @mutex.synchronize { @sessions.size }
     end
 
-    # @params path [String]
-    # @params stream [GrpcKit::Streams::ServerStream]
+    # @param path [String]
+    # @param stream [GrpcKit::Streams::ServerStream]
     def dispatch(path, stream)
       rpc = @rpc_descs[path]
       unless rpc

@@ -15,8 +15,8 @@ module GrpcKit
 
       delegate %i[send_event recv_event] => :@io
 
-      # @params io [GrpcKit::Session::IO]
-      # @params dispatcher [GrpcKit::Server]
+      # @param io [GrpcKit::Session::IO]
+      # @param dispatcher [GrpcKit::Server]
       def initialize(io, dispatcher)
         super() # initialize DS9::Session
 

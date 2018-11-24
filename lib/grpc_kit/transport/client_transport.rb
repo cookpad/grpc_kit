@@ -7,7 +7,7 @@ module GrpcKit
     class ClientTransport
       include GrpcKit::Transport::Packable
 
-      # @params session [GrpcKit::Session::ClientSession]
+      # @param session [GrpcKit::Session::ClientSession]
       def initialize(session)
         @session = session
         @stream = nil # set later

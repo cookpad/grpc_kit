@@ -5,7 +5,7 @@ require 'grpc_kit/errors'
 module GrpcKit
   module Stream
     class ServerStream
-      # @params transport [GrpcKit::transports::ServerTransport]
+      # @param transport [GrpcKit::transports::ServerTransport]
       def initialize(transport)
         @transport = transport
         @started = false

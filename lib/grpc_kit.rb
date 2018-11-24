@@ -14,7 +14,7 @@ module GrpcKit
       @logger ||= Logger.new(STDOUT, level: ENV['GRPC_KIT_LOGLEVEL'] || :info)
     end
 
-    # @params level [String] :debug, :info, :warn, :error, :fatal or :unknown
+    # @param level [String] :debug, :info, :warn, :error, :fatal or :unknown
     def self.loglevel=(level)
       logger.level = level
     end

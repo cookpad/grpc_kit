@@ -16,7 +16,7 @@ module GrpcKit
 
       delegate %i[send_event recv_event] => :@io
 
-      # @params io [GrpcKit::Session::IO]
+      # @param io [GrpcKit::Session::IO]
       def initialize(io, opts = {})
         super() # initialize DS9::Session
 
@@ -40,7 +40,7 @@ module GrpcKit
         stream
       end
 
-      # @params stream_id [Integer]
+      # @param stream_id [Integer]
       def start(stream_id)
         stream = @streams.fetch(stream_id)
 
