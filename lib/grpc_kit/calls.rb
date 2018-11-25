@@ -6,11 +6,22 @@ module GrpcKit
       Name = Struct.new(:name, :receiver)
       Reciver = Struct.new(:class)
       Klass = Struct.new(:service_name)
+
+      # @return [GrpcKit::Calls::Call::Name] gRPC method object
       attr_reader :method
+
+      # @return [Symbol] gRPC method name
+      attr_reader :method_name
+
+      # @return [String] gRPC service name
+      attr_reader :service_name
+
+      # @return [Hash<String, String>] gRPC metadata
+      attr_reader :metadata
 
       # @param stream [GrpcKit::Stream::ServerStream|GrpcKit::Stream::ClientStream]
       # @param config [GrpcKit::MethodConfig]
-      # @param metadata [Hash]
+      # @param metadata [Hash<String,String>]
       def initialize(stream:, config:, metadata:, timeout: nil)
         @config = config
         @metadata = metadata
@@ -26,14 +37,17 @@ module GrpcKit
         @restrict = false
       end
 
+      # @return [void]
       def restrict_mode
         @restrict = true
       end
 
+      # @return [void]
       def normal_mode
         @restrict = false
       end
 
+      # @return [Time] deadline of this rpc call
       def deadline
         @deadline ||= @timeout.to_absolute_time
       end

@@ -14,33 +14,46 @@ module GrpcKit
         @stream = stream
       end
 
+      # @param headers [Hash<String, String>]
+      # @return [void]
       def start_response(headers)
         @session.submit_response(@stream.stream_id, headers)
         send_data
       end
 
+      # @param headers [Hash<String, String>]
+      # @return [void]
       def submit_headers(headers)
         @session.submit_headers(@stream.stream_id, headers)
       end
 
+      # @param buf [String]
+      # @param last [Boolean]
+      # @return [void]
       def write_data(buf, last: false)
         @stream.write_send_data(pack(buf), last: last)
         send_data(last: last)
       end
 
+      # @param last [Boolean]
+      # @return [nil,String]
       def read_data(last: false)
         unpack(recv_data(last: last))
       end
 
+      # @param trailer [Hash<String, String>]
+      # @return [void]
       def write_trailers(trailer)
         @stream.write_trailers_data(trailer)
         send_data(last: true)
       end
 
+      # @return [void]
       def end_write
         @stream.end_write
       end
 
+      # @return [Hash<String,String>]
       def recv_headers
         @stream.headers
       end

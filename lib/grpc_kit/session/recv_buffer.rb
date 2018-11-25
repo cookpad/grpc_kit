@@ -8,10 +8,15 @@ module GrpcKit
         @end = false
       end
 
+      # @param data [String]
+      # @return [void]
       def write(data)
         @buffer << data
       end
 
+      # @param size [Integer,nil]
+      # @param last [Boolean]
+      # @return [String,nil]
       def read(size = nil, last: false)
         return nil if @buffer.empty?
 
@@ -29,10 +34,12 @@ module GrpcKit
         end
       end
 
+      # @return [Boolean]
       def end_read?
         @end
       end
 
+      # @return [void]
       def end_read
         @end = true
       end

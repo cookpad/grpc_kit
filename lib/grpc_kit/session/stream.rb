@@ -1,4 +1,4 @@
-# frozen_string_literal: false
+# frozen_string_literal: true
 
 require 'forwardable'
 require 'grpc_kit/session/headers'
@@ -18,6 +18,9 @@ module GrpcKit
       attr_reader :headers, :pending_send_data, :pending_recv_data, :trailer_data, :status
       attr_accessor :inflight, :stream_id
 
+      # @param stream_id [Integer]
+      # @param send_data [GrpcKit::Session::SendBuffer]
+      # @param recv_data [GrpcKit::Session::RecvBuffer]
       def initialize(stream_id:, send_data: nil, recv_data: nil)
         @stream_id = stream_id
         @end_read_stream = false
@@ -31,22 +34,33 @@ module GrpcKit
         @draining = false
       end
 
+      # @return [void]
       def drain
         @draining = true
       end
 
-      def write_trailers_data(tariler)
-        @trailer_data = tariler
+      # @param tarilers [Hash<String,String>]
+      # @return [void]
+      def write_trailers_data(tarilers)
+        @trailer_data = tarilers
       end
 
+      # @param data [String]
+      # @param last [Boolean]
+      # @return [void]
       def write_send_data(data, last: false)
         @pending_send_data.write(data, last: last)
       end
 
+      # @param last [Boolean]
+      # @return [void]
       def read_recv_data(last: false)
         @pending_recv_data.read(last: last)
       end
 
+      # @param name [String]
+      # @param value [String]
+      # @return [void]
       def add_header(name, value)
         @headers.add(name, value)
       end

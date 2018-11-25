@@ -7,6 +7,9 @@ module GrpcKit
     class ClientStreamer < Streaming
       private
 
+      # @param interceptor [GrpcKit::GRPC::ClientInterceptor]
+      # @param call [GrpcKit::Calls::Client::ClientStreamer]
+      # @param metadata [Hash<String,String>]
       def invoke(interceptor, call, metadata)
         # We don't need a `:requests` parameter but,
         # it shuoldn't remove from paramters due to having a compatibility of grpc gem.

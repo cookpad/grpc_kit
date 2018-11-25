@@ -3,6 +3,7 @@
 module GrpcKit
   module GRPC
     module DefaultLogger
+      # @return [Logger]
       def self.logger
         LOGGER
       end

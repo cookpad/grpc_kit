@@ -20,6 +20,7 @@ module GrpcKit
         @metadata = {}
       end
 
+      # @return [Hash<String,String>]
       def metadata
         @metadata =
           if @metadata.empty?
@@ -31,34 +32,44 @@ module GrpcKit
           end
       end
 
+      # @return [String,nil]
       def path
         @opts[':path']
       end
 
+      # @return [String,nil]
       def grpc_status
         @opts['grpc-status']
       end
 
+      # @return [String,nil]
       def grpc_encoding
         @opts['grpc-encoding']
       end
 
+      # @return [String,nil]
       def content_type
         @opts['content-type']
       end
 
+      # @return [String,nil]
       def status_message
         @opts['grpc-message']
       end
 
+      # @return [Time,nil]
       def timeout
         @timeout ||= @opts['grpc-timeout'] && GrpcTime.new(@opts['grpc-timeout'])
       end
 
+      # @return [String,nil]
       def http_status
         @opts[':status']
       end
 
+      # @param key [String]
+      # @param val [String]
+      # @return [void]
       def add(key, val)
         @opts[key] = val
       end

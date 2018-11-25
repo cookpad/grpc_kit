@@ -4,10 +4,12 @@ module GrpcKit
   module Interceptors
     module Client
       class Streaming
+        # @param interceptors [Array<GrpcKit::GRPC::ClientInterceptor>]
         def initialize(interceptors)
           @interceptors = interceptors
         end
 
+        # @param metadata [Hash<String,String>]
         def intercept(call, metadata, &block)
           if @interceptors && !@interceptors.empty?
             do_intercept(@interceptors.dup, call, metadata, &block)
@@ -35,6 +37,7 @@ module GrpcKit
 
     module Server
       class Streaming
+        # @param interceptors [Array<GrpcKit::GRPC::ServerInterceptor>]
         def initialize(interceptors)
           @interceptors = interceptors
         end

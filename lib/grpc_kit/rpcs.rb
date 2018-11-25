@@ -7,8 +7,10 @@ require 'grpc_kit/status_codes'
 module GrpcKit
   module Rpcs
     class ClientRpc
+      # @return [GrpcKit::MethodConfig]
       attr_reader :config
 
+      # @param config [GrpcKit::MethodConfig]
       def initialize(config)
         @config = config
       end
@@ -17,6 +19,8 @@ module GrpcKit
     end
 
     class ServerRpc
+      # @param handler [GrpcKit::GRPC::GenericService]
+      # @param config [GrpcKit::MethodConfig]
       def initialize(handler, config)
         @handler = handler
         @config = config

@@ -5,6 +5,7 @@ require 'grpc_kit/session/server_session'
 
 module GrpcKit
   class Server
+    # @param interceptors [Array<GrpcKit::GRPC::ServerInterceptor>] list of interceptors
     def initialize(interceptors: [])
       @sessions = []
       @rpc_descs = {}
@@ -16,6 +17,8 @@ module GrpcKit
       GrpcKit.logger.debug("Launched grpc_kit(v#{GrpcKit::VERSION})")
     end
 
+    # @param handler [GrpcKit::GRPC::GenericService] gRPC handler object or class
+    # @return [void]
     def handle(handler)
       klass = handler.is_a?(Class) ? handler : handler.class
       unless klass.include?(GrpcKit::GRPC::GenericService)
@@ -32,6 +35,8 @@ module GrpcKit
       end
     end
 
+    # @param conn [TCPSocket]
+    # @return [void]
     def run(conn)
       raise 'Stopping server' if @stopping
 
@@ -41,8 +46,9 @@ module GrpcKit
       end
     end
 
+    # This method is expected to be called in trap context
+    # @return [void]
     def force_shutdown
-      # expected to be called in trap context
       Thread.new do
         @mutex.synchronize do
           GrpcKit.logger.debug('force shutdown')
@@ -52,8 +58,9 @@ module GrpcKit
       end
     end
 
+    # This method is expected to be called in trap context
+    # @return [void]
     def graceful_shutdown
-      # expected to be called in trap context
       Thread.new do
         GrpcKit.logger.debug('graceful shutdown')
         @mutex.synchronize { @sessions.each(&:drain) }
@@ -77,8 +84,9 @@ module GrpcKit
       @mutex.synchronize { @sessions.size }
     end
 
-    # @param path [String]
+    # @param path [String] gRPC method path
     # @param stream [GrpcKit::Streams::ServerStream]
+    # @return [void]
     def dispatch(path, stream)
       rpc = @rpc_descs[path]
       unless rpc

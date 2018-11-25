@@ -12,10 +12,12 @@ module GrpcKit
         # @sent_ping = false
       end
 
+      # @return [void]
       def recv_ping_ack
         @after_one_rtt = true
       end
 
+      # @return [void]
       def call(session)
         if @goaway_sent
         # session.shutdown

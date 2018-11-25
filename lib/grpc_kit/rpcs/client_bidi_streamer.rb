@@ -6,7 +6,12 @@ require 'grpc_kit/calls/client_bidi_streamer'
 module GrpcKit
   module Rpcs::Client
     class BidiStreamer < GrpcKit::Rpcs::ClientRpc
-      def invoke(stream, _request, metadata: {}, timeout: nil)
+      # @param stream [GrpcKit::Stream::ClientStream]
+      # @param _requests [Object] it's for compatibility, no use
+      # @param metadata [Hash<String, String>]
+      # @param timeout [GrpcKit::GrpcTime]
+      # @return [GrpcKit::Calls::Client::BidiStreamer]
+      def invoke(stream, _requests, metadata: {}, timeout: nil)
         call = GrpcKit::Calls::Client::BidiStreamer.new(
           metadata: metadata,
           config: @config,

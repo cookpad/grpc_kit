@@ -5,7 +5,6 @@ require 'grpc_kit/calls'
 module GrpcKit
   module Calls::Server
     class RequestResponse < GrpcKit::Calls::Call
-      attr_reader :deadline, :metadata
       attr_reader :outgoing_initial_metadata, :outgoing_trailing_metadata
       alias incoming_metadata metadata
 
@@ -16,6 +15,9 @@ module GrpcKit
         @outgoing_trailing_metadata = {}
       end
 
+      # @param data [Object] request message
+      # @param last [Boolean]
+      # @return [void]
       def send_msg(data, last: false)
         raise 'No method error' if @restrict
 
@@ -29,6 +31,8 @@ module GrpcKit
         )
       end
 
+      # @param last [Boolean]
+      # @return [Object] response object
       def recv(last: false)
         raise 'No method error' if @restrict
 

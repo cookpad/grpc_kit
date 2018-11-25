@@ -23,6 +23,12 @@ require 'grpc_kit/rpcs/server_bidi_streamer'
 
 module GrpcKit
   class RpcDesc
+    # @param name [Symbol] path name
+    # @param marshal [Class, GrpcKit::GRPC::Stream] marshaling object
+    # @param unmarshal [Class, GrpcKit::GRPC::Stream] unmarshaling object
+    # @param marshal_method [Symbol] method name of marshaling which marshal is called this method
+    # @param unmarshal_method [Symbol] method name of unmarshaling which unmarshal is called this method
+    # @param service_name [String]
     def initialize(name:, marshal:, unmarshal:, marshal_method:, unmarshal_method:, service_name:)
       @name = name
       @marshal = marshal
@@ -32,6 +38,9 @@ module GrpcKit
       @service_name = service_name
     end
 
+    # @param handler [GrpcKit::GRPC::GenericService]
+    # @param interceptors [Array<GrpcKit::GRPC::ServerInterceptor>]
+    # @return [#invoke] Server version of rpc class
     def build_server(handler, interceptors: [])
       inter = interceptors.empty? ? nil : server_interceptor.new(interceptors)
 
@@ -46,6 +55,8 @@ module GrpcKit
       server.new(handler, config)
     end
 
+    # @param interceptors [Array<GrpcKit::GRPC::ClientInterceptor>]
+    # @return [#invoke] Client version of rpc class
     def build_client(interceptors: [])
       inter = interceptors.empty? ? nil : client_interceptor.new(interceptors)
 
@@ -60,26 +71,32 @@ module GrpcKit
       client.new(config)
     end
 
+    # @return [Symbol] Snake case name
     def ruby_style_name
       @ruby_style_name ||= to_underscore(@name).to_sym
     end
 
+    # @return [String] Full name of path name
     def path
       @path ||= "/#{@service_name}/#{@name}"
     end
 
+    # @return [Boolean]
     def request_response?
       !@marshal.is_a?(GrpcKit::GRPC::Stream) && !@unmarshal.is_a?(GrpcKit::GRPC::Stream)
     end
 
+    # @return [Boolean]
     def client_streamer?
       @marshal.is_a?(GrpcKit::GRPC::Stream) && !@unmarshal.is_a?(GrpcKit::GRPC::Stream)
     end
 
+    # @return [Boolean]
     def server_streamer?
       !@marshal.is_a?(GrpcKit::GRPC::Stream) && @unmarshal.is_a?(GrpcKit::GRPC::Stream)
     end
 
+    # @return [Boolean]
     def bidi_streamer?
       @marshal.is_a?(GrpcKit::GRPC::Stream) && @unmarshal.is_a?(GrpcKit::GRPC::Stream)
     end

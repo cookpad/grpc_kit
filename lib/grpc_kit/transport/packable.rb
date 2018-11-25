@@ -5,12 +5,14 @@ module GrpcKit
     module Packable
       # @param data [String]
       # @param compress [Boolean]
+      # @return [String] packed value
       def pack(data, compress = false)
         c = compress ? 1 : 0
         [c, data.bytesize, data].pack('CNa*')
       end
 
       # @param data [String]
+      # @return [String]
       def unpack(data)
         unpacker.feed(data) if data
 
@@ -29,14 +31,18 @@ module GrpcKit
           @data = +''.b
         end
 
+        # @return [Boolean]
         def data_exist?
           !@data.empty?
         end
 
+        # @param data [String]
+        # @return [void]
         def feed(data)
           @data << data
         end
 
+        # @return [nil, Array<Boolean, Integer, String>]
         def read
           return nil if @data.empty?
 

@@ -5,10 +5,12 @@ require 'grpc_kit/interceptors'
 module GrpcKit
   module Interceptors::Server
     class RequestResponse
+      # @param interceptors [Array<GrpcKit::GRPC::ServerInterceptor>]
       def initialize(interceptors)
         @interceptors = interceptors
       end
 
+      # @param call [GrpcKit::Calls::Client::RequestResponse]
       def intercept(request, call, &block)
         if @interceptors && !@interceptors.empty?
           do_intercept(@interceptors.dup, request, call, &block)

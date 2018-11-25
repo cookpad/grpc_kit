@@ -6,6 +6,9 @@ require 'grpc_kit/calls/server_bidi_streamer'
 module GrpcKit
   module Rpcs::Server
     class BidiStreamer < GrpcKit::Rpcs::ServerRpc
+      # @param stream [GrpcKit::Stream::ServerStream]
+      # @param metadata [Hash<String, String>]
+      # @return [void]
       def invoke(stream, metadata: {})
         call = GrpcKit::Calls::Server::BidiStreamer.new(metadata: metadata, config: @config, stream: stream)
 

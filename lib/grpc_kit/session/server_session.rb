@@ -29,6 +29,7 @@ module GrpcKit
         @drain = nil
       end
 
+      # @return [void]
       def start
         loop do
           invoke
@@ -81,10 +82,12 @@ module GrpcKit
         false
       end
 
+      # @return [void]
       def drain
         @drain ||= GrpcKit::Session::DrainController.new
       end
 
+      # @return [void]
       def shutdown
         stop
         @io.close

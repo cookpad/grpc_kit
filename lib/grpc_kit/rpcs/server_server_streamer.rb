@@ -6,6 +6,9 @@ require 'grpc_kit/calls/server_server_streamer'
 module GrpcKit
   module Rpcs::Server
     class ServerStreamer < GrpcKit::Rpcs::ServerRpc
+      # @param stream [GrpcKit::Stream::ServerStream]
+      # @param metadata [Hash<String, String>]
+      # @return [void]
       def invoke(stream, metadata: {})
         call = GrpcKit::Calls::Server::ServerStreamer.new(metadata: metadata, config: @config, stream: stream)
 

@@ -1,4 +1,4 @@
-# frozen_string_literal: false
+# frozen_string_literal: true
 
 module GrpcKit
   module Session
@@ -12,6 +12,7 @@ module GrpcKit
         @status = OPEN
       end
 
+      # @return [void]
       def close_local
         if @status == OPEN
           @status = HALF_CLOSE_LOCAL
@@ -24,6 +25,7 @@ module GrpcKit
         end
       end
 
+      # @return [void]
       def close_remote
         if @status == OPEN
           @status = HALF_CLOSE_REMOTE
@@ -36,18 +38,22 @@ module GrpcKit
         end
       end
 
+      # @return [void]
       def close
         @status = CLOSE
       end
 
+      # @return [Boolean]
       def close_local?
         (@status == HALF_CLOSE_LOCAL) || close?
       end
 
+      # @return [Boolean]
       def close_remote?
         (@status == HALF_CLOSE_REMOTE) || close?
       end
 
+      # @return [Boolean]
       def close?
         @status == CLOSE
       end

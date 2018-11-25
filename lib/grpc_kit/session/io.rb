@@ -13,6 +13,8 @@ module GrpcKit
         @io.close
       end
 
+      # @param length [Integer]
+      # @return [DS9::ERR_WOULDBLOCK, DS9::ERR_EOF, String]
       def recv_event(length)
         data = @io.read_nonblock(length, nil, exception: false)
 
@@ -26,6 +28,8 @@ module GrpcKit
         end
       end
 
+      # @param data [String]
+      # @return [DS9::ERR_WOULDBLOCK, Integer]
       def send_event(data)
         return 0 if data.empty?
 
@@ -37,6 +41,8 @@ module GrpcKit
         end
       end
 
+      # Blocking until io object is readable
+      # @return [void]
       def wait_readable
         ::IO.select([@io], [], [])
         true
@@ -44,10 +50,13 @@ module GrpcKit
         false
       end
 
+      # Blocking until io object is readable or writable
+      # @return [void]
       def select(timeout = 1)
         ::IO.select([@io], [@io], [], timeout)
       end
 
+      # @return [void]
       def flush
         @io.flush
       end

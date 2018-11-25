@@ -8,13 +8,24 @@ require 'grpc_kit/grpc/stream'
 module GrpcKit
   module GRPC
     module Dsl
-      attr_writer :service_name, :marshal_class_method, :unmarshal_class_method
+      # @param value [String]
+      attr_writer :service_name
+
+      # @param value [Symbol]
+      attr_writer :marshal_class_method
+
+      # @param value [Symbol]
+      attr_writer :unmarshal_class_method
 
       def inherited(subclass)
         subclass.rpc_descs.merge!(rpc_descs)
         subclass.service_name = @service_name
       end
 
+      # @param name [Symbol] gRPC method name
+      # @param marshal [Class, GrpcKit::GRPC::Stream] marshaling object
+      # @param unmarshal [Class, GrpcKit::GRPC::Stream] unmarshaling object
+      # @return [void]
       def rpc(name, marshal, unmarshal)
         if rpc_descs.key?(name)
           raise "rpc (#{name}) is already defined"
@@ -43,10 +54,12 @@ module GrpcKit
         end
       end
 
+      # @return [GrpcKit::GRPC::Stream]
       def stream(cls)
         GrpcKit::GRPC::Stream.new(cls)
       end
 
+      # @return [GrpcKit::Client]
       def rpc_stub_class
         rpc_descs_ = {}
         rpc_descs.each_value do |rpc_desc|
@@ -90,6 +103,7 @@ module GrpcKit
         end
       end
 
+      # @return [Hash<String,GrpcKit::RpcDesc>]
       def rpc_descs
         @rpc_descs ||= {}
       end

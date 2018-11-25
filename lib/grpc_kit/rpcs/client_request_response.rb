@@ -6,7 +6,12 @@ require 'grpc_kit/calls/client_request_response'
 module GrpcKit
   module Rpcs::Client
     class RequestResponse < GrpcKit::Rpcs::ClientRpc
-      def invoke(stream, request, timeout: nil, metadata: {})
+      # @param stream [GrpcKit::Stream::ClientStream]
+      # @param request [Object] request message
+      # @param metadata [Hash<String, String>]
+      # @param timeout [GrpcKit::GrpcTime]
+      # @return [Object] response message
+      def invoke(stream, request,  metadata: {}, timeout: nil)
         call = GrpcKit::Calls::Client::RequestResponse.new(
           metadata: metadata,
           config: @config,

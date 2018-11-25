@@ -13,11 +13,16 @@ module GrpcKit
         @stream = nil # set later
       end
 
-      def start_request(data, header, last: false)
-        @stream = @session.send_request(header)
+      # @param data [String]
+      # @param headers [Hash<String, String>]
+      # @param last [Boolean]
+      # @return [void]
+      def start_request(data, headers, last: false)
+        @stream = @session.send_request(headers)
         write_data(data, last: last)
       end
 
+      # @return [void]
       def close_and_flush
         @stream.end_write
         send_data
@@ -27,15 +32,22 @@ module GrpcKit
         @deferred = false
       end
 
+      # @param buf [String]
+      # @param last [Boolean]
+      # @return [void]
       def write_data(buf, last: false)
         write(@stream.pending_send_data, pack(buf), last: last)
         send_data
       end
 
+      # @param last [Boolean]
+      # @return [nil,String]
       def read_data(last: false)
         unpack(recv_data(last: last))
       end
 
+      # @param last [Boolean]
+      # @return [nil,String]
       def read_data_nonblock(last: false)
         data = nonblock_recv_data(last: last)
         if data == :wait_readable
@@ -46,6 +58,7 @@ module GrpcKit
         end
       end
 
+      # @return [Hash<String,String>]
       def recv_headers
         wait_close
         @stream.headers

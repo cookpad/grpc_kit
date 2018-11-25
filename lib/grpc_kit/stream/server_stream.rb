@@ -11,6 +11,7 @@ module GrpcKit
         @started = false
       end
 
+      # @return [void]
       def invoke(rpc)
         rpc.invoke(self, metadata: @transport.recv_headers.metadata)
       rescue GrpcKit::Errors::BadStatus => e
@@ -21,6 +22,13 @@ module GrpcKit
         send_status(status: GrpcKit::StatusCodes::UNKNOWN, msg: e.message, metadata: {})
       end
 
+      # @param data [Object]
+      # @param protobuf [GrpcKit::ProtoBuffer]
+      # @param last [Boolean]
+      # @param limit_size [Integer]
+      # @param initial_metadata [Hash<String,String>]
+      # @param trailing_metadata [Hash<String,String>]
+      # @return [void]
       def send_msg(data, protobuf, last: false, limit_size: nil, initial_metadata: {}, trailing_metadata: {})
         buf =
           begin
@@ -42,6 +50,11 @@ module GrpcKit
         end
       end
 
+      # @raise [StopIteration] when recving message finished
+      # @param protobuf [GrpcKit::ProtoBuffer]
+      # @param last [Boolean]
+      # @param limit_size [Integer]
+      # @return [Object]
       def recv_msg(protobuf, last: false, limit_size: nil)
         data = @transport.read_data(last: last)
 
@@ -68,10 +81,15 @@ module GrpcKit
         end
       end
 
+      # @param protobuf [GrpcKit::ProtoBuffer]
       def each(protobuf)
         loop { yield(recv_msg(protobuf)) }
       end
 
+      # @param status [GrpcKit::StatusCodes::BadStatus, GrpcKit::StatusCodes::OK]
+      # @param msg [String,nil]
+      # @param metadata [Hash<String,String>]
+      # @return [void]
       def send_status(data: nil, status: GrpcKit::StatusCodes::OK, msg: nil, metadata: {})
         t = build_trailers(status, msg, metadata)
         @transport.write_data(data, last: true) if data

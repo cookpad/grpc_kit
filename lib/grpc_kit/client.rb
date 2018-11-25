@@ -1,4 +1,4 @@
-# frozen_string_literal: false
+# frozen_string_literal: true
 
 require 'grpc_kit/grpc_time'
 require 'grpc_kit/session/io'
@@ -8,6 +8,10 @@ require 'grpc_kit/transport/client_transport'
 
 module GrpcKit
   class Client
+    # @param sock [TCPSocket]
+    # @param authority [nil, String]
+    # @param interceptors [Array<GrpcKit::GRPC::ClientInterceptor>] list of interceptors
+    # @param timeout [nil, Integer, String]
     def initialize(sock, authority: nil, interceptors: [], timeout: nil)
       @sock = sock
       @authority =
@@ -23,22 +27,33 @@ module GrpcKit
       build_rpcs(interceptors)
     end
 
+    # @param rpc [GrpcKit::Rpcs::Client::RequestResponse]
+    # @param request [Object]
+    # @param opts [Hash]
     def request_response(rpc, request, opts = {})
       GrpcKit.logger.debug('Calling request_respose')
       do_request(rpc, request, opts)
     end
 
+    # @param rpc [GrpcKit::Rpcs::Client::ClientStreamer]
+    # @param opts [Hash]
     def client_streamer(rpc, opts = {})
       GrpcKit.logger.debug('Calling client_streamer')
       do_request(rpc, nil, opts)
     end
 
+    # @param rpc [GrpcKit::Rpcs::Client::ServerStreamer]
+    # @param request [Object]
+    # @param opts [Hash]
     def server_streamer(rpc, request, opts = {})
       GrpcKit.logger.debug('Calling server_streamer')
       do_request(rpc, request, opts)
     end
 
-    def bidi_streamer(rpc, requests, opts = {})
+    # @param rpc [GrpcKit::Rpcs::Client::ServerStreamer]
+    # @param _requests [Object] it's for compatibility, no use
+    # @param opts [Hash]
+    def bidi_streamer(rpc, _requests, opts = {})
       GrpcKit.logger.debug('Calling bidi_streamer')
       do_request(rpc, nil, opts)
     end

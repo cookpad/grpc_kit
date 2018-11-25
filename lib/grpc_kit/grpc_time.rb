@@ -4,7 +4,7 @@ module GrpcKit
   class GrpcTime
     MAX = 10**9 - 1
 
-    # @param value [String|Integer]
+    # @param value [String,Integer]
     def initialize(value)
       @unit = nil
       @value = nil
@@ -38,10 +38,12 @@ module GrpcKit
       end
     end
 
+    # @return [String]
     def to_s
       "#{@value}#{@unit}"
     end
 
+    # @return [Time]
     def to_absolute_time
       case @unit
       when 'S'

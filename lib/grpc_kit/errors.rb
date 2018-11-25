@@ -6,13 +6,22 @@ module GrpcKit
   module Errors
     # https://github.com/grpc/grpc/blob/23b5b1a5a9c7084c5b64d4998ee15af0f77bd589/doc/statuscodes.md
 
+    # @param code [String] GrpcKit::StatusCodes's value
+    # @param message [String]
+    # @return [GrpcKit::Errors::BadStatus]
     def self.from_status_code(code, message)
       CODES.fetch(code).new(message)
     end
 
     class BadStatus < StandardError
-      attr_reader :code, :reason
+      # @return [String]
+      attr_reader :code
 
+      # @return [String]
+      attr_reader :reason
+
+      # @param code [String] GrpcKit::StatusCodes's value
+      # @param reason [String]
       def initialize(code, reason)
         @code = code
         @reason = reason
@@ -21,32 +30,37 @@ module GrpcKit
     end
 
     class Unknown < BadStatus
-      def initialize(mesage)
-        super(GrpcKit::StatusCodes::UNKNOWN, mesage)
+      # @param message [String]
+      def initialize(message)
+        super(GrpcKit::StatusCodes::UNKNOWN, message)
       end
     end
 
     class DeadlineExceeded < BadStatus
-      def initialize(mesage)
-        super(GrpcKit::StatusCodes::DEADLINE_EXCEEDED, mesage)
+      # @param message [String]
+      def initialize(message)
+        super(GrpcKit::StatusCodes::DEADLINE_EXCEEDED, message)
       end
     end
 
     class Unimplemented < BadStatus
-      def initialize(mesage)
-        super(GrpcKit::StatusCodes::UNIMPLEMENTED, mesage)
+      # @param message [String]
+      def initialize(message)
+        super(GrpcKit::StatusCodes::UNIMPLEMENTED, message)
       end
     end
 
     class ResourceExhausted < BadStatus
-      def initialize(mesage)
-        super(GrpcKit::StatusCodes::RESOURCE_EXHAUSTED, mesage)
+      # @param message [String]
+      def initialize(message)
+        super(GrpcKit::StatusCodes::RESOURCE_EXHAUSTED, message)
       end
     end
 
     class Internal < BadStatus
-      def initialize(mesage)
-        super(GrpcKit::StatusCodes::INTERNAL, mesage)
+      # @param message [String]
+      def initialize(message)
+        super(GrpcKit::StatusCodes::INTERNAL, message)
       end
     end
 

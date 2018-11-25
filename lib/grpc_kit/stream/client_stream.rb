@@ -19,6 +19,10 @@ module GrpcKit
         @started = false
       end
 
+      # @param data [Object]
+      # @param metadata [Hash<String,String>]
+      # @param last [Boolean]
+      # @return [void]
       def send_msg(data, metadata: {}, last: false)
         buf =
           begin
@@ -49,6 +53,10 @@ module GrpcKit
         loop { yield(do_recv) }
       end
 
+      # @raise [StopIteration] when recving message finished
+      # @param last [Boolean]
+      # @param blocking [Boolean]
+      # @return [Object]
       def recv_msg(last: false, blocking: true)
         validate_if_request_start!
 
@@ -72,11 +80,11 @@ module GrpcKit
         @transport.close_and_flush
       end
 
+      # @return [Array<Object>]
       def close_and_recv
         validate_if_request_start!
 
         @transport.close_and_flush
-
 
         data = []
         loop { data.push(do_recv) }
@@ -84,6 +92,7 @@ module GrpcKit
         if @deadline && Time.now > @deadline
           raise GrpcKit::Errors::DeadlineExceeded, @deadline
         end
+
         data
       end
 

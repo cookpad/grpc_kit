@@ -5,8 +5,6 @@ require 'grpc_kit/calls'
 module GrpcKit
   module Calls::Client
     class BidiStreamer < GrpcKit::Calls::Call
-      attr_reader :deadline, :service_name, :method_name
-      attr_reader :metadata
       alias outgoing_metadata metadata
 
       def initialize(*)
@@ -15,6 +13,9 @@ module GrpcKit
         @send = false
       end
 
+      # @param data [Object] request message
+      # @param last [Boolean]
+      # @return [void]
       def send_msg(data, last: false)
         raise 'No method error' if @restrict
 
@@ -27,6 +28,8 @@ module GrpcKit
 
       class WouldBlock < StandardError; end
 
+      # @param last [Boolean]
+      # @return [Object] response object
       def recv(last: false)
         raise 'No method error' if @restrict
 

@@ -17,6 +17,7 @@ module GrpcKit
       delegate %i[send_event recv_event] => :@io
 
       # @param io [GrpcKit::Session::IO]
+      # @param opts [Hash]
       def initialize(io, opts = {})
         super() # initialize DS9::Session
 
@@ -27,6 +28,8 @@ module GrpcKit
         @stop = false
       end
 
+      # @param headers [Hash<String,String>]
+      # @return [void]
       def send_request(headers)
         if @draining
           raise ConnectionClosing, "You can't send new request. becuase this connection will shuting down"
@@ -41,6 +44,7 @@ module GrpcKit
       end
 
       # @param stream_id [Integer]
+      # @return [void]
       def start(stream_id)
         stream = @streams.fetch(stream_id)
 
@@ -56,6 +60,7 @@ module GrpcKit
         shutdown
       end
 
+      # @return [void]
       def run_once
         return if @stop
 
