@@ -19,6 +19,10 @@ module GrpcKit
       def send_msg(data, last: false)
         raise 'No method error' if @restrict
 
+        if @reason
+          raise "Upstream returns an error status: #{@reason}"
+        end
+
         @mutex.synchronize do
           @stream.send_msg(data, last: last, metadata: outgoing_metadata)
         end
@@ -26,8 +30,8 @@ module GrpcKit
         @send = true
       end
 
-      class WouldBlock < StandardError; end
-
+      # This method not is expected to be call in the main thread where #send_msg is called
+      #
       # @param last [Boolean]
       # @return [Object] response object
       def recv(last: false)
@@ -35,15 +39,18 @@ module GrpcKit
 
         sleep 0.1 until @send
 
-        msg = @mutex.synchronize do
-          @stream.recv_msg(last: last, blocking: false)
+        loop do
+          msg = @mutex.synchronize do
+            @stream.recv_msg(last: last, blocking: false)
+          end
+
+          unless msg == :wait_readable
+            return msg
+          end
         end
-
-        raise WouldBlock if msg == :wait_readable
-
-        msg
-      rescue WouldBlock => _
-        retry
+      rescue GrpcKit::Errors::BadStatus => e
+        @reason = e
+        raise e
       end
 
       def close_and_send
