@@ -35,9 +35,8 @@ module GrpcKit
           raise ConnectionClosing, "You can't send new request. becuase this connection will shuting down"
         end
 
-        data = GrpcKit::Session::SendBuffer.new
-        stream_id = submit_request(headers, data).to_i
-        stream = GrpcKit::Session::Stream.new(stream_id: stream_id, send_data: data)
+        stream = GrpcKit::Session::Stream.new(stream_id: 0) # set later
+        stream_id = submit_request(headers, stream.pending_send_data).to_i
         stream.stream_id = stream_id
         @streams[stream_id] = stream
         stream

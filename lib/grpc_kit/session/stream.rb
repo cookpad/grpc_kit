@@ -19,14 +19,12 @@ module GrpcKit
       attr_accessor :inflight, :stream_id
 
       # @param stream_id [Integer]
-      # @param send_data [GrpcKit::Session::SendBuffer]
-      # @param recv_data [GrpcKit::Session::RecvBuffer]
-      def initialize(stream_id:, send_data: nil, recv_data: nil)
+      def initialize(stream_id:)
         @stream_id = stream_id
         @end_read_stream = false
         @headers = GrpcKit::Session::Headers.new
-        @pending_send_data = send_data || GrpcKit::Session::SendBuffer.new
-        @pending_recv_data = recv_data || GrpcKit::Session::RecvBuffer.new
+        @pending_send_data = GrpcKit::Session::SendBuffer.new
+        @pending_recv_data = GrpcKit::Session::RecvBuffer.new
 
         @inflight = false
         @trailer_data = {}

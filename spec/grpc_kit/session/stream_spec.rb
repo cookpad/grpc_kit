@@ -1,10 +1,16 @@
 # frozen_string_literal: true
 
 RSpec.describe GrpcKit::Session::Stream do
-  let(:stream) { described_class.new(stream_id: 1, send_data: send_data, recv_data: recv_data) }
+  let(:stream) { described_class.new(stream_id: 1) }
   let(:send_data) { double(:send_data, 'end_write?': false) }
   let(:recv_data) { double(:recv_data, 'end_read?': false) }
   let(:data) { 'data' }
+
+  before do
+    allow(GrpcKit::Session::SendBuffer).to receive(:new).and_return(send_data)
+    allow(GrpcKit::Session::RecvBuffer).to receive(:new).and_return(recv_data)
+  end
+
 
   describe '#write_send_data' do
     it 'call wirte method of @pending_send_data' do
