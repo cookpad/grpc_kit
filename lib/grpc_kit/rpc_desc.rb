@@ -48,7 +48,7 @@ module GrpcKit
         path: path,
         ruby_style_method_name: ruby_style_name,
         protobuf: server_protobuf,
-        service_name: @server_name,
+        service_name: @service_name,
         method_name: @name,
         interceptor: inter,
       )
@@ -64,7 +64,7 @@ module GrpcKit
         path: path,
         ruby_style_method_name: ruby_style_name,
         protobuf: client_protobuf,
-        service_name: @server_name,
+        service_name: @service_name,
         method_name: @name,
         interceptor: inter,
       )
