@@ -4,5 +4,6 @@
 require 'grpc_kit'
 require 'grpc_kit/grpc/generic_service'
 require 'grpc_kit/grpc/interceptor'
+require 'grpc_kit/grpc/logger'
 
 GRPC = GrpcKit::GRPC

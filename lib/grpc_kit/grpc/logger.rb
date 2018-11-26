@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
+require 'logger'
+
 module GrpcKit
   module GRPC
     module DefaultLogger
       # @return [Logger]
-      def self.logger
+      def logger
         LOGGER
       end
 
