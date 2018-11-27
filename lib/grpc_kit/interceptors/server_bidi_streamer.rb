@@ -8,8 +8,8 @@ module GrpcKit
       # @param interceptor [GrpcKit::GRPC::ServerInterceptor]
       # @param call [GrpcKit::Calls::Client::BidiStreamer]
       def invoke(interceptor, call)
-        interceptor.bidi_streamer(call: call, method: call.method) do
-          yield(call)
+        interceptor.bidi_streamer(call: call, method: call.method) do |new_call = nil|
+          yield(new_call || call)
         end
       end
     end

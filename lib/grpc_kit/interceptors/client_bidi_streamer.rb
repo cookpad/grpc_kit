@@ -11,8 +11,8 @@ module GrpcKit
       # @param call [GrpcKit::Calls::Client::BidiStreamer]
       # @param metadata [Hash<String,String>]
       def invoke(interceptor, call, metadata)
-        interceptor.bidi_streamer(requests: nil, call: call, method: call.method, metadata: metadata) do
-          yield(call, metadata)
+        interceptor.bidi_streamer(requests: nil, call: call, method: call.method, metadata: metadata) do |new_call = nil|
+          yield(new_call || call, metadata)
         end
       end
     end

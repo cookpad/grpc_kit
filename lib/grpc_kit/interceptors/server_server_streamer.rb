@@ -10,8 +10,8 @@ module GrpcKit
       def invoke(interceptor, call)
         # We don't need a `:request` parameter but,
         # it shuoldn't remove from paramters due to having a compatibility of grpc gem.
-        interceptor.server_streamer(request: nil, call: call, method: call.method) do
-          yield(call)
+        interceptor.server_streamer(request: nil, call: call, method: call.method) do |new_call = nil|
+          yield(new_call || call)
         end
       end
     end
