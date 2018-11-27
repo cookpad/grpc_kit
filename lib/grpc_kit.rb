@@ -2,6 +2,11 @@
 
 require 'logger'
 
+require 'grpc_kit/grpc/core'
+require 'grpc_kit/grpc/errors'
+require 'grpc_kit/grpc/generic_service'
+require 'grpc_kit/grpc/interceptor'
+require 'grpc_kit/grpc/logger'
 require 'grpc_kit/version'
 require 'grpc_kit/server'
 require 'grpc_kit/client'
