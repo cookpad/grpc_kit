@@ -48,6 +48,8 @@ module GrpcKit
             return msg
           end
         end
+
+        raise StopIteration
       rescue GrpcKit::Errors::BadStatus => e
         @reason = e
         raise e
