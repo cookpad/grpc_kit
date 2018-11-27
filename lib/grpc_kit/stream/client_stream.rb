@@ -143,7 +143,7 @@ module GrpcKit
 
         begin
           @config.protobuf.decode(buf)
-        rescue ArgumentError => e
+        rescue ArgumentError, TypeError => e
           raise GrpcKit::Errors::Internal, "Error while decoding in Client: #{e}"
         end
       end

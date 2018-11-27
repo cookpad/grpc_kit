@@ -33,7 +33,7 @@ module GrpcKit
         buf =
           begin
             protobuf.encode(data)
-          rescue ArgumentError => e
+          rescue ArgumentError, TypeError => e
             raise GrpcKit::Errors::Internal, "Error while encoding in server: #{e}"
           end
 
