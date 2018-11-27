@@ -49,7 +49,9 @@ module GrpcKit
 
       # @return [Time] deadline of this rpc call
       def deadline
-        @deadline ||= @timeout.to_absolute_time
+        return @deadline if instance_variable_defined?(:@deadline)
+
+        @deadline = @timeout && @timeout.to_absolute_time
       end
     end
   end
