@@ -29,10 +29,31 @@ module GrpcKit
       end
     end
 
+    class Ok < BadStatus
+      # @param message [String]
+      def initialize(message)
+        super(GrpcKit::StatusCodes::OK, message)
+      end
+    end
+
+    class Cancelled < BadStatus
+      # @param message [String]
+      def initialize(message)
+        super(GrpcKit::StatusCodes::CANCELLED, message)
+      end
+    end
+
     class Unknown < BadStatus
       # @param message [String]
       def initialize(message)
         super(GrpcKit::StatusCodes::UNKNOWN, message)
+      end
+    end
+
+    class InvalidArgument < BadStatus
+      # @param message [String]
+      def initialize(message)
+        super(GrpcKit::StatusCodes::INVALID_ARGUMENT, message)
       end
     end
 
@@ -43,10 +64,24 @@ module GrpcKit
       end
     end
 
-    class Unimplemented < BadStatus
+    class NotFound < BadStatus
       # @param message [String]
       def initialize(message)
-        super(GrpcKit::StatusCodes::UNIMPLEMENTED, message)
+        super(GrpcKit::StatusCodes::NOT_FOUND, message)
+      end
+    end
+
+    class AlreadyExists < BadStatus
+      # @param message [String]
+      def initialize(message)
+        super(GrpcKit::StatusCodes::ALREADY_EXISTS, message)
+      end
+    end
+
+    class PermissionDenied < BadStatus
+      # @param message [String]
+      def initialize(message)
+        super(GrpcKit::StatusCodes::PERMISSION_DENIED, message)
       end
     end
 
@@ -57,6 +92,34 @@ module GrpcKit
       end
     end
 
+    class FailedPrecondition < BadStatus
+      # @param message [String]
+      def initialize(message)
+        super(GrpcKit::StatusCodes::FAILED_PRECONDITION, message)
+      end
+    end
+
+    class Aborted < BadStatus
+      # @param message [String]
+      def initialize(message)
+        super(GrpcKit::StatusCodes::ABORTED, message)
+      end
+    end
+
+    class OutOfRange < BadStatus
+      # @param message [String]
+      def initialize(message)
+        super(GrpcKit::StatusCodes::OUT_OF_RANGE, message)
+      end
+    end
+
+    class Unimplemented < BadStatus
+      # @param message [String]
+      def initialize(message)
+        super(GrpcKit::StatusCodes::UNIMPLEMENTED, message)
+      end
+    end
+
     class Internal < BadStatus
       # @param message [String]
       def initialize(message)
@@ -64,25 +127,53 @@ module GrpcKit
       end
     end
 
+    class Unavailable < BadStatus
+      # @param message [String]
+      def initialize(message)
+        super(GrpcKit::StatusCodes::UNAVAILABLE, message)
+      end
+    end
+
+    class DataLoss < BadStatus
+      # @param message [String]
+      def initialize(message)
+        super(GrpcKit::StatusCodes::DATA_LOSS, message)
+      end
+    end
+
+    class Unauthenticated < BadStatus
+      # @param message [String]
+      def initialize(message)
+        super(GrpcKit::StatusCodes::UNAUTHENTICATED, message)
+      end
+    end
+
+    class DoNotUse < BadStatus
+      # @param message [String]
+      def initialize(message)
+        super(GrpcKit::StatusCodes::DO_NOT_USE, message)
+      end
+    end
+
     CODES = {
-      # GrpcKit::StatusCode::OK                  => 'OK',
-      # GrpcKit::StatusCode::CANCELLED           => 'CANCELLED',
+      GrpcKit::StatusCodes::OK                  => Ok,
+      GrpcKit::StatusCodes::CANCELLED           => Cancelled,
       GrpcKit::StatusCodes::UNKNOWN             => Unknown,
-      # GrpcKit::StatusCode::INVALID_ARGUMENT    => 'INVALID_ARGUMENT',
+      GrpcKit::StatusCodes::INVALID_ARGUMENT    => InvalidArgument,
       GrpcKit::StatusCodes::DEADLINE_EXCEEDED   => DeadlineExceeded,
-      # GrpcKit::StatusCode::NOT_FOUND           => 'NOT_FOUND',
-      # GrpcKit::StatusCode::ALREADY_EXISTS      => 'ALREADY_EXISTS',
-      # GrpcKit::StatusCode::PERMISSION_DENIED   => 'PERMISSION_DENIED',
+      GrpcKit::StatusCodes::NOT_FOUND           => NotFound,
+      GrpcKit::StatusCodes::ALREADY_EXISTS      => AlreadyExists,
+      GrpcKit::StatusCodes::PERMISSION_DENIED   => PermissionDenied,
       GrpcKit::StatusCodes::RESOURCE_EXHAUSTED  => ResourceExhausted,
-      # GrpcKit::StatusCode::FAILED_PRECONDITION => 'FAILED_PRECONDITION',
-      # GrpcKit::StatusCode::ABORTED             => 'ABORTED',
-      # GrpcKit::StatusCode::OUT_OF_RANGE        => 'OUT_OF_RANGE',
+      GrpcKit::StatusCodes::FAILED_PRECONDITION => FailedPrecondition,
+      GrpcKit::StatusCodes::ABORTED             => Aborted,
+      GrpcKit::StatusCodes::OUT_OF_RANGE        => OutOfRange,
       GrpcKit::StatusCodes::UNIMPLEMENTED       => Unimplemented,
       GrpcKit::StatusCodes::INTERNAL            => Internal,
-      # GrpcKit::StatusCode::UNAVAILABLE         => 'UNAVAILABLE',
-      # GrpcKit::StatusCode::DATA_LOSS           => 'DATA_LOSS',
-      # GrpcKit::StatusCode::UNAUTHENTICATED     => 'UNAUTHENTICATED',
-      # GrpcKit::StatusCode::DO_NOT_USE          => 'DO_NOT_USE',
+      GrpcKit::StatusCodes::UNAVAILABLE         => Unavailable,
+      GrpcKit::StatusCodes::DATA_LOSS           => DataLoss,
+      GrpcKit::StatusCodes::UNAUTHENTICATED     => Unauthenticated,
+      GrpcKit::StatusCodes::DO_NOT_USE          => DoNotUse,
     }.freeze
   end
 end
