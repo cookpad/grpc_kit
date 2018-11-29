@@ -1,16 +1,11 @@
 # frozen_string_literal: true
 
-require 'logger'
-
 module GrpcKit
   module GRPC
     module DefaultLogger
-      # @return [Logger]
       def logger
-        LOGGER
+        GrpcKit.logger
       end
-
-      LOGGER = Logger.new(STDOUT)
     end
 
     unless methods.include?(:logger)

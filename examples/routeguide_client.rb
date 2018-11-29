@@ -1,23 +1,18 @@
 # frozen_string_literal: true
 
-# rubocop:disable Style/GlobalVars
-
 $LOAD_PATH.unshift File.expand_path('./examples/routeguide')
 
 require 'grpc_kit'
 require 'pry'
 require 'json'
-require 'logger'
 require 'routeguide_services_pb'
 
 RESOURCE_PATH = './examples/routeguide/routeguide.json'
 HOST = 'localhost'
 PORT = 50051
 
-$logger = Logger.new(STDOUT)
-
 def get_feature(stub)
-  $logger.info('===== get_feature =====')
+  GRPC.logger.info('===== get_feature =====')
   points = [
     Routeguide::Point.new(latitude:  409_146_138, longitude: -746_188_906),
     Routeguide::Point.new(latitude:  0, longitude: 0)
@@ -26,15 +21,15 @@ def get_feature(stub)
   points.each do |pt|
     feature = stub.get_feature(pt)
     if feature.name == ''
-      $logger.info("Found nothing at #{feature.inspect}")
+      GRPC.logger.info("Found nothing at #{feature.inspect}")
     else
-      $logger.info("Found '#{feature.name}' at #{feature.location.inspect}")
+      GRPC.logger.info("Found '#{feature.name}' at #{feature.location.inspect}")
     end
   end
 end
 
 def list_features(stub)
-  $logger.info('===== list_features =====')
+  GRPC.logger.info('===== list_features =====')
   rect = Routeguide::Rectangle.new(
     lo: Routeguide::Point.new(latitude: 400_000_000, longitude: -750_000_000),
     hi: Routeguide::Point.new(latitude: 420_000_000, longitude: -730_000_000),
@@ -44,12 +39,12 @@ def list_features(stub)
 
   loop do
     r = stream.recv
-    $logger.info("Found #{r.name} at #{r.location.inspect}")
+    GRPC.logger.info("Found #{r.name} at #{r.location.inspect}")
   end
 end
 
 def record_route(stub, size)
-  $logger.info('===== record_route =====')
+  GRPC.logger.info('===== record_route =====')
 
   features = File.open(RESOURCE_PATH) do |f|
     JSON.parse(f.read)
@@ -79,14 +74,14 @@ ROUTE_CHAT_NOTES = [
 ].freeze
 
 def route_chat(stub)
-  $logger.info('===== route_chat =====')
+  GRPC.logger.info('===== route_chat =====')
 
   call = stub.route_chat({})
 
   t = Thread.new do
     loop do
       rn = call.recv
-      $logger.info("Got message #{rn.message} at point point(#{rn.location.latitude}, #{rn.location.longitude})")
+      GRPC.logger.info("Got message #{rn.message} at point point(#{rn.location.latitude}, #{rn.location.longitude})")
     end
   end
 
@@ -115,5 +110,3 @@ get_feature(stub)
 list_features(stub)
 record_route(stub, 10)
 route_chat(stub)
-
-# rubocop:enable Style/GlobalVars

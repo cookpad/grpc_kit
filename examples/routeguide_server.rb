@@ -6,13 +6,11 @@ require 'grpc_kit'
 require 'pry'
 require 'json'
 require 'routeguide_services_pb'
-require 'logger'
 
 class Server < Routeguide::RouteGuide::Service
   RESOURCE_PATH = './examples/routeguide/routeguide.json'
 
   def initialize
-    @logger = Logger.new(STDOUT)
     File.open(RESOURCE_PATH) do |f|
       features = JSON.parse(f.read)
       @features = Hash[features.map { |x| [x['location'], x['name']] }]
@@ -23,12 +21,12 @@ class Server < Routeguide::RouteGuide::Service
 
   def get_feature(point, ctx)
     name = @features.fetch({ 'longitude' => point.longitude, 'latitude' => point.latitude }, '')
-    @logger.info("Point longitude=#{point.longitude}, latitude=#{point.latitude}, metadata=#{ctx.metadata}")
+    GRPC.logger.info("Point longitude=#{point.longitude}, latitude=#{point.latitude}, metadata=#{ctx.metadata}")
     Routeguide::Feature.new(location: point, name: name)
   end
 
   def list_features(rect, stream)
-    @logger.info('===== list_features =====')
+    GRPC.logger.info('===== list_features =====')
 
     @features.each do |location, name|
       if name.nil? || name == '' || !in_range(location, rect)
@@ -37,13 +35,13 @@ class Server < Routeguide::RouteGuide::Service
 
       pt = Routeguide::Point.new(location)
       resp = Routeguide::Feature.new(location: pt, name: name)
-      @logger.info(resp)
+      GRPC.logger.info(resp)
       stream.send_msg(resp)
     end
   end
 
   def record_route(stream)
-    @logger.info('===== record_route =====')
+    GRPC.logger.info('===== record_route =====')
     distance = 0
     count = 0
     features = 0
@@ -52,7 +50,7 @@ class Server < Routeguide::RouteGuide::Service
 
     loop do
       point = stream.recv # XXX: raise StopIteration
-      @logger.info(point)
+      GRPC.logger.info(point)
 
       count += 1
       name = @features.fetch({ 'longitude' => point.longitude, 'latitude' => point.latitude }, '')
@@ -75,7 +73,7 @@ class Server < Routeguide::RouteGuide::Service
   def route_chat(call)
     loop do
       rn = call.recv
-      @logger.info("route_note location=#{rn.location.inspect}, message=#{rn.message}")
+      GRPC.logger.info("route_note location=#{rn.location.inspect}, message=#{rn.message}")
       key = "#{rn.location.latitude} #{rn.location.longitude}"
       saved_msgs = @route_notes[key]
       @route_notes[key] << rn.message
@@ -117,6 +115,7 @@ class Server < Routeguide::RouteGuide::Service
 end
 
 sock = TCPServer.new(50051)
+GrpcKit.logger = Logger.new('hoge', level: :debug)
 
 opts = {}
 
