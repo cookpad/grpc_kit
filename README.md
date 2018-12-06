@@ -53,10 +53,6 @@ message = stub.say_hello(Helloworld::HelloRequest.new(name: 'your name')).messag
 puts message
 ```
 
-## Requirements
-
-* [nghttp2](https://nghttp2.org/)
-
 ## Development
 
 ```

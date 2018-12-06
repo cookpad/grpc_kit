@@ -1,43 +1,13 @@
 language: ruby
 cache:
  - bundler
- - apt
 dist: trusty
-sudo: required
-compiler:
-  - clang
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    packages:
-    - g++-7
-    - autoconf
-    - automake
-    - autotools-dev
-    - libtool
-    - pkg-config
-    - zlib1g-dev
-    - libcunit1-dev
-    - libssl-dev
-    - libxml2-dev
-    - libev-dev
-    - libevent-dev
-    - libjansson-dev
-    - libjemalloc-dev
-    - libc-ares-dev
-    - cmake
-    - cmake-data
 rvm:
   - ruby-head
   - 2.5.3
   - 2.4.5
 before_install:
-  - bin/nghttp2
-  - export LD_LIBRARY_PATH=$HOME/lib:$LD_LIBRARY_PATH
-  - export PKG_CONFIG_PATH=$HOME/lib/pkgconfig:$PKG_CONFIG_PATH
-  - gem install bundler -v 1.16.0
-
+  - gem install bundler -v 1.17.0
 matrix:
   allow_failures:
     - rvm: ruby-head
