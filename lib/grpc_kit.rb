@@ -23,7 +23,7 @@ module GrpcKit
 
     # @param level [String] :debug, :info, :warn, :error, :fatal or :unknown
     # @return [void]
-    def self.loglevel=(level)
+    def loglevel=(level)
       logger.level = level
     end
   end
