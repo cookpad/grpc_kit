@@ -59,6 +59,10 @@ puts message
 $ bundle install
 ```
 
+## Projects using grpc_kit
+
+* [griffin](https://github.com/ganmacs/griffin) Multi process gRPC server in Ruby
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/ganmacs/grpc_kit.
