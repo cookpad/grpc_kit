@@ -5,6 +5,8 @@ require 'grpc_kit/calls'
 module GrpcKit
   module Calls::Client
     class ServerStreamer < GrpcKit::Calls::Call
+      include Enumerable
+
       alias outgoing_metadata metadata
 
       # @param data [Object] request message
@@ -24,8 +26,11 @@ module GrpcKit
         @stream.recv_msg(last: last)
       end
 
+      # @yieldparam response [Object] each response object of server streaming RPC
       def each
-        # TODO
+        loop do
+          yield(recv)
+        end
       end
     end
   end
