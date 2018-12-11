@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'forwardable'
 require 'grpc_kit/grpc/dsl'
 
 module GrpcKit
@@ -79,6 +80,16 @@ module GrpcKit
       end
 
       # rubocop:enable Lint/UnusedMethodArgument
+    end
+
+    class CallStream
+      extend Forwardable
+      delegate %i[send_msg recv each close_and_send close_and_recv] => :@inner
+
+      # @param inner [GrpcKit::Calls::Call]
+      def initialize(inner)
+        @inner = inner
+      end
     end
   end
 end
