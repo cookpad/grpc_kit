@@ -34,12 +34,6 @@ module GrpcKit
         # for compatible
         klass = Klass.new(@service_name)
         @method ||= Name.new(@method_name, Reciver.new(klass))
-        @restrict = false
-      end
-
-      # @return [void]
-      def restrict_mode
-        @restrict = true
       end
 
       # @return [void]

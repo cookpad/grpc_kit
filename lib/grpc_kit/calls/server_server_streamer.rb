@@ -19,8 +19,6 @@ module GrpcKit
       # @param last [Boolean]
       # @return [void]
       def send_msg(data, last: false)
-        raise 'No method error' if @restrict
-
         @stream.send_msg(
           data,
           @protobuf,
@@ -34,8 +32,6 @@ module GrpcKit
       # @param last [Boolean]
       # @return [Object] response object
       def recv(last: false)
-        raise 'No method error' if @restrict
-
         @stream.recv_msg(@protobuf, last: last, limit_size: @config.max_receive_message_size)
       end
     end

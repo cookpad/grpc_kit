@@ -17,8 +17,6 @@ module GrpcKit
       # @param last [Boolean]
       # @return [void]
       def send_msg(data, last: false)
-        raise 'No method error' if @restrict
-
         if @reason
           raise "Upstream returns an error status: #{@reason}"
         end
@@ -35,8 +33,6 @@ module GrpcKit
       # @param last [Boolean]
       # @return [Object] response object
       def recv(last: false)
-        raise 'No method error' if @restrict
-
         sleep 0.1 until @send
 
         loop do
