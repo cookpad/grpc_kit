@@ -10,9 +10,13 @@ module GrpcKit
       # @param metadata [Hash<String, String>]
       # @return [void]
       def invoke(stream, metadata: {})
-        call = GrpcKit::Calls::Server::RequestResponse.new(metadata: metadata, config: @config, stream: stream)
-        request = call.recv(last: true)
+        call = GrpcKit::Calls::Server::RequestResponse.new(
+          metadata: metadata,
+          config: @config,
+          stream: stream,
+        )
 
+        request = call.recv(last: true)
         resp =
           if @config.interceptor
             @config.interceptor.intercept(request, call) do |_, _|

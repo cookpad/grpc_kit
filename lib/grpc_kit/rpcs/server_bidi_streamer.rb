@@ -10,7 +10,11 @@ module GrpcKit
       # @param metadata [Hash<String, String>]
       # @return [void]
       def invoke(stream, metadata: {})
-        call = GrpcKit::Calls::Server::BidiStreamer.new(metadata: metadata, config: @config, stream: stream)
+        call = GrpcKit::Calls::Server::BidiStreamer.new(
+          metadata: metadata,
+          config: @config,
+          stream: stream,
+        )
 
         if @config.interceptor
           @config.interceptor.intercept(call) do |c|

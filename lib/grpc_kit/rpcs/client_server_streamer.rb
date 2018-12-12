@@ -12,7 +12,12 @@ module GrpcKit
       # @param timeout [GrpcKit::GrpcTime]
       # @return [GrpcKit::Calls::Client::ServerStreamer]
       def invoke(stream, request, metadata: {}, timeout: nil)
-        call = GrpcKit::Calls::Client::ServerStreamer.new(metadata: metadata, config: @config, timeout: timeout, stream: stream)
+        call = GrpcKit::Calls::Client::ServerStreamer.new(
+          metadata: metadata,
+          config: @config,
+          timeout: timeout,
+          stream: stream,
+        )
 
         if @config.interceptor
           @config.interceptor.intercept(call, metadata) do |c, m|
