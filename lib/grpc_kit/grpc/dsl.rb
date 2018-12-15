@@ -67,7 +67,7 @@ module GrpcKit
           rpc_descs_[rpc_desc.ruby_style_name] = rpc_desc
         end
 
-        Class.new(GrpcKit::Client) do
+        Class.new(GrpcKit.base_client_class) do
           def initialize(*)
             @rpcs = {}
             super

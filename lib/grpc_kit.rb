@@ -26,5 +26,17 @@ module GrpcKit
     def loglevel=(level)
       logger.level = level
     end
+
+    def base_client_class
+      @base_client_class || GrpcKit::Client
+    end
+
+    def base_client_class=(value)
+      unless value.ancestors.include?(GrpcKit::Client)
+        raise 'base_client_class must inherit GrpcKit::Client'
+      end
+
+      @base_client_class = value
+    end
   end
 end
