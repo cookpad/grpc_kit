@@ -12,11 +12,12 @@ module GrpcKit
 
       # @param call [GrpcKit::Calls::Client::RequestResponse]
       # @param metadata [Hash<String,String>]
+      # @yieldreturn [Object] Response object server sent
       def intercept(request, call, metadata, &block)
         if @interceptors && !@interceptors.empty?
           do_intercept(@interceptors.dup, request, call, metadata, &block)
         else
-          yield(request, call, metadata)
+          yield
         end
       end
 
@@ -24,13 +25,13 @@ module GrpcKit
 
       def do_intercept(interceptors, request, call, metadata)
         if interceptors.empty?
-          return yield(request, call, metadata)
+          return yield
         end
 
         interceptor = interceptors.pop
         interceptor.request_response(request: request, call: call, method: call.method, metadata: metadata) do
-          do_intercept(interceptors, request, call, metadata) do |r, c, m|
-            yield(r, c, m)
+          do_intercept(interceptors, request, call, metadata) do
+            yield
           end
         end
       end

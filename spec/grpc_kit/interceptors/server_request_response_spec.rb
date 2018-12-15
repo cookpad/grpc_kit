@@ -41,10 +41,10 @@ RSpec.describe GrpcKit::Interceptors::Server::RequestResponse do
     expect(interceptor1).to receive(:request_response).with(request: request, call: call, method: method).once.and_call_original
     expect(interceptor2).to receive(:request_response).with(request: request, call: call, method: method).once.and_call_original
 
-    ret = interceptor.intercept(request, call) do |r, c|
-      [r, c].tap { |rv| expect(rv).to eq([request, call]) }
+    ret = interceptor.intercept(request, call) do
+      'response'
     end
-    expect(ret).to eq([request, call])
+    expect(ret).to eq('response')
     expect(queue).to eq(%i[interceptor2 interceptor1])
   end
 
@@ -55,10 +55,10 @@ RSpec.describe GrpcKit::Interceptors::Server::RequestResponse do
       expect(interceptor1).not_to receive(:request_response)
       expect(interceptor2).not_to receive(:request_response)
 
-      ret = interceptor.intercept(request, call) do |r, c|
-        [r, c].tap { |rv| expect(rv).to eq([request, call]) }
+      ret = interceptor.intercept(request, call) do
+        'response'
       end
-      expect(ret).to eq([request, call])
+      expect(ret).to eq('response')
     end
   end
 end

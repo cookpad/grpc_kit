@@ -19,7 +19,7 @@ module GrpcKit
         request = call.recv(last: true)
         resp =
           if @config.interceptor
-            @config.interceptor.intercept(request, call) do |_, _|
+            @config.interceptor.intercept(request, call) do
               @handler.send(@config.ruby_style_method_name, request, call)
             end
           else
