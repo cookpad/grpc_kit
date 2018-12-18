@@ -9,7 +9,7 @@ module GrpcKit
   module GRPC
     module Dsl
       # @param value [String]
-      attr_writer :service_name
+      attr_accessor :service_name
 
       # @param value [Symbol]
       attr_writer :marshal_class_method
