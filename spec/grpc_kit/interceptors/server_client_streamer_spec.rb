@@ -50,14 +50,11 @@ RSpec.describe GrpcKit::Interceptors::Server::ClientStreamer do
   context 'when given interceptor is empty' do
     let(:interceptors) { [] }
 
-    it "do not call interceptor's client_streamer" do
+    it 'raises an Argument error' do
       expect(interceptor1).not_to receive(:client_streamer)
       expect(interceptor2).not_to receive(:client_streamer)
 
-      ret = interceptor.intercept(call) do |c|
-        [c].tap { |rv| expect(rv).to eq([call]) }
-      end
-      expect(ret).to eq([call])
+      expect { interceptor.intercept(call) {} }.to raise_error(ArgumentError)
     end
   end
 end

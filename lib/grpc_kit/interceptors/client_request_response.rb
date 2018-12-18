@@ -7,18 +7,14 @@ module GrpcKit
     class RequestResponse
       # @param interceptors [Array<GrpcKit::GRPC::ClientInterceptor>]
       def initialize(interceptors)
-        @interceptors = interceptors
+        @registry = GrpcKit::InterceptorRegistry.new(interceptors)
       end
 
       # @param call [GrpcKit::Calls::Client::RequestResponse]
       # @param metadata [Hash<String,String>]
       # @yieldreturn [Object] Response object server sent
       def intercept(request, call, metadata, &block)
-        if @interceptors && !@interceptors.empty?
-          do_intercept(@interceptors.dup, request, call, metadata, &block)
-        else
-          yield
-        end
+        do_intercept(@registry.build, request, call, metadata, &block)
       end
 
       private

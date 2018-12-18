@@ -1,24 +1,21 @@
 # frozen_string_literal: true
 
 require 'grpc_kit/interceptors'
+require 'grpc_kit/interceptor_registory'
 
 module GrpcKit
   module Interceptors::Server
     class RequestResponse
       # @param interceptors [Array<GrpcKit::GRPC::ServerInterceptor>]
       def initialize(interceptors)
-        @interceptors = interceptors
+        @registry = GrpcKit::InterceptorRegistry.new(interceptors)
       end
 
       # @param request [Object] Recevied request objects
       # @param call [GrpcKit::Calls::Client::RequestResponse]
       # @yieldreturn [Object] Response object server sent
       def intercept(request, call, &block)
-        if @interceptors && !@interceptors.empty?
-          do_intercept(@interceptors.dup, request, call, &block)
-        else
-          yield
-        end
+        do_intercept(@registry.build, request, call, &block)
       end
 
       private

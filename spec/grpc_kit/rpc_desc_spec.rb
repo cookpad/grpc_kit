@@ -20,6 +20,7 @@ RSpec.describe GrpcKit::RpcDesc do
   let(:name) { 'GetFeature' }
   let(:service_name) { 'routeguide.RouteGuide' }
   let(:handler) { double(:handler) }
+  let(:interceptor) { Class.new(GrpcKit::GRPC::Interceptor).new }
 
   describe '#build_server' do
     let(:server) { rpc_desc.build_server(handler) }
@@ -34,7 +35,7 @@ RSpec.describe GrpcKit::RpcDesc do
       end
 
       context 'with interceptor' do
-        let(:server) { rpc_desc.build_server(handler, interceptors: [double(:interceptor)]) }
+        let(:server) { rpc_desc.build_server(handler, interceptors: [interceptor]) }
 
         before do
           expect(GrpcKit::MethodConfig).to receive(:build_for_server) do |hash|
@@ -58,7 +59,7 @@ RSpec.describe GrpcKit::RpcDesc do
       end
 
       context 'with interceptor' do
-        let(:server) { rpc_desc.build_server(handler, interceptors: [double(:interceptor)]) }
+        let(:server) { rpc_desc.build_server(handler, interceptors: [interceptor]) }
 
         before do
           expect(GrpcKit::MethodConfig).to receive(:build_for_server) do |hash|
@@ -82,7 +83,7 @@ RSpec.describe GrpcKit::RpcDesc do
       end
 
       context 'with interceptor' do
-        let(:server) { rpc_desc.build_server(handler, interceptors: [double(:interceptor)]) }
+        let(:server) { rpc_desc.build_server(handler, interceptors: [interceptor]) }
 
         before do
           expect(GrpcKit::MethodConfig).to receive(:build_for_server) do |hash|
@@ -99,7 +100,7 @@ RSpec.describe GrpcKit::RpcDesc do
   end
 
   describe '#build_client' do
-    let(:client) { rpc_desc.build_client(interceptors: [double(:interceptor)]) }
+    let(:client) { rpc_desc.build_client(interceptors: [interceptor]) }
 
     context 'when request_response' do
       before do

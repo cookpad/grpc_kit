@@ -51,14 +51,11 @@ RSpec.describe GrpcKit::Interceptors::Server::RequestResponse do
   context 'when given interceptor is empty' do
     let(:interceptors) { [] }
 
-    it "do not call interceptor's request_response" do
+    it 'raises an Argument error' do
       expect(interceptor1).not_to receive(:request_response)
       expect(interceptor2).not_to receive(:request_response)
 
-      ret = interceptor.intercept(request, call) do
-        'response'
-      end
-      expect(ret).to eq('response')
+      expect { interceptor.intercept(call) {} }.to raise_error(ArgumentError)
     end
   end
 end

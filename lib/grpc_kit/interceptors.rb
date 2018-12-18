@@ -1,21 +1,19 @@
 # frozen_string_literal: true
 
+require 'grpc_kit/interceptor_registory'
+
 module GrpcKit
   module Interceptors
     module Client
       class Streaming
         # @param interceptors [Array<GrpcKit::GRPC::ClientInterceptor>]
         def initialize(interceptors)
-          @interceptors = interceptors
+          @registry = GrpcKit::InterceptorRegistry.new(interceptors)
         end
 
         # @param metadata [Hash<String,String>]
         def intercept(call, metadata, &block)
-          if @interceptors && !@interceptors.empty?
-            do_intercept(@interceptors.dup, call, metadata, &block)
-          else
-            yield(call, metadata)
-          end
+          do_intercept(@registry.build, call, metadata, &block)
         end
 
         private
@@ -39,15 +37,11 @@ module GrpcKit
       class Streaming
         # @param interceptors [Array<GrpcKit::GRPC::ServerInterceptor>]
         def initialize(interceptors)
-          @interceptors = interceptors
+          @registry = GrpcKit::InterceptorRegistry.new(interceptors)
         end
 
         def intercept(call, &block)
-          if @interceptors && !@interceptors.empty?
-            do_intercept(@interceptors.dup, call, &block)
-          else
-            yield(call)
-          end
+          do_intercept(@registry.build, call, &block)
         end
 
         private
