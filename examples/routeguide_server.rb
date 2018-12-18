@@ -20,6 +20,7 @@ class Server < Routeguide::RouteGuide::Service
   end
 
   def get_feature(point, ctx)
+    GRPC.logger.info('===== get_feature =====')
     name = @features.fetch({ 'longitude' => point.longitude, 'latitude' => point.latitude }, '')
     GRPC.logger.info("Point longitude=#{point.longitude}, latitude=#{point.latitude}, metadata=#{ctx.metadata}")
     Routeguide::Feature.new(location: point, name: name)
@@ -71,6 +72,7 @@ class Server < Routeguide::RouteGuide::Service
   end
 
   def route_chat(call)
+    GRPC.logger.info('===== record_chat =====')
     loop do
       rn = call.recv
       GRPC.logger.info("route_note location=#{rn.location.inspect}, message=#{rn.message}")
@@ -115,8 +117,6 @@ class Server < Routeguide::RouteGuide::Service
 end
 
 sock = TCPServer.new(50051)
-GrpcKit.logger = Logger.new('hoge', level: :debug)
-
 opts = {}
 
 if ENV['GRPC_INTERCEPTOR']

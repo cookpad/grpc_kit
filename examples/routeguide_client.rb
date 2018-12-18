@@ -55,13 +55,13 @@ def record_route(stub, size)
   size.times do
     location = features.sample['location']
     point = Routeguide::Point.new(latitude: location['latitude'], longitude: location['longitude'])
-    puts "Next point is #{point.inspect}"
+    GRPC.logger.info("Next point is #{point.inspect}")
     stream.send_msg(point)
     sleep(rand(0..1))
   end
 
   resp = stream.close_and_recv
-  puts "summary: #{resp[0].inspect}"
+  GRPC.logger.info("summary: #{resp[0].inspect}")
 end
 
 ROUTE_CHAT_NOTES = [
@@ -81,7 +81,7 @@ def route_chat(stub)
   t = Thread.new do
     loop do
       rn = call.recv
-      GRPC.logger.info("Got message #{rn.message} at point point(#{rn.location.latitude}, #{rn.location.longitude})")
+      GRPC.logger.info("Got message #{rn.message} at point (#{rn.location.latitude}, #{rn.location.longitude})")
     end
   end
 
