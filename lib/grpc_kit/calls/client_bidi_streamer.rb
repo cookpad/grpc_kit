@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
+require 'grpc_kit/call'
 require 'grpc_kit/calls'
 
 module GrpcKit
   module Calls::Client
-    class BidiStreamer < GrpcKit::Calls::Call
+    class BidiStreamer < GrpcKit::Call
       alias outgoing_metadata metadata
 
       def initialize(*)

@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
+require 'grpc_kit/call'
 require 'grpc_kit/calls'
 
 module GrpcKit
   module Calls::Server
-    class RequestResponse < GrpcKit::Calls::Call
+    class RequestResponse < GrpcKit::Call
       attr_reader :outgoing_initial_metadata, :outgoing_trailing_metadata
       alias incoming_metadata metadata
 

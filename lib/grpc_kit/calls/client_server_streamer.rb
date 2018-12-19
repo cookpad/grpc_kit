@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
+require 'grpc_kit/call'
 require 'grpc_kit/calls'
 
 module GrpcKit
   module Calls::Client
-    class ServerStreamer < GrpcKit::Calls::Call
+    class ServerStreamer < GrpcKit::Call
       include Enumerable
 
       alias outgoing_metadata metadata

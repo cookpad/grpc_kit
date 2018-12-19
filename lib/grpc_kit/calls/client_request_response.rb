@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
+require 'grpc_kit/call'
 require 'grpc_kit/calls'
 
 module GrpcKit
   module Calls::Client
-    class RequestResponse < GrpcKit::Calls::Call
+    class RequestResponse < GrpcKit::Call
       alias outgoing_metadata metadata
 
       # @param data [Object] request message
