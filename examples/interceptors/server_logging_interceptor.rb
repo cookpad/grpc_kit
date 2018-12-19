@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'grpc_kit'
+require_relative 'call_stream'
 
 class LoggingInterceptor < GRPC::ServerInterceptor
   def request_response(request: nil, call: nil, method: nil)
@@ -26,18 +27,14 @@ class LoggingInterceptor < GRPC::ServerInterceptor
     yield(LoggingStream.new(call))
   end
 
-  class LoggingStream
-    def initialize(stream)
-      @stream = stream
-    end
-
-    def send_msg(msg, **opt)
+  class LoggingStream < CallStream
+    def send_msg(msg, *)
       GrpcKit.logger.info("logging interceptor send #{msg.inspect}")
-      @stream.send_msg(msg, opt)
+      super
     end
 
-    def recv(**opt)
-      @stream.recv(**opt).tap do |v|
+    def recv(*)
+      super.tap do |v|
         GrpcKit.logger.info("logging interceptor recv #{v.inspect}")
       end
     end
