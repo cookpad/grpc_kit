@@ -73,7 +73,7 @@ RSpec.describe GrpcKit::Stream::ClientStream do
 
     it 'read data until no data' do
       expect(client_stream).to receive(:check_status!).once
-      expect(client_stream.close_and_recv).to eq([data])
+      expect(client_stream.close_and_recv).to eq(data)
     end
   end
 end

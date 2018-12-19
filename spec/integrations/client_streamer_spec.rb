@@ -34,7 +34,7 @@ RSpec.describe 'client_streamer' do
       stream.send_msg(Hello::Request.new(msg: "message #{i}"))
     end
     resp = stream.close_and_recv
-    expect(resp[0].msg).to eq('response')
+    expect(resp.msg).to eq('response')
   end
 
   context 'with interceptor' do
@@ -53,7 +53,7 @@ RSpec.describe 'client_streamer' do
         stream.send_msg(Hello::Request.new(msg: "message #{i}"))
       end
       resp = stream.close_and_recv
-      expect(resp[0].msg).to eq('response')
+      expect(resp.msg).to eq('response')
     end
   end
 
@@ -145,7 +145,7 @@ RSpec.describe 'client_streamer' do
         stream.send_msg(Hello::Request.new(msg: "message #{i}"))
       end
       resp = stream.close_and_recv
-      expect(resp[0].msg).to eq('response')
+      expect(resp.msg).to eq('response')
     end
   end
 end

@@ -61,7 +61,7 @@ def record_route(stub, size)
   end
 
   resp = stream.close_and_recv
-  GRPC.logger.info("summary: #{resp[0].inspect}")
+  GRPC.logger.info("summary: #{resp.inspect}")
 end
 
 ROUTE_CHAT_NOTES = [

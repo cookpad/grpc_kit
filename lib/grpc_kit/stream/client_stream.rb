@@ -80,20 +80,19 @@ module GrpcKit
         @transport.close_and_flush
       end
 
-      # @return [Array<Object>]
+      # @return [Object]
       def close_and_recv
         validate_if_request_start!
 
         @transport.close_and_flush
 
-        data = []
-        loop { data.push(do_recv) }
+        ret = do_recv(last: true)
 
         if @deadline && Time.now > @deadline
           raise GrpcKit::Errors::DeadlineExceeded, @deadline
         end
 
-        data
+        ret
       end
 
       private
