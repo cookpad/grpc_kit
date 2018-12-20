@@ -36,9 +36,7 @@ def list_features(stub)
   )
 
   stream = stub.list_features(rect)
-
-  loop do
-    r = stream.recv
+  stream.each do |r|
     GRPC.logger.info("Found #{r.name} at #{r.location.inspect}")
   end
 end
@@ -60,7 +58,7 @@ def record_route(stub, size)
     sleep(rand(0..1))
   end
 
-  resp = stream.close_and_recv
+  resp = stream.recv
   GRPC.logger.info("summary: #{resp.inspect}")
 end
 
@@ -79,8 +77,7 @@ def route_chat(stub)
   call = stub.route_chat({})
 
   t = Thread.new do
-    loop do
-      rn = call.recv
+    call.each do |rn|
       GRPC.logger.info("Got message #{rn.message} at point (#{rn.location.latitude}, #{rn.location.longitude})")
     end
   end

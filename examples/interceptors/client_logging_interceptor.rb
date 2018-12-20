@@ -28,12 +28,12 @@ class LoggingInterceptor < GRPC::ClientInterceptor
   end
 
   class LoggingStream < CallStream
-    def send_msg(msg, **opts)
+    def send_msg(msg)
       GrpcKit.logger.info("logging interceptor send #{msg.inspect}")
       super
     end
 
-    def recv(*)
+    def recv
       super.tap do |v|
         GrpcKit.logger.info("logging interceptor recv #{v.inspect}")
       end

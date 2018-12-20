@@ -16,16 +16,16 @@ module GrpcKit
           stream: stream,
         )
 
-        request = call.recv(last: true)
+        request = call.recv
         if @config.interceptor
           @config.interceptor.intercept(request, call) do
             resp = @handler.send(@config.ruby_style_method_name, request, call)
-            call.send_msg(resp, last: true)
+            call.send_msg(resp)
             resp
           end
         else
           resp = @handler.send(@config.ruby_style_method_name, request, call)
-          call.send_msg(resp, last: true)
+          call.send_msg(resp)
         end
       end
     end

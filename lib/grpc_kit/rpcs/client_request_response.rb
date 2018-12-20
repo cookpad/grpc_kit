@@ -11,7 +11,7 @@ module GrpcKit
       # @param metadata [Hash<String, String>]
       # @param timeout [GrpcKit::GrpcTime]
       # @return [Object] response message
-      def invoke(stream, request,  metadata: {}, timeout: nil)
+      def invoke(stream, request, metadata: {}, timeout: nil)
         call = GrpcKit::Calls::Client::RequestResponse.new(
           metadata: metadata,
           config: @config,
@@ -22,12 +22,12 @@ module GrpcKit
         Timeout.timeout(timeout&.to_f, GrpcKit::Errors::DeadlineExceeded) do
           if @config.interceptor
             @config.interceptor.intercept(request, call, call.metadata) do
-              call.send_msg(request, last: true)
-              call.recv(last: true)
+              call.send_msg(request)
+              call.recv
             end
           else
-            call.send_msg(request, last: true)
-            call.recv(last: true)
+            call.send_msg(request)
+            call.recv
           end
         end
       end
