@@ -11,7 +11,6 @@ RSpec.describe GrpcKit::Session::Stream do
     allow(GrpcKit::Session::RecvBuffer).to receive(:new).and_return(recv_data)
   end
 
-
   describe '#write_send_data' do
     it 'call wirte method of @pending_send_data' do
       expect(send_data).to receive(:write).with(data, last: false)

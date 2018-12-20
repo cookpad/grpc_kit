@@ -58,7 +58,7 @@ RSpec.describe 'server_streamer' do
       lambda do |req, call|
         expect(req.msg).to eq(request)
         sleep 2
-        call.send_msg(Hello::Response.new(msg: "message"))
+        call.send_msg(Hello::Response.new(msg: 'message'))
       end
     end
 

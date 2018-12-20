@@ -47,7 +47,7 @@ RSpec.describe GrpcKit::GrpcTime do
 
     it do
       expect(described_class.new(1).to_absolute_time.to_i).to eq(now.to_i + 1)
-      expect(described_class.new(-1).to_absolute_time.to_i).to eq(10**9-1)
+      expect(described_class.new(-1).to_absolute_time.to_i).to eq(10**9 - 1)
       expect(described_class.new('1H').to_absolute_time.to_i).to eq(now.to_i + 60 * 60)
       expect(described_class.new('1M').to_absolute_time.to_i).to eq(now.to_i + 60)
       expect(described_class.new('1S').to_absolute_time.to_i).to eq(now.to_i + 1)
@@ -59,7 +59,7 @@ RSpec.describe GrpcKit::GrpcTime do
 
   describe 'to_f' do
     it do
-      expect(described_class.new(-1).to_f).to eq(10**9-1 * 1.0)
+      expect(described_class.new(-1).to_f).to eq(10**9 - 1 * 1.0)
       expect(described_class.new(1).to_f).to eq(1)
       expect(described_class.new('1H').to_f).to eq(60 * 60)
       expect(described_class.new('1M').to_f).to eq(60)

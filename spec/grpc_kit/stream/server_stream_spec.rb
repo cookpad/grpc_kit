@@ -15,7 +15,7 @@ RSpec.describe GrpcKit::Stream::ServerStream do
     )
   end
   let(:protobuf) do
-    double(:protobuf).tap do |pb |
+    double(:protobuf).tap do |pb|
       allow(pb).to receive(:decode) { |v| v }
       allow(pb).to receive(:encode) { |v| v }
     end

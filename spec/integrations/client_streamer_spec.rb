@@ -63,9 +63,9 @@ RSpec.describe 'client_streamer' do
       stream = stub.hello_client_streamer({})
 
       sleep 0.5
-      stream.send_msg(Hello::Request.new(msg: "message 0"))
+      stream.send_msg(Hello::Request.new(msg: 'message 0'))
       sleep 1
-      expect { stream.send_msg(Hello::Request.new(msg: "message 1")) }.to raise_error(GrpcKit::Errors::DeadlineExceeded)
+      expect { stream.send_msg(Hello::Request.new(msg: 'message 1')) }.to raise_error(GrpcKit::Errors::DeadlineExceeded)
     end
 
     context do

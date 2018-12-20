@@ -34,7 +34,7 @@ module GrpcKit
         loop do
           invoke
 
-          if @streams.size == 0
+          if @streams.empty?
             unless @io.wait_readable
               shutdown
               break

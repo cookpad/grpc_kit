@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class TestTransport
   def write_data(d, last: false)
     @write_data ||= ''

@@ -15,7 +15,7 @@ def get_feature(stub)
   GRPC.logger.info('===== get_feature =====')
   points = [
     Routeguide::Point.new(latitude:  409_146_138, longitude: -746_188_906),
-    Routeguide::Point.new(latitude:  0, longitude: 0)
+    Routeguide::Point.new(latitude:  0, longitude: 0),
   ]
 
   points.each do |pt|
