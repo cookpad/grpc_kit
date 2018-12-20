@@ -16,11 +16,6 @@ module GrpcKit
 
       # @return [Object] response object
       def recv
-        @stream.recv_msg
-      end
-
-      # @return [Object] response objects
-      def close_and_recv
         @stream.close_and_recv
       end
     end

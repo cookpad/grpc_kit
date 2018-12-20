@@ -33,7 +33,7 @@ RSpec.describe 'client_streamer' do
     3.times do |i|
       stream.send_msg(Hello::Request.new(msg: "message #{i}"))
     end
-    resp = stream.close_and_recv
+    resp = stream.recv
     expect(resp.msg).to eq('response')
   end
 
@@ -52,7 +52,7 @@ RSpec.describe 'client_streamer' do
       3.times do |i|
         stream.send_msg(Hello::Request.new(msg: "message #{i}"))
       end
-      resp = stream.close_and_recv
+      resp = stream.recv
       expect(resp.msg).to eq('response')
     end
   end
@@ -88,7 +88,7 @@ RSpec.describe 'client_streamer' do
           stream.send_msg(Hello::Request.new(msg: "message #{i}"))
         end
 
-        expect { stream.close_and_recv }.to raise_error(GrpcKit::Errors::DeadlineExceeded)
+        expect { stream.recv }.to raise_error(GrpcKit::Errors::DeadlineExceeded)
       end
     end
   end
@@ -99,7 +99,7 @@ RSpec.describe 'client_streamer' do
       stub = Hello2::Greeter::Stub.new(ServerHelper.connect)
       stream = stub.hello_client_streamer({})
       stream.send_msg(Hello2::Request.new(msg: 'message'))
-      expect { stream.close_and_recv }.to raise_error(GrpcKit::Errors::Unimplemented)
+      expect { stream.recv }.to raise_error(GrpcKit::Errors::Unimplemented)
     end
   end
 
@@ -144,7 +144,7 @@ RSpec.describe 'client_streamer' do
       3.times do |i|
         stream.send_msg(Hello::Request.new(msg: "message #{i}"))
       end
-      resp = stream.close_and_recv
+      resp = stream.recv
       expect(resp.msg).to eq('response')
     end
   end

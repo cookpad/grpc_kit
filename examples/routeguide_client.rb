@@ -60,7 +60,7 @@ def record_route(stub, size)
     sleep(rand(0..1))
   end
 
-  resp = stream.close_and_recv
+  resp = stream.recv
   GRPC.logger.info("summary: #{resp.inspect}")
 end
 
