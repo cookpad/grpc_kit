@@ -15,15 +15,14 @@ module GrpcKit
       end
 
       # @param data [Object] request message
-      # @param last [Boolean]
       # @return [void]
-      def send_msg(data, last: false)
+      def send_msg(data)
         if @reason
           raise "Upstream returns an error status: #{@reason}"
         end
 
         @mutex.synchronize do
-          @stream.send_msg(data, last: last, metadata: outgoing_metadata)
+          @stream.send_msg(data, metadata: outgoing_metadata)
         end
 
         @send = true
@@ -31,14 +30,13 @@ module GrpcKit
 
       # This method not is expected to be call in the main thread where #send_msg is called
       #
-      # @param last [Boolean]
       # @return [Object] response object
-      def recv(last: false)
+      def recv
         sleep 0.1 until @send
 
         loop do
           msg = @mutex.synchronize do
-            @stream.recv_msg(last: last, blocking: false)
+            @stream.recv_msg(blocking: false)
           end
 
           unless msg == :wait_readable

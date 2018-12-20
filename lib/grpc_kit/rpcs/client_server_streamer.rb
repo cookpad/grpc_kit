@@ -21,11 +21,11 @@ module GrpcKit
 
         if @config.interceptor
           @config.interceptor.intercept(call, metadata) do |c, m|
-            c.send_msg(request, last: true)
+            c.send_msg(request)
             c
           end
         else
-          call.send_msg(request, last: true)
+          call.send_msg(request)
           call
         end
       end

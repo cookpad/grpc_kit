@@ -19,11 +19,11 @@ module GrpcKit
         if @config.interceptor
           @config.interceptor.intercept(call) do |c|
             resp = @handler.send(@config.ruby_style_method_name, c)
-            c.send_msg(resp, last: true)
+            c.send_msg(resp)
           end
         else
           resp = @handler.send(@config.ruby_style_method_name, call)
-          call.send_msg(resp, last: true)
+          call.send_msg(resp)
         end
       end
     end

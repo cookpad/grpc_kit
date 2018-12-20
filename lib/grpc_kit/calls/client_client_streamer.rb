@@ -9,16 +9,14 @@ module GrpcKit
       alias outgoing_metadata metadata
 
       # @param data [Object] request message
-      # @param last [Boolean]
       # @return [void]
-      def send_msg(data, last: false)
-        @stream.send_msg(data, last: last, metadata: outgoing_metadata)
+      def send_msg(data)
+        @stream.send_msg(data, metadata: outgoing_metadata)
       end
 
-      # @param last [Boolean]
       # @return [Object] response object
-      def recv(last: false)
-        @stream.recv_msg(last: last)
+      def recv
+        @stream.recv_msg
       end
 
       # @return [Object] response objects
