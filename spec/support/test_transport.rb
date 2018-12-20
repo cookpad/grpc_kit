@@ -2,7 +2,7 @@
 
 class TestTransport
   def write_data(d, last: false)
-    @write_data ||= ''
+    @write_data ||= +''
     @write_data << d
   end
 
