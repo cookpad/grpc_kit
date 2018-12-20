@@ -81,11 +81,6 @@ module GrpcKit
         end
       end
 
-      # @param protobuf [GrpcKit::ProtoBuffer]
-      def each(protobuf)
-        loop { yield(recv_msg(protobuf)) }
-      end
-
       # @param status [GrpcKit::StatusCodes::BadStatus, GrpcKit::StatusCodes::OK]
       # @param msg [String,nil]
       # @param metadata [Hash<String,String>]

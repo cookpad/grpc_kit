@@ -47,12 +47,6 @@ module GrpcKit
         end
       end
 
-      def each
-        validate_if_request_start!
-
-        loop { yield(do_recv) }
-      end
-
       # @raise [StopIteration] when recving message finished
       # @param last [Boolean]
       # @param blocking [Boolean]
