@@ -20,7 +20,7 @@ module GrpcKit
         )
 
         if @config.interceptor
-          @config.interceptor.intercept(call, metadata) { |s| s }
+          @config.interceptor.intercept(call, metadata) { |c| c }
         else
           call
         end
