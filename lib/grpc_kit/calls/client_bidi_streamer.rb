@@ -6,6 +6,8 @@ require 'grpc_kit/calls'
 module GrpcKit
   module Calls::Client
     class BidiStreamer < GrpcKit::Call
+      include Enumerable
+
       alias outgoing_metadata metadata
 
       def initialize(*)
@@ -54,6 +56,11 @@ module GrpcKit
         @mutex.synchronize do
           @stream.close_and_send
         end
+      end
+
+      # @yieldparam response [Object] each response object of bidi streaming RPC
+      def each
+        loop { yield(recv) }
       end
     end
   end

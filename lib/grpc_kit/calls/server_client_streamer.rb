@@ -36,7 +36,7 @@ module GrpcKit
         @stream.recv_msg(@protobuf, limit_size: @config.max_receive_message_size)
       end
 
-      # @yieldparam response [Object] each response object of server streaming RPC
+      # @yieldparam response [Object] each response object of client streaming RPC
       def each
         loop { yield(recv) }
       end

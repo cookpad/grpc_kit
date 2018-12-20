@@ -12,7 +12,7 @@ class CallStream < GrpcKit::Call
     @inner = inner
   end
 
-  def method_missing(name, *args)
-    @inner.public_send(name, *args)
+  def method_missing(name, *args, &block)
+    @inner.public_send(name, *args, &block)
   end
 end

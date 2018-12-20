@@ -49,8 +49,7 @@ class Server < Routeguide::RouteGuide::Service
     start_at = Time.now.to_i
     last = nil
 
-    loop do
-      point = stream.recv # XXX: raise StopIteration
+    stream.each do |point|
       GRPC.logger.info(point)
 
       count += 1
@@ -73,8 +72,7 @@ class Server < Routeguide::RouteGuide::Service
 
   def route_chat(call)
     GRPC.logger.info('===== record_chat =====')
-    loop do
-      rn = call.recv
+    call.each do |rn|
       GRPC.logger.info("route_note location=#{rn.location.inspect}, message=#{rn.message}")
       key = "#{rn.location.latitude} #{rn.location.longitude}"
       saved_msgs = @route_notes[key]

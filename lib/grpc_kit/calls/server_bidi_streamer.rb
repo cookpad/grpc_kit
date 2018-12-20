@@ -6,6 +6,8 @@ require 'grpc_kit/calls'
 module GrpcKit
   module Calls::Server
     class BidiStreamer < GrpcKit::Call
+      include Enumerable
+
       attr_reader :outgoing_initial_metadata, :outgoing_trailing_metadata
       alias incoming_metadata metadata
 
@@ -31,6 +33,11 @@ module GrpcKit
       # @return [Object] response object
       def recv
         @stream.recv_msg(@protobuf, limit_size: @config.max_receive_message_size)
+      end
+
+      # @yieldparam response [Object] each response object of bidi streaming RPC
+      def each
+        loop { yield(recv) }
       end
     end
   end
