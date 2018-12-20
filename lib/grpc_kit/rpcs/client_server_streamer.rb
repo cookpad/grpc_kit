@@ -20,7 +20,7 @@ module GrpcKit
         )
 
         if @config.interceptor
-          @config.interceptor.intercept(call, metadata) do |c, m|
+          @config.interceptor.intercept(call, metadata) do |c|
             c.send_msg(request)
             c
           end
