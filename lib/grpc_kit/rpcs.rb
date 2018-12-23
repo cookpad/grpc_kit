@@ -19,7 +19,7 @@ module GrpcKit
     end
 
     class ServerRpc
-      # @param handler [GrpcKit::GRPC::GenericService]
+      # @param handler [GrpcKit::Grpc::GenericService]
       # @param config [GrpcKit::MethodConfig]
       def initialize(handler, config)
         @handler = handler

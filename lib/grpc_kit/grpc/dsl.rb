@@ -6,7 +6,7 @@ require 'grpc_kit/client'
 require 'grpc_kit/grpc/stream'
 
 module GrpcKit
-  module GRPC
+  module Grpc
     module Dsl
       # @param value [String]
       attr_accessor :service_name
@@ -23,8 +23,8 @@ module GrpcKit
       end
 
       # @param name [Symbol] gRPC method name
-      # @param marshal [Class, GrpcKit::GRPC::Stream] marshaling object
-      # @param unmarshal [Class, GrpcKit::GRPC::Stream] unmarshaling object
+      # @param marshal [Class, GrpcKit::Grpc::Stream] marshaling object
+      # @param unmarshal [Class, GrpcKit::Grpc::Stream] unmarshaling object
       # @return [void]
       def rpc(name, marshal, unmarshal)
         if rpc_descs.key?(name)
@@ -55,9 +55,9 @@ module GrpcKit
         end
       end
 
-      # @return [GrpcKit::GRPC::Stream]
+      # @return [GrpcKit::Grpc::Stream]
       def stream(cls)
-        GrpcKit::GRPC::Stream.new(cls)
+        GrpcKit::Grpc::Stream.new(cls)
       end
 
       # @return [GrpcKit::Client]

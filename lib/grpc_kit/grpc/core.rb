@@ -3,7 +3,7 @@
 require 'grpc_kit/status_codes'
 
 module GrpcKit
-  module GRPC
+  module Grpc
     module Core
       StatusCodes = GrpcKit::StatusCodes
     end

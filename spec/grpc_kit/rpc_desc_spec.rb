@@ -20,7 +20,7 @@ RSpec.describe GrpcKit::RpcDesc do
   let(:name) { 'GetFeature' }
   let(:service_name) { 'routeguide.RouteGuide' }
   let(:handler) { double(:handler) }
-  let(:interceptor) { Class.new(GrpcKit::GRPC::Interceptor).new }
+  let(:interceptor) { Class.new(GrpcKit::Grpc::Interceptor).new }
 
   describe '#build_server' do
     let(:server) { rpc_desc.build_server(handler) }
@@ -48,7 +48,7 @@ RSpec.describe GrpcKit::RpcDesc do
     end
 
     context 'when client_streamer' do
-      let(:marshal) { GrpcKit::GRPC::Stream.new(super()) }
+      let(:marshal) { GrpcKit::Grpc::Stream.new(super()) }
 
       context 'without interceptor' do
         before do
@@ -72,7 +72,7 @@ RSpec.describe GrpcKit::RpcDesc do
     end
 
     context 'when server_streamer' do
-      let(:unmarshal) { GrpcKit::GRPC::Stream.new(super()) }
+      let(:unmarshal) { GrpcKit::Grpc::Stream.new(super()) }
 
       context 'without interceptor' do
         before do
@@ -113,7 +113,7 @@ RSpec.describe GrpcKit::RpcDesc do
     end
 
     context 'when client_streamer' do
-      let(:marshal) { GrpcKit::GRPC::Stream.new(super()) }
+      let(:marshal) { GrpcKit::Grpc::Stream.new(super()) }
 
       before do
         expect(GrpcKit::MethodConfig).to receive(:build_for_client) do |hash|
@@ -125,7 +125,7 @@ RSpec.describe GrpcKit::RpcDesc do
     end
 
     context 'when server_streamer' do
-      let(:unmarshal) { GrpcKit::GRPC::Stream.new(super()) }
+      let(:unmarshal) { GrpcKit::Grpc::Stream.new(super()) }
 
       before do
         expect(GrpcKit::MethodConfig).to receive(:build_for_client) do |hash|
@@ -164,18 +164,18 @@ RSpec.describe GrpcKit::RpcDesc do
     it { expect(rpc_desc.request_response?).to eq(true) }
 
     context 'marshal is stream' do
-      let(:marshal) { GrpcKit::GRPC::Stream.new(super()) }
+      let(:marshal) { GrpcKit::Grpc::Stream.new(super()) }
       it { expect(rpc_desc.request_response?).to eq(false) }
     end
 
     context 'unmarshal is stream' do
-      let(:unmarshal) { GrpcKit::GRPC::Stream.new(super()) }
+      let(:unmarshal) { GrpcKit::Grpc::Stream.new(super()) }
       it { expect(rpc_desc.request_response?).to eq(false) }
     end
 
     context 'both marshal and unmarshal are stream' do
-      let(:marshal) { GrpcKit::GRPC::Stream.new(super()) }
-      let(:unmarshal) { GrpcKit::GRPC::Stream.new(super()) }
+      let(:marshal) { GrpcKit::Grpc::Stream.new(super()) }
+      let(:unmarshal) { GrpcKit::Grpc::Stream.new(super()) }
 
       it { expect(rpc_desc.request_response?).to eq(false) }
     end
@@ -185,18 +185,18 @@ RSpec.describe GrpcKit::RpcDesc do
     it { expect(rpc_desc.client_streamer?).to eq(false) }
 
     context 'marshal is stream' do
-      let(:marshal) { GrpcKit::GRPC::Stream.new(super()) }
+      let(:marshal) { GrpcKit::Grpc::Stream.new(super()) }
       it { expect(rpc_desc.client_streamer?).to eq(true) }
     end
 
     context 'unmarshal is stream' do
-      let(:unmarshal) { GrpcKit::GRPC::Stream.new(super()) }
+      let(:unmarshal) { GrpcKit::Grpc::Stream.new(super()) }
       it { expect(rpc_desc.client_streamer?).to eq(false) }
     end
 
     context 'both marshal and unmarshal are stream' do
-      let(:marshal) { GrpcKit::GRPC::Stream.new(super()) }
-      let(:unmarshal) { GrpcKit::GRPC::Stream.new(super()) }
+      let(:marshal) { GrpcKit::Grpc::Stream.new(super()) }
+      let(:unmarshal) { GrpcKit::Grpc::Stream.new(super()) }
 
       it { expect(rpc_desc.client_streamer?).to eq(false) }
     end
@@ -206,18 +206,18 @@ RSpec.describe GrpcKit::RpcDesc do
     it { expect(rpc_desc.server_streamer?).to eq(false) }
 
     context 'marshal is stream' do
-      let(:marshal) { GrpcKit::GRPC::Stream.new(super()) }
+      let(:marshal) { GrpcKit::Grpc::Stream.new(super()) }
       it { expect(rpc_desc.server_streamer?).to eq(false) }
     end
 
     context 'unmarshal is stream' do
-      let(:unmarshal) { GrpcKit::GRPC::Stream.new(super()) }
+      let(:unmarshal) { GrpcKit::Grpc::Stream.new(super()) }
       it { expect(rpc_desc.server_streamer?).to eq(true) }
     end
 
     context 'both marshal and unmarshal are stream' do
-      let(:marshal) { GrpcKit::GRPC::Stream.new(super()) }
-      let(:unmarshal) { GrpcKit::GRPC::Stream.new(super()) }
+      let(:marshal) { GrpcKit::Grpc::Stream.new(super()) }
+      let(:unmarshal) { GrpcKit::Grpc::Stream.new(super()) }
 
       it { expect(rpc_desc.server_streamer?).to eq(false) }
     end
@@ -227,18 +227,18 @@ RSpec.describe GrpcKit::RpcDesc do
     it { expect(rpc_desc.bidi_streamer?).to eq(false) }
 
     context 'marshal is stream' do
-      let(:marshal) { GrpcKit::GRPC::Stream.new(super()) }
+      let(:marshal) { GrpcKit::Grpc::Stream.new(super()) }
       it { expect(rpc_desc.bidi_streamer?).to eq(false) }
     end
 
     context 'unmarshal is stream' do
-      let(:unmarshal) { GrpcKit::GRPC::Stream.new(super()) }
+      let(:unmarshal) { GrpcKit::Grpc::Stream.new(super()) }
       it { expect(rpc_desc.bidi_streamer?).to eq(false) }
     end
 
     context 'both marshal and unmarshal are stream' do
-      let(:marshal) { GrpcKit::GRPC::Stream.new(super()) }
-      let(:unmarshal) { GrpcKit::GRPC::Stream.new(super()) }
+      let(:marshal) { GrpcKit::Grpc::Stream.new(super()) }
+      let(:unmarshal) { GrpcKit::Grpc::Stream.new(super()) }
 
       it { expect(rpc_desc.bidi_streamer?).to eq(true) }
     end

@@ -5,7 +5,7 @@ require 'grpc_kit/session/server_session'
 
 module GrpcKit
   class Server
-    # @param interceptors [Array<GrpcKit::GRPC::ServerInterceptor>] list of interceptors
+    # @param interceptors [Array<GrpcKit::Grpc::ServerInterceptor>] list of interceptors
     def initialize(interceptors: [])
       @sessions = []
       @rpc_descs = {}
@@ -17,12 +17,12 @@ module GrpcKit
       GrpcKit.logger.debug("Launched grpc_kit(v#{GrpcKit::VERSION})")
     end
 
-    # @param handler [GrpcKit::GRPC::GenericService] gRPC handler object or class
+    # @param handler [GrpcKit::Grpc::GenericService] gRPC handler object or class
     # @return [void]
     def handle(handler)
       klass = handler.is_a?(Class) ? handler : handler.class
-      unless klass.include?(GrpcKit::GRPC::GenericService)
-        raise "#{klass} must include GRPC::GenericService"
+      unless klass.include?(GrpcKit::Grpc::GenericService)
+        raise "#{klass} must include Grpc::GenericService"
       end
 
       klass.rpc_descs.each do |path, rpc_desc|

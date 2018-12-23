@@ -6,7 +6,7 @@ require 'grpc_kit/interceptor_registory'
 module GrpcKit
   module Interceptors::Server
     class RequestResponse
-      # @param interceptors [Array<GrpcKit::GRPC::ServerInterceptor>]
+      # @param interceptors [Array<GrpcKit::Grpc::ServerInterceptor>]
       def initialize(interceptors)
         @registry = GrpcKit::InterceptorRegistry.new(interceptors)
       end

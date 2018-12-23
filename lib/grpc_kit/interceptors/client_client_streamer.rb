@@ -7,7 +7,7 @@ module GrpcKit
     class ClientStreamer < Streaming
       private
 
-      # @param interceptor [GrpcKit::GRPC::ClientInterceptor]
+      # @param interceptor [GrpcKit::Grpc::ClientInterceptor]
       # @param call [GrpcKit::Calls::Client::ClientStreamer]
       # @param metadata [Hash<String,String>]
       def invoke(interceptor, call, metadata)

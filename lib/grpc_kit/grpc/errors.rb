@@ -4,7 +4,7 @@ require 'grpc_kit'
 require 'grpc_kit/errors'
 
 module GrpcKit
-  module GRPC
+  module Grpc
     include GrpcKit::Errors
   end
 end

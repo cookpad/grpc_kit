@@ -10,7 +10,7 @@ module GrpcKit
   class Client
     # @param sock [TCPSocket]
     # @param authority [nil, String]
-    # @param interceptors [Array<GrpcKit::GRPC::ClientInterceptor>] list of interceptors
+    # @param interceptors [Array<GrpcKit::Grpc::ClientInterceptor>] list of interceptors
     # @param timeout [nil, Integer, String]
     def initialize(sock, authority: nil, interceptors: [], timeout: nil)
       @sock = sock

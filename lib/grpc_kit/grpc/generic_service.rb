@@ -3,10 +3,10 @@
 require 'grpc_kit/grpc/dsl'
 
 module GrpcKit
-  module GRPC
+  module Grpc
     module GenericService
       def self.included(obj)
-        obj.extend(GrpcKit::GRPC::Dsl)
+        obj.extend(GrpcKit::Grpc::Dsl)
       end
     end
   end

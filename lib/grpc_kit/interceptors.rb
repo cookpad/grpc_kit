@@ -6,7 +6,7 @@ module GrpcKit
   module Interceptors
     module Client
       class Streaming
-        # @param interceptors [Array<GrpcKit::GRPC::ClientInterceptor>]
+        # @param interceptors [Array<GrpcKit::Grpc::ClientInterceptor>]
         def initialize(interceptors)
           @registry = GrpcKit::InterceptorRegistry.new(interceptors)
         end
@@ -35,7 +35,7 @@ module GrpcKit
 
     module Server
       class Streaming
-        # @param interceptors [Array<GrpcKit::GRPC::ServerInterceptor>]
+        # @param interceptors [Array<GrpcKit::Grpc::ServerInterceptor>]
         def initialize(interceptors)
           @registry = GrpcKit::InterceptorRegistry.new(interceptors)
         end

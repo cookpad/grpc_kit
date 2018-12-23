@@ -7,7 +7,7 @@ module GrpcKit
     class BidiStreamer < Streaming
       private
 
-      # @param interceptor [GrpcKit::GRPC::ClientInterceptor]
+      # @param interceptor [GrpcKit::Grpc::ClientInterceptor]
       # @param call [GrpcKit::Calls::Client::BidiStreamer]
       # @param metadata [Hash<String,String>]
       def invoke(interceptor, call, metadata)

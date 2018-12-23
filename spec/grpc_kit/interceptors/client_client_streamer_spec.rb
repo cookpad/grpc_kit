@@ -12,7 +12,7 @@ RSpec.describe GrpcKit::Interceptors::Client::ClientStreamer do
   let(:queue) { [] }
 
   let(:interceptor1) do
-    Class.new(GrpcKit::GRPC::ClientInterceptor) do
+    Class.new(GrpcKit::Grpc::ClientInterceptor) do
       def initialize(queue)
         @queue = queue
       end
@@ -25,7 +25,7 @@ RSpec.describe GrpcKit::Interceptors::Client::ClientStreamer do
   end
 
   let(:interceptor2) do
-    Class.new(GrpcKit::GRPC::ClientInterceptor) do
+    Class.new(GrpcKit::Grpc::ClientInterceptor) do
       def initialize(queue)
         @queue = queue
       end

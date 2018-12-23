@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module GrpcKit
-  module GRPC
+  module Grpc
     module DefaultLogger
       def logger
         GrpcKit.logger

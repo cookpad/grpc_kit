@@ -4,7 +4,7 @@ require 'grpc_kit/grpc/dsl'
 require 'forwardable'
 
 module GrpcKit
-  module GRPC
+  module Grpc
     class Stream
       extend Forwardable
       delegate %i[encode decode] => :@klass

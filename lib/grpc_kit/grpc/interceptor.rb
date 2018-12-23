@@ -3,7 +3,7 @@
 require 'grpc_kit/grpc/dsl'
 
 module GrpcKit
-  module GRPC
+  module Grpc
     class Interceptor
       def initialize(options = {})
         @options = options

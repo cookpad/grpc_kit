@@ -2,8 +2,8 @@
 
 module GrpcKit
   class Codec
-    # @param marshal [Class, GrpcKit::GRPC::Stream]
-    # @param unmarshal [Class, GrpcKit::GRPC::Stream]
+    # @param marshal [Class, GrpcKit::Grpc::Stream]
+    # @param unmarshal [Class, GrpcKit::Grpc::Stream]
     # @param marshal_method [Symbol]
     # @param unmarshal_method [Symbol]
     def initialize(marshal:, unmarshal:, marshal_method:, unmarshal_method:)

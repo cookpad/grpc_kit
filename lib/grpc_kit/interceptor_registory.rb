@@ -24,11 +24,11 @@ module GrpcKit
       end
 
       invalid_interceptors = @interceptors.reject do |interceptor|
-        interceptor.class.ancestors.include?(GrpcKit::GRPC::Interceptor)
+        interceptor.class.ancestors.include?(GrpcKit::Grpc::Interceptor)
       end
 
       unless invalid_interceptors.empty?
-        raise ArgumentError, "interceptor #{invalid_interceptors} must descend from #{GrpcKit::GRPC::Interceptor}"
+        raise ArgumentError, "interceptor #{invalid_interceptors} must descend from #{GrpcKit::Grpc::Interceptor}"
       end
     end
   end

@@ -5,7 +5,7 @@ require 'grpc_kit/interceptors'
 module GrpcKit
   module Interceptors::Server
     class ServerStreamer < Streaming
-      # @param interceptor [GrpcKit::GRPC::ServerInterceptor]
+      # @param interceptor [GrpcKit::Grpc::ServerInterceptor]
       # @param call [GrpcKit::Calls::Client::ServerStreamer]
       def invoke(interceptor, call)
         # We don't need a `:request` parameter but,
