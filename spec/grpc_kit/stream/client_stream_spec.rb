@@ -11,14 +11,14 @@ RSpec.describe GrpcKit::Stream::ClientStream do
     double(
       :config,
       max_receive_message_size: 1000,
-      protobuf: protobuf,
+      codec: codec,
     )
   end
 
-  let(:protobuf) do
-    pb = double(:protobuf)
-    allow(pb).to receive(:decode) { |v| v }
-    pb
+  let(:codec) do
+    c = double(:codec)
+    allow(c).to receive(:decode) { |v| v }
+    c
   end
 
   describe '#recv_msg' do

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'grpc_kit/method_config'
-require 'grpc_kit/protobuffer'
+require 'grpc_kit/codec'
 
 require 'grpc_kit/interceptors/client_request_response'
 require 'grpc_kit/interceptors/client_client_streamer'
@@ -47,7 +47,7 @@ module GrpcKit
       config = GrpcKit::MethodConfig.build_for_server(
         path: path,
         ruby_style_method_name: ruby_style_name,
-        protobuf: server_protobuf,
+        codec: server_codec,
         service_name: @service_name,
         method_name: @name,
         interceptor: inter,
@@ -63,7 +63,7 @@ module GrpcKit
       config = GrpcKit::MethodConfig.build_for_client(
         path: path,
         ruby_style_method_name: ruby_style_name,
-        protobuf: client_protobuf,
+        codec: client_codec,
         service_name: @service_name,
         method_name: @name,
         interceptor: inter,
@@ -129,21 +129,21 @@ module GrpcKit
         end
     end
 
-    def server_protobuf
-      @server_protobuf ||= ProtoBuffer.new(
-        encoder: @unmarshal,
-        decoder: @marshal,
-        encode_method: @marshal_method,
-        decode_method: @unmarshal_method,
+    def server_codec
+      @server_codec ||= Codec.new(
+        marshal: @unmarshal,
+        unmarshal: @marshal,
+        marshal_method: @marshal_method,
+        unmarshal_method: @unmarshal_method,
       )
     end
 
-    def client_protobuf
-      @client_protobuf ||= ProtoBuffer.new(
-        encoder: @marshal,
-        decoder: @unmarshal,
-        encode_method: @marshal_method,
-        decode_method: @unmarshal_method,
+    def client_codec
+      @client_codec ||= Codec.new(
+        marshal: @marshal,
+        unmarshal: @unmarshal,
+        marshal_method: @marshal_method,
+        unmarshal_method: @unmarshal_method,
       )
     end
 

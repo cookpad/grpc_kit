@@ -23,16 +23,16 @@ module GrpcKit
       end
 
       # @param data [Object]
-      # @param protobuf [GrpcKit::ProtoBuffer]
+      # @param codec [GrpcKit::Codec]
       # @param last [Boolean]
       # @param limit_size [Integer]
       # @param initial_metadata [Hash<String,String>]
       # @param trailing_metadata [Hash<String,String>]
       # @return [void]
-      def send_msg(data, protobuf, last: false, limit_size: nil, initial_metadata: {}, trailing_metadata: {})
+      def send_msg(data, codec, last: false, limit_size: nil, initial_metadata: {}, trailing_metadata: {})
         buf =
           begin
-            protobuf.encode(data)
+            codec.encode(data)
           rescue ArgumentError, TypeError => e
             raise GrpcKit::Errors::Internal, "Error while encoding in server: #{e}"
           end
@@ -51,11 +51,11 @@ module GrpcKit
       end
 
       # @raise [StopIteration] when recving message finished
-      # @param protobuf [GrpcKit::ProtoBuffer]
+      # @param codec [GrpcKit::Codec]
       # @param last [Boolean]
       # @param limit_size [Integer]
       # @return [Object]
-      def recv_msg(protobuf, last: false, limit_size: nil)
+      def recv_msg(codec, last: false, limit_size: nil)
         data = @transport.read_data(last: last)
 
         raise StopIteration if data.nil?
@@ -75,7 +75,7 @@ module GrpcKit
         end
 
         begin
-          protobuf.decode(buf)
+          codec.decode(buf)
         rescue ArgumentError => e
           raise GrpcKit::Errors::Internal, "Error while decoding in server: #{e}"
         end

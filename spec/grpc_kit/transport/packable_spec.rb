@@ -9,7 +9,7 @@ RSpec.describe GrpcKit::Transport::Packable do
     c.new
   end
 
-  let(:data) { 'protobuff data' }
+  let(:data) { 'marshaled data' }
 
   describe '#pack' do
     # Length-Prefixed-Message → Compressed-Flag Message-Length Message

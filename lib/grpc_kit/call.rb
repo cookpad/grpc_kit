@@ -26,7 +26,7 @@ module GrpcKit
       @metadata = metadata
       @method_name = @config.method_name
       @service_name = @config.service_name
-      @protobuf = @config.protobuf
+      @codec = @config.codec
       @timeout = timeout
       @stream = stream
 

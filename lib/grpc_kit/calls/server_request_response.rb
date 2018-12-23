@@ -22,7 +22,7 @@ module GrpcKit
       def send_msg(data)
         @stream.send_msg(
           data,
-          @protobuf,
+          @codec,
           last: true,
           initial_metadata: @outgoing_initial_metadata,
           trailing_metadata: @outgoing_trailing_metadata,
@@ -32,7 +32,7 @@ module GrpcKit
 
       # @return [Object] response object
       def recv
-        @stream.recv_msg(@protobuf, last: true, limit_size: @config.max_receive_message_size)
+        @stream.recv_msg(@codec, last: true, limit_size: @config.max_receive_message_size)
       end
     end
   end

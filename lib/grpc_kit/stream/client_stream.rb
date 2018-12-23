@@ -26,7 +26,7 @@ module GrpcKit
       def send_msg(data, metadata: {}, last: false)
         buf =
           begin
-            @config.protobuf.encode(data)
+            @config.codec.encode(data)
           rescue ArgumentError => e
             raise GrpcKit::Errors::Internal, "Error while encoding in client: #{e}"
           end
@@ -135,7 +135,7 @@ module GrpcKit
         raise StopIteration if buf.nil?
 
         begin
-          @config.protobuf.decode(buf)
+          @config.codec.decode(buf)
         rescue ArgumentError, TypeError => e
           raise GrpcKit::Errors::Internal, "Error while decoding in Client: #{e}"
         end

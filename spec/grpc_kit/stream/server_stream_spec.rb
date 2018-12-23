@@ -14,10 +14,10 @@ RSpec.describe GrpcKit::Stream::ServerStream do
       max_receive_message_size: 1000,
     )
   end
-  let(:protobuf) do
-    double(:protobuf).tap do |pb|
-      allow(pb).to receive(:decode) { |v| v }
-      allow(pb).to receive(:encode) { |v| v }
+  let(:codec) do
+    double(:codec).tap do |c|
+      allow(c).to receive(:decode) { |v| v }
+      allow(c).to receive(:encode) { |v| v }
     end
   end
 
@@ -27,7 +27,7 @@ RSpec.describe GrpcKit::Stream::ServerStream do
     context 'when sending a message' do
       context 'in the first time' do
         it do
-          server_stream.send_msg(data, protobuf)
+          server_stream.send_msg(data, codec)
           expect(transport.get_start_response[':status']).to eq('200')
           expect(transport.get_write_data).to eq(data)
           expect(transport.get_end_write).to eq(nil)
@@ -36,7 +36,7 @@ RSpec.describe GrpcKit::Stream::ServerStream do
 
         context 'and with last' do
           it do
-            server_stream.send_msg(data, protobuf, last: true)
+            server_stream.send_msg(data, codec, last: true)
             expect(transport.get_start_response[':status']).to eq('200')
             expect(transport.get_write_data).to eq(data)
             expect(transport.get_end_write).to eq(true)
@@ -47,8 +47,8 @@ RSpec.describe GrpcKit::Stream::ServerStream do
 
       context 'in the second time' do
         it do
-          server_stream.send_msg(data, protobuf)
-          server_stream.send_msg(data, protobuf)
+          server_stream.send_msg(data, codec)
+          server_stream.send_msg(data, codec)
           expect(transport.get_start_response[':status']).to eq('200')
           expect(transport.get_write_data).to eq(data + data)
           expect(transport.get_end_write).to eq(nil)
@@ -58,8 +58,8 @@ RSpec.describe GrpcKit::Stream::ServerStream do
 
       context 'with last' do
         it 'set trailers' do
-          server_stream.send_msg(data, protobuf)
-          server_stream.send_msg(data, protobuf, last: true)
+          server_stream.send_msg(data, codec)
+          server_stream.send_msg(data, codec, last: true)
           expect(transport.get_start_response[':status']).to eq('200')
           expect(transport.get_write_data).to eq(data + data)
           expect(transport.get_write_trailers['grpc-status']).to eq(GrpcKit::StatusCodes::OK.to_s)
@@ -76,24 +76,24 @@ RSpec.describe GrpcKit::Stream::ServerStream do
     end
 
     it 'reads data' do
-      expect(server_stream.recv_msg(protobuf)).to eq(data)
+      expect(server_stream.recv_msg(codec)).to eq(data)
     end
 
     context 'when last is given' do
       it 'read data with last' do
         expect(transport).to receive(:read_data).with(last: true).and_return(body)
-        expect(server_stream.recv_msg(protobuf, last: true)).to eq(data)
+        expect(server_stream.recv_msg(codec, last: true)).to eq(data)
       end
     end
 
     context 'when no more data to read' do
       let(:body) { nil }
 
-      it { expect { server_stream.recv_msg(protobuf) }.to raise_error(StopIteration) }
+      it { expect { server_stream.recv_msg(codec) }.to raise_error(StopIteration) }
     end
 
     context 'when data is larger than limit_size' do
-      it { expect { server_stream.recv_msg(protobuf, limit_size: 2) }.to raise_error(GrpcKit::Errors::ResourceExhausted) }
+      it { expect { server_stream.recv_msg(codec, limit_size: 2) }.to raise_error(GrpcKit::Errors::ResourceExhausted) }
     end
   end
 
@@ -106,8 +106,8 @@ RSpec.describe GrpcKit::Stream::ServerStream do
     end
 
     it 'reads data' do
-      expect(server_stream.recv_msg(protobuf)).to eq(data)
-      expect { server_stream.recv_msg(protobuf) }.to raise_error(StopIteration)
+      expect(server_stream.recv_msg(codec)).to eq(data)
+      expect { server_stream.recv_msg(codec) }.to raise_error(StopIteration)
     end
   end
 
@@ -158,7 +158,7 @@ RSpec.describe GrpcKit::Stream::ServerStream do
 
     context 'when it has sent data' do
       before do
-        server_stream.send_msg(data, protobuf)
+        server_stream.send_msg(data, codec)
       end
 
       it 'call start_response' do
