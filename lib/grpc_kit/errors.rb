@@ -10,7 +10,16 @@ module GrpcKit
     # @param message [String]
     # @return [GrpcKit::Errors::BadStatus]
     def self.from_status_code(code, message)
-      CODES.fetch(code).new(message)
+      if code == GrpcKit::StatusCodes::OK
+        raise ArgumentError, 'Status OK is not an error'
+      end
+
+      error_class = CODES[code]
+      if error_class
+        error_class.new(message)
+      else
+        GrpcKit::Errors::Unknown.new("Received unknown code: code=#{code}\n #{message}")
+      end
     end
 
     class BadStatus < StandardError
@@ -26,13 +35,6 @@ module GrpcKit
         @code = code
         @reason = reason
         super("[#{GrpcKit::StatusCodes::CODE_NAME[code]}] #{reason}")
-      end
-    end
-
-    class Ok < BadStatus
-      # @param message [String]
-      def initialize(message)
-        super(GrpcKit::StatusCodes::OK, message)
       end
     end
 
@@ -156,7 +158,6 @@ module GrpcKit
     end
 
     CODES = {
-      GrpcKit::StatusCodes::OK => Ok,
       GrpcKit::StatusCodes::CANCELLED => Cancelled,
       GrpcKit::StatusCodes::UNKNOWN => Unknown,
       GrpcKit::StatusCodes::INVALID_ARGUMENT => InvalidArgument,
