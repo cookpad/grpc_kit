@@ -28,7 +28,7 @@ module GrpcKit
       end
 
       unless invalid_interceptors.empty?
-        raise ArgumentError, "interceptor #{invalid_interceptors} must descend from #{GrpcKit::Grpc::Interceptor}"
+        raise ArgumentError, "interceptor #{invalid_interceptors.join(', ')} must descend from #{GrpcKit::Grpc::Interceptor}"
       end
     end
   end
