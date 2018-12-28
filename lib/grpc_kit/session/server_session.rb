@@ -113,11 +113,14 @@ module GrpcKit
       rescue DS9::Exception => e
         shutdown
 
-        if e.code == DS9::ERR_EOF
-          return
+        case e.code
+        when DS9::ERR_EOF
+          GrpcKit.logger.debug('The peer performed a shutdown on the connection')
+        when DS9::ERR_BAD_CLIENT_MAGIC
+          GrpcKit.logger.debug('Invalid client magic was received')
+        else
+          raise "#{e.message}. code=#{e.code}"
         end
-
-        raise e
       end
 
       # `provider` for nghttp2_submit_response
