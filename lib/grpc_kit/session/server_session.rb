@@ -24,7 +24,6 @@ module GrpcKit
         @streams = {}
         @stop = false
         @dispatcher = dispatcher
-        @peer_shutdowned = false
         @inflights = []
         @drain = nil
       end
@@ -50,7 +49,7 @@ module GrpcKit
 
       # @return [bool] return session can continue
       def run_once
-        if @peer_shutdowned || @stop || !(want_read? || want_write?)
+        if @stop || !(want_read? || want_write?)
           # it could be called twice
           @streams.each_value(&:close)
           return false
@@ -113,10 +112,9 @@ module GrpcKit
         receive
       rescue DS9::Exception => e
         shutdown
-        if DS9::ERR_EOF == e.code
-          @peer_shutdowned = true
+
+        if e.code == DS9::ERR_EOF
           return
-          # raise EOFError
         end
 
         raise e
