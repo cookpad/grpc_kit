@@ -117,7 +117,7 @@ module GrpcKit
         when DS9::ERR_EOF
           GrpcKit.logger.debug('The peer performed a shutdown on the connection')
         when DS9::ERR_BAD_CLIENT_MAGIC
-          GrpcKit.logger.debug('Invalid client magic was received')
+          GrpcKit.logger.error('Invalid client magic was received')
         else
           raise "#{e.message}. code=#{e.code}"
         end
