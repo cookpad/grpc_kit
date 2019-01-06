@@ -6,13 +6,14 @@ require 'grpc_kit/session/server_session'
 module GrpcKit
   class Server
     # @param interceptors [Array<GrpcKit::Grpc::ServerInterceptor>] list of interceptors
-    def initialize(interceptors: [])
+    # @param shutdown_timeout [Integer] Number of seconds to wait for the server shutdown
+    def initialize(interceptors: [], shutdown_timeout: 30)
+      @interceptors = interceptors
+      @shutdown_timeout = shutdown_timeout
       @sessions = []
       @rpc_descs = {}
-      @interceptors = interceptors
       @mutex = Mutex.new
       @stopping = false
-      @max_graceful_wait = 60
 
       GrpcKit.logger.debug("Launched grpc_kit(v#{GrpcKit::VERSION})")
     end
@@ -49,34 +50,34 @@ module GrpcKit
     # This method is expected to be called in trap context
     # @return [void]
     def force_shutdown
-      Thread.new do
-        @mutex.synchronize do
-          GrpcKit.logger.debug('force shutdown')
-          @stopping = true
-          @sessions.each(&:shutdown)
-        end
-      end
+      @stopping = true
+
+      Thread.new {
+        GrpcKit.logger.debug('force shutdown')
+        shutdown_sessions
+      }
     end
 
     # This method is expected to be called in trap context
     # @return [void]
     def graceful_shutdown
+      @stopping = true
+
       Thread.new do
         GrpcKit.logger.debug('graceful shutdown')
         @mutex.synchronize { @sessions.each(&:drain) }
-        @stopping = true
 
-        begin
-          Timeout.timeout(@max_graceful_wait) do
-            loop do
-              break if @sessions.empty?
-
-              sleep 1
-            end
+        end_time = Time.now + @shutdown_timeout
+        until end_time < Time.now
+          if @sessions.empty?
+            return
           end
-        rescue Timeout::Error => _
-          GrpcKit.logger.debug('Max wait time expired')
+
+          sleep 1
         end
+
+        GrpcKit.logger.error('Timeout graceful shutdown. perform force shutdown')
+        shutdown_sessions
       end
     end
 
@@ -99,6 +100,10 @@ module GrpcKit
     end
 
     private
+
+    def shutdown_sessions
+      @mutex.synchronize { @sessions.each(&:shutdown) }
+    end
 
     def establish_session(conn)
       session = GrpcKit::Session::ServerSession.new(GrpcKit::Session::IO.new(conn), self)

@@ -5,32 +5,56 @@ require 'ds9'
 module GrpcKit
   module Session
     class DrainController
+      module Status
+        NOT_START = 0
+        STARTED = 1
+        SENT_PING = 2
+        RECV_PING_ACK = 3
+        SENT_GOAWAY = 4
+      end
+
       def initialize
-        @sent_shutdown_notice = false
-        @goaway_sent = false
-        @after_one_rtt = false
-        # @sent_ping = false
+        @status = Status::NOT_START
+      end
+
+      def start_draining?
+        @status > Status::NOT_START
+      end
+
+      def start_draining
+        @status = Status::STARTED
       end
 
       # @return [void]
       def recv_ping_ack
-        @after_one_rtt = true
+        if @status == Status::SENT_PING
+          next_step
+        end
       end
 
       # @return [void]
-      def call(session)
-        if @goaway_sent
-        # session.shutdown
-        elsif @sent_shutdown_notice && @after_one_rtt
-          session.submit_goaway(DS9::NO_ERROR, session.last_proc_stream_id)
-          @goaway_sent = true
-        # elsif @sent_shutdown_notice && !@after_one_rtt && !@sent_ping
-        # @sent_ping = true
-        elsif !@sent_shutdown_notice
+      def next(session)
+        case @status
+        when Status::NOT_START
+          # next_step
+        when Status::STARTED
           session.submit_shutdown
-          @sent_shutdown_notice = true
-          session.submit_ping # wait for 1 RTT
+          session.submit_ping
+          next_step
+        when Status::SENT_PING
+          # skip until #recv_ping_ack is called (1RTT)
+        when Status::RECV_PING_ACK
+          session.submit_goaway(DS9::NO_ERROR, session.last_proc_stream_id)
+          next_step
+        when Status::SENT_GOAWAY
+          session.shutdown
         end
+      end
+
+      private
+
+      def next_step
+        @status += 1
       end
     end
   end
