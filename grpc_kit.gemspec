@@ -7,7 +7,7 @@ require 'grpc_kit/version'
 Gem::Specification.new do |spec|
   spec.name          = 'grpc_kit'
   spec.version       = GrpcKit::VERSION
-  spec.authors       = ['ganmacs']
+  spec.authors       = ['Yuta Iwama']
   spec.email         = ['ganmacs@gmail.com']
 
   spec.summary       = 'A kit for creating gRPC server/client'
