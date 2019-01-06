@@ -25,7 +25,7 @@ module GrpcKit
         @stop = false
         @dispatcher = dispatcher
         @inflights = []
-        @drain = nil
+        @drain_controller = GrpcKit::Session::DrainController.new
       end
 
       # @return [void]
@@ -55,13 +55,13 @@ module GrpcKit
           return false
         end
 
-        if @drain
+        if @drain_controller.start_draining?
           if @streams.empty?
             shutdown
-            return
+            return false
           end
 
-          @drain.call(self)
+          @drain_controller.next(self)
         end
 
         rs, ws = @io.select
@@ -83,7 +83,7 @@ module GrpcKit
 
       # @return [void]
       def drain
-        @drain ||= GrpcKit::Session::DrainController.new
+        @drain_controller.start_draining
       end
 
       # @return [void]
@@ -165,7 +165,7 @@ module GrpcKit
             # nghttp2 can't send any data once server sent actaul GoAway(not shutdown notice) frame.
             # We want to send data in case of ClientStreamer or BidiBstreamer which they are sending data in same stream
             # So we have to wait to send actual GoAway frame untill timeout or something
-            # @drain.recv_ping_ack if @drain
+            # @drain_controller.recv_ping_ack
           end
           # when DS9::Frames::Goaway
           # when DS9::Frames::RstStream
