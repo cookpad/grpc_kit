@@ -40,7 +40,7 @@ RSpec.describe GrpcKit::Stream::ServerStream do
             expect(transport.get_start_response[':status']).to eq('200')
             expect(transport.get_write_data).to eq(data)
             expect(transport.get_end_write).to eq(true)
-            expect(transport.get_write_trailers['grpc-status']).to eq(GrpcKit::StatusCodes::OK.to_s)
+            expect(transport.get_start_response['grpc-status']).to eq(GrpcKit::StatusCodes::OK.to_s)
           end
         end
       end
@@ -150,7 +150,7 @@ RSpec.describe GrpcKit::Stream::ServerStream do
           server_stream.send_status(data: data)
           expect(transport.get_write_data).to eq(data)
           expect(transport.get_start_response[':status']).to eq('200')
-          expect(transport.get_write_trailers['grpc-status']).to eq(GrpcKit::StatusCodes::OK)
+          expect(transport.get_start_response['grpc-status']).to eq(GrpcKit::StatusCodes::OK)
           expect(transport.get_submit_headers).to eq(nil)
         end
       end
