@@ -130,7 +130,9 @@ module GrpcKit
         stream = @streams[stream_id]
         data = @streams[stream_id].pending_send_data.read(length)
         if data.nil?
-          submit_trailer(stream_id, stream.trailer_data)
+           unless stream.trailer_data.empty?
+             submit_trailer(stream_id, stream.trailer_data)
+           end
           # trailer header
           false
         else

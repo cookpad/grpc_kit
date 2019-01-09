@@ -93,8 +93,8 @@ module GrpcKit
         if @started
           @transport.write_trailers(t)
         elsif data
-          @transport.write_trailers(t)
-          start_response
+          # first message with end flag
+          start_response(nil, metadata: t)
         else
           send_headers(trailers: t)
         end
