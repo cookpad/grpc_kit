@@ -46,7 +46,7 @@ module GrpcKit
         elsif @started
           @transport.write_data(buf)
         else
-          start_response(buf, metadata: initial_metadata)
+          start_response(buf, headers: initial_metadata)
         end
       end
 
@@ -94,7 +94,7 @@ module GrpcKit
           @transport.write_trailers(t)
         elsif data
           # first message with end flag
-          start_response(nil, metadata: t)
+          start_response(nil, headers: t)
         else
           send_headers(trailers: t)
         end
@@ -110,12 +110,12 @@ module GrpcKit
         @started = true
       end
 
-      def start_response(data = nil, metadata: {})
+      def start_response(data = nil, headers: {})
         h = { ':status' => '200', 'content-type' => 'application/grpc' }
         h['accept-encoding'] = 'identity'
 
         @transport.write_data(data) if data
-        @transport.start_response(h.merge(metadata))
+        @transport.start_response(h.merge(headers))
         @started = true
       end
 
