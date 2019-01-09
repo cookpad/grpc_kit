@@ -85,7 +85,7 @@ module GrpcKit
       # @param msg [String,nil]
       # @param metadata [Hash<String,String>]
       # @return [void]
-      def send_status(data: nil, status: GrpcKit::StatusCodes::OK, msg: nil, metadata: {})
+      def send_status(data: nil, status: GrpcKit::StatusCodes::OK, msg: 'OK', metadata: {})
         t = build_trailers(status, msg, metadata)
         @transport.write_data(data, last: true) if data
 
