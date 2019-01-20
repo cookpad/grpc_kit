@@ -13,6 +13,9 @@ require 'grpc_kit/client'
 
 module GrpcKit
   class << self
+    # @param value [GrpcKit::Server]
+    attr_accessor :server
+
     # @param value [Logger] Any logger
     attr_writer :logger
 

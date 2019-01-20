@@ -19,6 +19,9 @@ module GrpcKit
     end
 
     class ServerRpc
+      # @param value [GrpcKit::Grpc::GenericService] replacable hook point of handler
+      attr_writer :handler
+
       # @param handler [GrpcKit::Grpc::GenericService]
       # @param config [GrpcKit::MethodConfig]
       def initialize(handler, config)

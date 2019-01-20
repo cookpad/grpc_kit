@@ -5,6 +5,9 @@ require 'grpc_kit/session/server_session'
 
 module GrpcKit
   class Server
+    # @param value [Hahs<String,...>]
+    attr_reader :rpc_descs
+
     # @param interceptors [Array<GrpcKit::Grpc::ServerInterceptor>] list of interceptors
     # @param shutdown_timeout [Integer] Number of seconds to wait for the server shutdown
     def initialize(interceptors: [], shutdown_timeout: 30)
@@ -14,6 +17,8 @@ module GrpcKit
       @rpc_descs = {}
       @mutex = Mutex.new
       @stopping = false
+
+      GrpcKit.server = self
 
       GrpcKit.logger.debug("Launched grpc_kit(v#{GrpcKit::VERSION})")
     end
