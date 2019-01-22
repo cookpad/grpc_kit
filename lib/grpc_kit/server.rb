@@ -68,16 +68,15 @@ module GrpcKit
         @mutex.synchronize { @sessions.each(&:drain) }
 
         end_time = Time.now + @shutdown_timeout
-        until end_time < Time.now
-          if @sessions.empty?
-            return
+        loop do
+          if end_time < Time.now
+            GrpcKit.logger.error("Graceful shutdown is timeout (#{@shutdown_timeout}sec). Perform shutdown forceibly")
+            shutdown_sessions
+            break
+          elsif @sessions.empty?
+            break
           end
-
-          sleep 1
         end
-
-        GrpcKit.logger.error('Timeout graceful shutdown. perform force shutdown')
-        shutdown_sessions
       end
     end
 
