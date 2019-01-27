@@ -42,9 +42,9 @@ module GrpcKit
     def run(conn, pool: default_pool)
       raise 'Stopping server' if @stopping
 
-      establish_session(conn) do |s|
+      establish_session(conn, pool) do |s|
         s.submit_settings([])
-        s.start(pool)
+        s.start
       end
     end
 
@@ -105,8 +105,8 @@ module GrpcKit
       @mutex.synchronize { @sessions.each(&:shutdown) }
     end
 
-    def establish_session(conn)
-      session = GrpcKit::Session::ServerSession.new(GrpcKit::Session::IO.new(conn), self)
+    def establish_session(conn, pool)
+      session = GrpcKit::Session::ServerSession.new(GrpcKit::Session::IO.new(conn), self, pool)
       begin
         @mutex.synchronize { @sessions << session }
         yield(session)

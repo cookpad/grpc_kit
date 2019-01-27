@@ -19,7 +19,7 @@ module GrpcKit
 
       # @param io [GrpcKit::Session::IO]
       # @param dispatcher [GrpcKit::Server]
-      def initialize(io, dispatcher)
+      def initialize(io, dispatcher, pool)
         super() # initialize DS9::Session
 
         @io = io
@@ -29,16 +29,16 @@ module GrpcKit
         @inflights = []
         @drain_controller = GrpcKit::Session::DrainController.new
         @control_queue = GrpcKit::ControlQueue.new
-      end
-
-      # @return [void]
-      def start(pool)
-        @pool = pool.register_handler do |stream|
-          t = GrpcKit::Transport::ServerTransport.new(@control_queue, stream)
+        @pool = pool.register_handler do |task|
+          stream = task[0]
+          t = GrpcKit::Transport::ServerTransport.new(task[1], stream)
           th = GrpcKit::Stream::ServerStream.new(t)
           @dispatcher.dispatch(stream.headers.path, th)
         end
+      end
 
+      # @return [void]
+      def start
         loop do
           invoke
 
@@ -180,7 +180,7 @@ module GrpcKit
 
           unless stream.inflight
             stream.inflight = true
-            @pool.schedule(stream)
+            @pool.schedule([stream, @control_queue])
           end
         when DS9::Frames::Headers
           if frame.end_stream?
