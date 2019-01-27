@@ -18,7 +18,6 @@ module GrpcKit
       # @return [void]
       def start_response(headers)
         @session.submit_response(@stream.stream_id, headers)
-        send_data
       end
 
       # @param headers [Hash<String, String>]
@@ -32,7 +31,6 @@ module GrpcKit
       # @return [void]
       def write_data(buf, last: false)
         @stream.write_send_data(pack(buf), last: last)
-        send_data(last: last)
       end
 
       # @param last [Boolean]
@@ -45,7 +43,6 @@ module GrpcKit
       # @return [void]
       def write_trailers(trailer)
         @stream.write_trailers_data(trailer)
-        send_data(last: true)
       end
 
       # @return [void]
@@ -71,19 +68,15 @@ module GrpcKit
             data = @stream.read_recv_data(last: last)
             return data
           end
-
-          @session.run_once
         end
       end
 
-      def send_data(last: false)
-        if @stream.pending_send_data.need_resume?
-          @session.resume_data(@stream.stream_id)
+      def send_data
+        unless @stream.pending_send_data.need_resume?
+          return
         end
 
-        unless last
-          @session.run_once
-        end
+        @session.resume_data(@stream.stream_id)
       end
     end
   end
