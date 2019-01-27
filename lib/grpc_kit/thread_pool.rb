@@ -7,7 +7,7 @@ module GrpcKit
     DEFAULT_MAX = 20
     DEFAULT_MIN = 5
 
-    def initialize(max: DEFAULT_MAX, min: DEFAULT_MIN, interval: 30)
+    def initialize(max: DEFAULT_MAX, min: DEFAULT_MIN, interval: 30, &block)
       @max_pool_size = max
       @min_pool_size = min
       @shutdown = false
@@ -20,13 +20,9 @@ module GrpcKit
       @workers = []
       @mutex = Mutex.new
       @waiting = 0
+      @block = block
 
       @min_pool_size.times { spawn_thread }
-    end
-
-    def register_handler(&block)
-      @block = block
-      self
     end
 
     # @return [Bool] scheduling is succes or not

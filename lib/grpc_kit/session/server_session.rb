@@ -18,23 +18,17 @@ module GrpcKit
       delegate %i[send_event recv_event] => :@io
 
       # @param io [GrpcKit::Session::IO]
-      # @param dispatcher [GrpcKit::Server]
-      def initialize(io, dispatcher, pool)
+      # @param pool [GrpcKit::ThreadPool] Thread pool handling reqeusts
+      def initialize(io, pool)
         super() # initialize DS9::Session
 
         @io = io
         @streams = {}
         @stop = false
-        @dispatcher = dispatcher
         @inflights = []
         @drain_controller = GrpcKit::Session::DrainController.new
         @control_queue = GrpcKit::ControlQueue.new
-        @pool = pool.register_handler do |task|
-          stream = task[0]
-          t = GrpcKit::Transport::ServerTransport.new(task[1], stream)
-          th = GrpcKit::Stream::ServerStream.new(t)
-          @dispatcher.dispatch(stream.headers.path, th)
-        end
+        @pool = pool
       end
 
       # @return [void]
