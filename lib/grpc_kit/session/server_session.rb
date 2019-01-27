@@ -2,11 +2,13 @@
 
 require 'ds9'
 require 'forwardable'
+require 'grpc_kit/control_queue'
 require 'grpc_kit/session/stream'
 require 'grpc_kit/session/drain_controller'
 require 'grpc_kit/stream/server_stream'
-require 'grpc_kit/transport/server_transport'
 require 'grpc_kit/session/send_buffer'
+require 'grpc_kit/transport/server_transport'
+require 'grpc_kit/thread_pool'
 
 module GrpcKit
   module Session
@@ -26,6 +28,12 @@ module GrpcKit
         @dispatcher = dispatcher
         @inflights = []
         @drain_controller = GrpcKit::Session::DrainController.new
+        @control_queue = GrpcKit::ControlQueue.new
+        @pool = GrpcKit::ThreadPool.new do |stream|
+          t = GrpcKit::Transport::ServerTransport.new(@control_queue, stream)
+          th = GrpcKit::Stream::ServerStream.new(t)
+          @dispatcher.dispatch(stream.headers.path, th)
+        end
       end
 
       # @return [void]
@@ -89,6 +97,7 @@ module GrpcKit
       # @return [void]
       def shutdown
         stop
+        @pool.shutdown
         @io.close
       rescue StandardError => e
         GrpcKit.logger.debug(e)
@@ -101,10 +110,20 @@ module GrpcKit
       end
 
       def invoke
-        while (stream = @inflights.pop)
-          t = GrpcKit::Transport::ServerTransport.new(self, stream)
-          th = GrpcKit::Stream::ServerStream.new(t)
-          @dispatcher.dispatch(stream.headers.path, th)
+        while (event = @control_queue.pop)
+          case event[0]
+          when :submit_response
+            # piggybacked previous invokeing #submit_response?
+            if @streams[event[1]].pending_send_data.empty?
+              next
+            end
+
+            submit_response(event[1], event[2])
+          when :submit_headers
+            submit_headers(event[1], event[2])
+          when :resume_data
+            resume_data(event[1])
+          end
         end
       end
 
@@ -138,7 +157,16 @@ module GrpcKit
         end
       end
 
+      # nghttp2_session_callbacks_set_on_data_chunk_recv_callback
+      def on_data_chunk_recv(stream_id, data, _flags)
+        stream = @streams[stream_id]
+        if stream
+          stream.pending_recv_data.write(data)
+        end
+      end
+
       # nghttp2_session_callbacks_set_on_frame_recv_callback
+      # Note: called after ServerSession#on_data_chunk_recv
       def on_frame_recv(frame)
         GrpcKit.logger.debug("on_frame_recv #{frame}") # Too many call
 
@@ -152,7 +180,7 @@ module GrpcKit
 
           unless stream.inflight
             stream.inflight = true
-            @inflights << stream
+            @pool.schedule(stream)
           end
         when DS9::Frames::Headers
           if frame.end_stream?
@@ -231,14 +259,6 @@ module GrpcKit
           if @streams.empty?
             shutdown
           end
-        end
-      end
-
-      # nghttp2_session_callbacks_set_on_data_chunk_recv_callback
-      def on_data_chunk_recv(stream_id, data, _flags)
-        stream = @streams[stream_id]
-        if stream
-          stream.pending_recv_data.write(data)
         end
       end
     end
