@@ -5,7 +5,7 @@ require 'grpc_kit/thread_pool/auto_trimmer'
 module GrpcKit
   class ThreadPool
     DEFAULT_MAX = 20
-    DEFAULT_MIN = 3
+    DEFAULT_MIN = 5
 
     def initialize(max = DEFAULT_MAX, min = DEFAULT_MIN, interval: 30, &block)
       @max_pool_size = max
@@ -35,7 +35,7 @@ module GrpcKit
 
       @tasks.push(block || task)
 
-      if @mutex.synchronize { (@waiting == 0 && !@tasks.empty?) && (@spawned > @min_pool_size) }
+      if @mutex.synchronize { (@waiting < @tasks.size) && (@spawned > @min_pool_size) }
         spawn_thread
       end
 
@@ -49,7 +49,7 @@ module GrpcKit
     end
 
     def trim(force = false)
-      if @mutex.synchronize { (force || (@waiting > 0 && @tasks.empty?)) && (@spawned > @min_pool_size) }
+      if @mutex.synchronize { (force || (@waiting > 0)) && (@spawned > @min_pool_size) }
         GrpcKit.logger.debug("Trim worker! Next worker size #{@spawned - 1}")
         @tasks.push(nil)
       end
