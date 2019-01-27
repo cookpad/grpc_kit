@@ -18,6 +18,7 @@ module GrpcKit
       @spawned = 0
       @workers = []
       @mutex = Mutex.new
+      @waiting = 0
 
       @min_pool_size.times { spawn_thread }
     end
@@ -34,10 +35,8 @@ module GrpcKit
 
       @tasks.push(block || task)
 
-      @mutex.synchronize do
-        if !sleep_worker_exist? && (@spawned < @max_pool_size)
-          spawn_thread
-        end
+      if @mutex.synchronize { (@waiting == 0 && !@tasks.empty?) && (@spawned > @min_pool_size) }
+        spawn_thread
       end
 
       true
@@ -46,24 +45,17 @@ module GrpcKit
     def shutdown
       @shutdown = true
       @auto_trimmer.stop
-      @workers.each(&:kill)
+      @waiting.times { @tasks.push(nil) }
     end
 
     def trim(force = false)
-      @mutex.synchronize do
-        if (force || sleep_worker_exist?) && (@spawned > @min_pool_size)
-          GrpcKit.logger.debug("Trim worker! Next worker_size= #{@spawned-1}")
-          @tasks.push(nil)
-        end
+      if @mutex.synchronize { (force || (@waiting > 0 && @tasks.empty?)) && (@spawned > @min_pool_size) }
+        GrpcKit.logger.debug("Trim worker! Next worker size #{@spawned - 1}")
+        @tasks.push(nil)
       end
     end
 
     private
-
-    # Can be race condition. must use in mutex context
-    def sleep_worker_exist?
-      !!@workers.find { |w| w.status == 'sleep' }
-    end
 
     def spawn_thread
       @spawned += 1
@@ -76,7 +68,9 @@ module GrpcKit
             break
           end
 
+          @mutex.synchronize { @waiting += 1 }
           task = @tasks.pop
+          @mutex.synchronize { @waiting -= 1 }
           if task.nil?
             break
           end
