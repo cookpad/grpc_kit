@@ -7,14 +7,15 @@ module GrpcKit
         @buffer = ''.b
         @end_write = false
         @deferred_read = false
+        @mutex = Mutex.new
       end
 
       # @param data [String]
       # @param last [Boolean]
       # @return [void]
       def write(data, last: false)
+        @mutex.synchronize { @buffer << data }
         end_write if last
-        @buffer << data
       end
 
       # @return [Boolean]
@@ -32,11 +33,21 @@ module GrpcKit
         @end_write
       end
 
+      def empty?
+        @mutex.synchronize { @buffer.empty? }
+      end
+
       # @param size [Integer,nil]
       # @return [nil,DS9::ERR_DEFERRED,String]
       def read(size = nil)
-        if @buffer.empty?
+        buf = do_read(size)
+        if buf.nil?
           if end_write?
+            # Call again because #write invokes `@buffer << data` before calling #end_write
+            if (buf = do_read(size))
+              return buf
+            end
+
             @deferred_read = false
             return nil # EOF
           end
@@ -45,15 +56,25 @@ module GrpcKit
           return DS9::ERR_DEFERRED
         end
 
-        if size.nil? || @buffer.bytesize < size
-          buf = @buffer
-          @buffer = ''.b
-          buf
-        else
-          @buffer.freeze
-          rbuf = @buffer.byteslice(0, size)
-          @buffer = @buffer.byteslice(size, @buffer.bytesize)
-          rbuf
+        buf
+      end
+
+      private
+
+      def do_read(size = nil)
+        @mutex.synchronize do
+          if @buffer.empty?
+            nil
+          elsif size.nil? || @buffer.bytesize < size
+            buf = @buffer
+            @buffer = ''.b
+            buf
+          else
+            @buffer.freeze
+            rbuf = @buffer.byteslice(0, size)
+            @buffer = @buffer.byteslice(size, @buffer.bytesize)
+            rbuf
+          end
         end
       end
     end

@@ -63,15 +63,13 @@ module GrpcKit
       def recv_data(last: false)
         loop do
           data = @stream.read_recv_data(last: last)
-          return data unless data.nil?
+          return data if data
 
           if @stream.close_remote?
-            # it do not receive data which we need, it may receive invalid grpc-status
-            unless @stream.end_read?
-              return nil
-            end
-
-            return nil
+            # Call @stream.read_recv_data after checking @stream.close_remote?
+            # because of the order of nghttp2 callbacks which calls a callback receiving data before a callback receiving END_STREAM flag
+            data = @stream.read_recv_data(last: last)
+            return data
           end
 
           @session.run_once
