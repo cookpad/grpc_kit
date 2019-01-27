@@ -12,7 +12,9 @@ module GrpcKit
       @min_pool_size = min
       @shutdown = false
       @tasks = Queue.new
-      @auto_trimmer = AutoTrimmer.new(self, interval: interval).tap(&:start!)
+      unless max == min
+        @auto_trimmer = AutoTrimmer.new(self, interval: interval).tap(&:start!)
+      end
 
       @spawned = 0
       @workers = []
@@ -48,7 +50,7 @@ module GrpcKit
 
     def shutdown
       @shutdown = true
-      @auto_trimmer.stop
+      @auto_trimmer.stop if @auto_trimmer
       @waiting.times { @tasks.push(nil) }
     end
 
