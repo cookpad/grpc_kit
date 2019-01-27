@@ -37,13 +37,14 @@ module GrpcKit
     end
 
     # @param conn [TCPSocket]
+    # @param pool [GrpcKit::ThreadPool] Thread pool handling reqeust if need
     # @return [void]
-    def run(conn)
+    def run(conn, pool: default_pool)
       raise 'Stopping server' if @stopping
 
       establish_session(conn) do |s|
         s.submit_settings([])
-        s.start
+        s.start(pool)
       end
     end
 
@@ -112,6 +113,10 @@ module GrpcKit
       ensure
         @mutex.synchronize { @sessions.delete(session) }
       end
+    end
+
+    def default_pool
+      @default_pool ||= GrpcKit::ThreadPool.new
     end
   end
 end

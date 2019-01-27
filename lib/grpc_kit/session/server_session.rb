@@ -29,15 +29,16 @@ module GrpcKit
         @inflights = []
         @drain_controller = GrpcKit::Session::DrainController.new
         @control_queue = GrpcKit::ControlQueue.new
-        @pool = GrpcKit::ThreadPool.new do |stream|
+      end
+
+      # @return [void]
+      def start(pool)
+        @pool = pool.register_handler do |stream|
           t = GrpcKit::Transport::ServerTransport.new(@control_queue, stream)
           th = GrpcKit::Stream::ServerStream.new(t)
           @dispatcher.dispatch(stream.headers.path, th)
         end
-      end
 
-      # @return [void]
-      def start
         loop do
           invoke
 
@@ -97,7 +98,6 @@ module GrpcKit
       # @return [void]
       def shutdown
         stop
-        @pool.shutdown
         @io.close
       rescue StandardError => e
         GrpcKit.logger.debug(e)

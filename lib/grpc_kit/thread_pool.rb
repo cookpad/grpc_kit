@@ -7,13 +7,12 @@ module GrpcKit
     DEFAULT_MAX = 20
     DEFAULT_MIN = 5
 
-    def initialize(max = DEFAULT_MAX, min = DEFAULT_MIN, interval: 30, &block)
+    def initialize(max: DEFAULT_MAX, min: DEFAULT_MIN, interval: 30)
       @max_pool_size = max
       @min_pool_size = min
       @shutdown = false
       @tasks = Queue.new
       @auto_trimmer = AutoTrimmer.new(self, interval: interval).tap(&:start!)
-      @block = block
 
       @spawned = 0
       @workers = []
@@ -21,6 +20,11 @@ module GrpcKit
       @waiting = 0
 
       @min_pool_size.times { spawn_thread }
+    end
+
+    def register_handler(&block)
+      @block = block
+      self
     end
 
     # @return [Bool] scheduling is succes or not
