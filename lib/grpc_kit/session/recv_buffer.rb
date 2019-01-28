@@ -6,32 +6,36 @@ module GrpcKit
       def initialize
         @buffer = +''.b
         @end = false
+        @mutex = Mutex.new
       end
 
       # @param data [String]
       # @return [void]
       def write(data)
-        @buffer << data
+        @mutex.synchronize { @buffer << data }
       end
 
       # @param size [Integer,nil]
       # @param last [Boolean]
       # @return [String,nil]
       def read(size = nil, last: false)
-        return nil if @buffer.empty?
+        buf = @mutex.synchronize do
+          return nil if @buffer.empty?
+
+          if size.nil? || @buffer.bytesize < size
+            buf = @buffer
+            @buffer = ''.b
+            buf
+          else
+            @buffer.freeze
+            rbuf = @buffer.byteslice(0, size)
+            @buffer = @buffer.byteslice(size, @buffer.bytesize)
+            rbuf
+          end
+        end
 
         end_read if last
-
-        if size.nil? || @buffer.bytesize < size
-          buf = @buffer
-          @buffer = ''.b
-          buf
-        else
-          @buffer.freeze
-          rbuf = @buffer.byteslice(0, size)
-          @buffer = @buffer.byteslice(size, @buffer.bytesize)
-          rbuf
-        end
+        buf
       end
 
       # @return [Boolean]

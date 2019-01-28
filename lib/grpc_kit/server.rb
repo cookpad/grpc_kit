@@ -7,9 +7,13 @@ module GrpcKit
   class Server
     # @param interceptors [Array<GrpcKit::Grpc::ServerInterceptor>] list of interceptors
     # @param shutdown_timeout [Integer] Number of seconds to wait for the server shutdown
-    def initialize(interceptors: [], shutdown_timeout: 30)
+    # @param min_pool_size [Integer] A mininum thread pool size
+    # @param max_pool_size [Integer] A maximum thread pool size
+    def initialize(interceptors: [], shutdown_timeout: 30, min_pool_size: nil, max_pool_size: nil)
       @interceptors = interceptors
       @shutdown_timeout = shutdown_timeout
+      @min_pool_size = min_pool_size || GrpcKit::ThreadPool::DEFAULT_MIN
+      @max_pool_size = max_pool_size || GrpcKit::ThreadPool::DEFAULT_MAX
       @sessions = []
       @rpc_descs = {}
       @mutex = Mutex.new
@@ -84,28 +88,35 @@ module GrpcKit
       @mutex.synchronize { @sessions.size }
     end
 
-    # @param path [String] gRPC method path
-    # @param stream [GrpcKit::Streams::ServerStream]
-    # @return [void]
-    def dispatch(path, stream)
+    private
+
+    def dispatch(stream, control_queue)
+      t = GrpcKit::Transport::ServerTransport.new(control_queue, stream)
+      ss = GrpcKit::Stream::ServerStream.new(t)
+      path = stream.headers.path
+
       rpc = @rpc_descs[path]
       unless rpc
         e = GrpcKit::Errors::Unimplemented.new(path)
-        stream.send_status(status: e.code, msg: e.message)
+        ss.send_status(status: e.code, msg: e.message)
         return
       end
 
-      stream.invoke(rpc)
+      ss.invoke(rpc)
     end
 
-    private
+    def thread_pool
+      @thread_pool ||= GrpcKit::ThreadPool.new(min: @min_pool_size, max: @max_pool_size) do |task|
+        dispatch(task[0], task[1])
+      end
+    end
 
     def shutdown_sessions
       @mutex.synchronize { @sessions.each(&:shutdown) }
     end
 
     def establish_session(conn)
-      session = GrpcKit::Session::ServerSession.new(GrpcKit::Session::IO.new(conn), self)
+      session = GrpcKit::Session::ServerSession.new(GrpcKit::Session::IO.new(conn), thread_pool)
       begin
         @mutex.synchronize { @sessions << session }
         yield(session)
