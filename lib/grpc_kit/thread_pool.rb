@@ -7,6 +7,9 @@ module GrpcKit
     DEFAULT_MAX = 20
     DEFAULT_MIN = 5
 
+    # @param min [Integer] A mininum thread pool size
+    # @param max [Integer] A maximum thread pool size
+    # @param interval [Integer] An interval time of calling #trim
     def initialize(max: DEFAULT_MAX, min: DEFAULT_MIN, interval: 30, &block)
       @max_pool_size = max
       @min_pool_size = min
@@ -25,10 +28,10 @@ module GrpcKit
       @min_pool_size.times { spawn_thread }
     end
 
-    # @return [Bool] scheduling is succes or not
+    # @param task [Object] task to schedule
     def schedule(task, &block)
       if task.nil?
-        return true
+        return
       end
 
       if @shutdown
@@ -40,8 +43,6 @@ module GrpcKit
       if @mutex.synchronize { (@waiting < @tasks.size) && (@spawned > @min_pool_size) }
         spawn_thread
       end
-
-      true
     end
 
     def shutdown
