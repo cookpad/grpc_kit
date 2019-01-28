@@ -22,7 +22,6 @@ module GrpcKit
       @spawned = 0
       @workers = []
       @mutex = Mutex.new
-      @waiting = 0
       @block = block
 
       @min_pool_size.times { spawn_thread }
@@ -40,7 +39,8 @@ module GrpcKit
 
       @tasks.push(block || task)
 
-      if @mutex.synchronize { (@waiting < @tasks.size) && (@spawned > @min_pool_size) }
+      Thread.pass
+      if !@tasks.empty? && @mutex.synchronize { @spawned > @min_pool_size }
         spawn_thread
       end
     end
@@ -52,7 +52,7 @@ module GrpcKit
     end
 
     def trim(force = false)
-      if @mutex.synchronize { (force || (@waiting > 0)) && (@spawned > @min_pool_size) }
+      if (force || @tasks.empty?) && @mutex.synchronize { @spawned > @min_pool_size }
         GrpcKit.logger.debug("Trim worker! Next worker size #{@spawned - 1}")
         @tasks.push(nil)
       end
@@ -71,9 +71,7 @@ module GrpcKit
             break
           end
 
-          @mutex.synchronize { @waiting += 1 }
           task = @tasks.pop
-          @mutex.synchronize { @waiting -= 1 }
           if task.nil?
             break
           end
