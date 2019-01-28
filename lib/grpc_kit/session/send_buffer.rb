@@ -23,6 +23,10 @@ module GrpcKit
         @deferred_read
       end
 
+      def no_resume
+        @deferred_read = false
+      end
+
       # @return [void]
       def end_write
         @end_write = true
@@ -41,22 +45,24 @@ module GrpcKit
       # @return [nil,DS9::ERR_DEFERRED,String]
       def read(size = nil)
         buf = do_read(size)
-        if buf.nil?
-          if end_write?
-            # Call again because #write invokes `@buffer << data` before calling #end_write
-            if (buf = do_read(size))
-              return buf
-            end
-
-            @deferred_read = false
-            return nil # EOF
-          end
-
-          @deferred_read = true
-          return DS9::ERR_DEFERRED
+        if buf
+          @deferred_read = false
+          return buf
         end
 
-        buf
+        if end_write?
+          # Call again because #write invokes `@buffer << data` before calling #end_write
+          if (buf = do_read(size))
+            @deferred_read = false
+            return buf
+          end
+
+          @deferred_read = false
+          return nil # EOF
+        end
+
+        @deferred_read = true
+        DS9::ERR_DEFERRED
       end
 
       private

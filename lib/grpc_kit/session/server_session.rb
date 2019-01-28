@@ -120,6 +120,7 @@ module GrpcKit
               next
             end
             resume_data(event[1])
+            @streams[event[1]].pending_send_data.no_resume
           end
         end
       end
