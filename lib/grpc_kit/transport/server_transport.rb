@@ -18,6 +18,7 @@ module GrpcKit
       # @return [void]
       def start_response(headers)
         @control_queue.submit_response(@stream.stream_id, headers)
+        send_data
       end
 
       # @param headers [Hash<String, String>]
@@ -31,6 +32,7 @@ module GrpcKit
       # @return [void]
       def write_data(buf, last: false)
         @stream.write_send_data(pack(buf), last: last)
+        send_data
       end
 
       # @param last [Boolean]
@@ -43,6 +45,7 @@ module GrpcKit
       # @return [void]
       def write_trailers(trailer)
         @stream.write_trailers_data(trailer)
+        send_data
       end
 
       # @return [void]
@@ -72,11 +75,7 @@ module GrpcKit
       end
 
       def send_data
-        unless @stream.pending_send_data.need_resume?
-          return
-        end
-
-        @session.resume_data(@stream.stream_id)
+        @control_queue.resume_data(@stream.stream_id)
       end
     end
   end

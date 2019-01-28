@@ -116,6 +116,9 @@ module GrpcKit
           when :submit_headers
             submit_headers(event[1], event[2])
           when :resume_data
+            unless @streams[event[1]].pending_send_data.need_resume?
+              next
+            end
             resume_data(event[1])
           end
         end
