@@ -107,8 +107,9 @@ module GrpcKit
         while (event = @control_queue.pop)
           case event[0]
           when :submit_response
+            stream = @streams[event[1]]
             # piggybacked previous invokeing #submit_response?
-            if @streams[event[1]].pending_send_data.empty?
+            unless stream && !stream.pending_send_data.empty?
               next
             end
 
@@ -116,11 +117,13 @@ module GrpcKit
           when :submit_headers
             submit_headers(event[1], event[2])
           when :resume_data
-            unless @streams[event[1]].pending_send_data.need_resume?
+            stream = @streams[event[1]]
+            unless stream && stream.pending_send_data.need_resume?
               next
             end
+
             resume_data(event[1])
-            @streams[event[1]].pending_send_data.no_resume
+            stream.pending_send_data.no_resume
           end
         end
       end
