@@ -48,7 +48,7 @@ module GrpcKit
     def shutdown
       @shutdown = true
       @auto_trimmer.stop if @auto_trimmer
-      @waiting.times { @tasks.push(nil) }
+      @max_pool_size.times { @tasks.push(nil) }
     end
 
     def trim(force = false)

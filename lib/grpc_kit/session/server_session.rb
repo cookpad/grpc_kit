@@ -58,15 +58,6 @@ module GrpcKit
           return false
         end
 
-        if @drain_controller.start_draining?
-          if @streams.empty?
-            shutdown
-            return false
-          end
-
-          @drain_controller.next(self)
-        end
-
         rs, ws = @io.select
 
         if !rs.empty? && want_read?
@@ -79,7 +70,7 @@ module GrpcKit
 
         true
       rescue Errno::ECONNRESET, IOError => e
-        GrpcKit.logger.debug(e.message)
+        GrpcKit.logger.error(e.message)
         shutdown
         false
       end
@@ -93,8 +84,9 @@ module GrpcKit
       def shutdown
         stop
         @io.close
+        # @pool.shutdown
       rescue StandardError => e
-        GrpcKit.logger.debug(e)
+        GrpcKit.logger.error(e)
       end
 
       private
@@ -255,12 +247,6 @@ module GrpcKit
 
         stream = @streams.delete(stream_id)
         stream.close if stream
-
-        if @drain
-          if @streams.empty?
-            shutdown
-          end
-        end
       end
     end
   end
