@@ -77,7 +77,7 @@ module GrpcKit
           begin
             @block.call(task)
           rescue Exception => e # rubocop:disable Lint/RescueException
-            GrpcKit.logger.error("An error occured on top level in worker #{Thread.current.name}: #{e.message} (#{e.class})\n #{Thread.current.backtrace.join("\n")}")
+            GrpcKit.logger.error("An error occured on top level in worker #{Thread.current.name}: #{e.message} (#{e.class})\n #{e.backtrace.join("\n")}")
           end
         end
 
