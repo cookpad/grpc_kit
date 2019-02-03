@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'grpc_kit/control_queue'
+require 'grpc_kit/session/control_queue'
 
-RSpec.describe GrpcKit::ControlQueue do
+RSpec.describe GrpcKit::Session::ControlQueue do
   let(:queue) do
     described_class.new
   end

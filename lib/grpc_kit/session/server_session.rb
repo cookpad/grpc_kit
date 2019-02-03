@@ -2,7 +2,7 @@
 
 require 'ds9'
 require 'forwardable'
-require 'grpc_kit/control_queue'
+require 'grpc_kit/session/control_queue'
 require 'grpc_kit/session/stream'
 require 'grpc_kit/session/drain_controller'
 require 'grpc_kit/stream/server_stream'
@@ -27,7 +27,7 @@ module GrpcKit
         @stop = false
         @inflights = []
         @drain_controller = GrpcKit::Session::DrainController.new
-        @control_queue = GrpcKit::ControlQueue.new
+        @control_queue = GrpcKit::Session::ControlQueue.new
         @pool = pool
       end
 
