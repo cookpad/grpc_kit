@@ -2,6 +2,7 @@
 
 require 'grpc_kit/session/io'
 require 'grpc_kit/session/server_session'
+require 'grpc_kit/rpc_dispatcher'
 
 module GrpcKit
   class Server
@@ -12,8 +13,8 @@ module GrpcKit
     def initialize(interceptors: [], shutdown_timeout: 30, min_pool_size: nil, max_pool_size: nil)
       @interceptors = interceptors
       @shutdown_timeout = shutdown_timeout
-      @min_pool_size = min_pool_size || GrpcKit::ThreadPool::DEFAULT_MIN
-      @max_pool_size = max_pool_size || GrpcKit::ThreadPool::DEFAULT_MAX
+      @min_pool_size = min_pool_size || GrpcKit::RpcDispatcher::DEFAULT_MIN
+      @max_pool_size = max_pool_size || GrpcKit::RpcDispatcher::DEFAULT_MAX
       @sessions = []
       @rpc_descs = {}
       @mutex = Mutex.new
@@ -90,25 +91,8 @@ module GrpcKit
 
     private
 
-    def dispatch(stream, control_queue)
-      t = GrpcKit::Transport::ServerTransport.new(control_queue, stream)
-      ss = GrpcKit::Stream::ServerStream.new(t)
-      path = stream.headers.path
-
-      rpc = @rpc_descs[path]
-      unless rpc
-        e = GrpcKit::Errors::Unimplemented.new(path)
-        ss.send_status(status: e.code, msg: e.message)
-        return
-      end
-
-      ss.invoke(rpc)
-    end
-
-    def thread_pool
-      @thread_pool ||= GrpcKit::ThreadPool.new(min: @min_pool_size, max: @max_pool_size) do |task|
-        dispatch(task[0], task[1])
-      end
+    def dispatcher
+      @dispatcher ||= GrpcKit::RpcDispatcher.new(@rpc_descs, min: @min_pool_size, max: @max_pool_size)
     end
 
     def shutdown_sessions
@@ -116,7 +100,7 @@ module GrpcKit
     end
 
     def establish_session(conn)
-      session = GrpcKit::Session::ServerSession.new(GrpcKit::Session::IO.new(conn), thread_pool)
+      session = GrpcKit::Session::ServerSession.new(GrpcKit::Session::IO.new(conn), dispatcher)
       begin
         @mutex.synchronize { @sessions << session }
         yield(session)

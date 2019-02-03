@@ -5,10 +5,6 @@ require 'forwardable'
 require 'grpc_kit/session/control_queue'
 require 'grpc_kit/session/stream'
 require 'grpc_kit/session/drain_controller'
-require 'grpc_kit/stream/server_stream'
-require 'grpc_kit/session/send_buffer'
-require 'grpc_kit/transport/server_transport'
-require 'grpc_kit/thread_pool'
 
 module GrpcKit
   module Session
@@ -18,8 +14,8 @@ module GrpcKit
       delegate %i[send_event recv_event] => :@io
 
       # @param io [GrpcKit::Session::IO]
-      # @param pool [GrpcKit::ThreadPool] Thread pool handling reqeusts
-      def initialize(io, pool)
+      # @param pool [GrpcKit::RcpDispatcher]
+      def initialize(io, dispatcher)
         super() # initialize DS9::Session
 
         @io = io
@@ -28,7 +24,7 @@ module GrpcKit
         @inflights = []
         @drain_controller = GrpcKit::Session::DrainController.new
         @control_queue = GrpcKit::Session::ControlQueue.new
-        @pool = pool
+        @dispatcher = dispatcher
       end
 
       # @return [void]
@@ -84,7 +80,6 @@ module GrpcKit
       def shutdown
         stop
         @io.close
-        # @pool.shutdown
       rescue StandardError => e
         GrpcKit.logger.error(e)
       end
@@ -173,7 +168,7 @@ module GrpcKit
 
           unless stream.inflight
             stream.inflight = true
-            @pool.schedule([stream, @control_queue])
+            @dispatcher.schedule([stream, @control_queue])
           end
         when DS9::Frames::Headers
           if frame.end_stream?
