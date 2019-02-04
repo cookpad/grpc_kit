@@ -11,8 +11,8 @@ module GrpcKit
     class Stream
       extend Forwardable
 
-      delegate %i[end_write end_write?] => :@pending_send_data
-      delegate %i[end_read end_read?] => :@pending_recv_data
+      delegate %i[end_write?] => :@pending_send_data
+      delegate %i[end_read?] => :@pending_recv_data
       delegate %i[close close_remote close_local close? close_remote? close_local?] => :@status
 
       attr_reader :headers, :pending_send_data, :pending_recv_data, :trailer_data, :status
@@ -30,6 +30,14 @@ module GrpcKit
         @trailer_data = {}
         @status = GrpcKit::Session::StreamStatus.new
         @draining = false
+      end
+
+      def end_write
+        @pending_send_data.end_write
+      end
+
+      def end_read
+        @pending_recv_data.end_read
       end
 
       # @return [void]

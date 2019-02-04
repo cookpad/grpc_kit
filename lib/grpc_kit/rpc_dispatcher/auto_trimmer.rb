@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module GrpcKit
-  class ThreadPool
+  class RpcDispatcher
     class AutoTrimmer
       def initialize(pool, interval: 30)
         @pool = pool
