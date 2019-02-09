@@ -64,23 +64,23 @@ module GrpcKit
     end
 
     # This method is expected to be called in trap context
+    # @params timeout [Boolean] timeout error could be raised or not
     # @return [void]
-    def graceful_shutdown
+    def graceful_shutdown(timeout: true)
       @stopping = true
 
       Thread.new do
         GrpcKit.logger.debug('graceful shutdown')
         @mutex.synchronize { @sessions.each(&:drain) }
 
-        end_time = Time.now + @shutdown_timeout
-        loop do
-          if end_time < Time.now
-            GrpcKit.logger.error("Graceful shutdown is timeout (#{@shutdown_timeout}sec). Perform shutdown forceibly")
-            shutdown_sessions
-            break
-          elsif @sessions.empty?
-            break
+        begin
+          sec = timeout ? @shutdown_timeout : 0
+          Timeout.timeout(sec) do
+            sleep 1 until @sessions.empty?
           end
+        rescue Timeout::Error => _
+          GrpcKit.logger.error("Graceful shutdown is timeout (#{@shutdown_timeout}sec). Perform shutdown forceibly")
+          shutdown_sessions
         end
       end
     end
