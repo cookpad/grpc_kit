@@ -3,7 +3,8 @@
 require 'grpc_kit/session/drain_controller'
 
 RSpec.describe GrpcKit::Session::DrainController do
-  let(:drain) { described_class.new }
+  let(:draining_time) { 0 }
+  let(:drain) { described_class.new(draining_time) }
 
   describe '#next' do
     it 'always performs nothing' do
@@ -21,6 +22,13 @@ RSpec.describe GrpcKit::Session::DrainController do
       it 'calls some methods in order' do
         session = double(:session)
         expect(session).to receive(:submit_shutdown)
+        expect(session).not_to receive(:submit_ping)
+        expect(session).not_to receive(:submit_goaway)
+        expect(session).not_to receive(:shutdown)
+        drain.next(session)
+
+        session = double(:session)
+        expect(session).not_to receive(:submit_shutdown)
         expect(session).to receive(:submit_ping)
         expect(session).not_to receive(:submit_goaway)
         expect(session).not_to receive(:shutdown)
@@ -47,7 +55,7 @@ RSpec.describe GrpcKit::Session::DrainController do
         expect(session).not_to receive(:submit_shutdown)
         expect(session).not_to receive(:submit_ping)
         expect(session).not_to receive(:submit_goaway)
-        expect(session).to receive(:shutdown)
+        # expect(session).to receive(:shutdown)
         drain.next(session)
       end
 

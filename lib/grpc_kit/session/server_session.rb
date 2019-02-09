@@ -54,6 +54,10 @@ module GrpcKit
           return false
         end
 
+        if @drain_controller.start_draining?
+          @drain_controller.next(self)
+        end
+
         rs, ws = @io.select
 
         if !rs.empty? && want_read?
@@ -178,10 +182,7 @@ module GrpcKit
         when DS9::Frames::Ping
           if frame.ping_ack?
             GrpcKit.logger.debug('ping ack is received')
-            # nghttp2 can't send any data once server sent actaul GoAway(not shutdown notice) frame.
-            # We want to send data in case of ClientStreamer or BidiBstreamer which they are sending data in same stream
-            # So we have to wait to send actual GoAway frame untill timeout or something
-            # @drain_controller.recv_ping_ack
+            @drain_controller.recv_ping_ack
           end
           # when DS9::Frames::Goaway
           # when DS9::Frames::RstStream

@@ -8,12 +8,14 @@ module GrpcKit
       module Status
         NOT_START = 0
         STARTED = 1
-        SENT_PING = 2
-        RECV_PING_ACK = 3
-        SENT_GOAWAY = 4
+        SENT_SHUTDOWN = 2
+        SENT_PING = 3
+        RECV_PING_ACK = 4
+        SENT_GOAWAY = 5
       end
 
-      def initialize
+      def initialize(draining_time = 5)
+        @draining_time = draining_time
         @status = Status::NOT_START
       end
 
@@ -39,15 +41,22 @@ module GrpcKit
           # next_step
         when Status::STARTED
           session.submit_shutdown
+          next_step
+        when Status::SENT_SHUTDOWN
           session.submit_ping
+          @sent_time = Time.now.to_i
           next_step
         when Status::SENT_PING
           # skip until #recv_ping_ack is called (1RTT)
         when Status::RECV_PING_ACK
+          if @sent_time && (Time.now.to_i - @sent_time) > @draining_time
+            return
+          end
+
           session.submit_goaway(DS9::NO_ERROR, session.last_proc_stream_id)
           next_step
         when Status::SENT_GOAWAY
-          session.shutdown
+          # session.shutdown
         end
       end
 
