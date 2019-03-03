@@ -39,6 +39,7 @@ RSpec.describe GrpcKit::RpcDispatcher do
         expect(server_stream).to receive(:invoke).once
         allow(GrpcKit::Stream::ServerStream).to receive(:new).and_return(server_stream)
         dispatcher.schedule([stream, control_queue])
+        sleep 1
         dispatcher.shutdown
         until dispatcher.instance_variable_get(:@workers).empty?
           sleep 1
@@ -58,6 +59,7 @@ RSpec.describe GrpcKit::RpcDispatcher do
         expect(server_stream).to receive(:send_status).with(status: GrpcKit::StatusCodes::UNIMPLEMENTED, msg: '[UNIMPLEMENTED] unimplemented_method')
         allow(GrpcKit::Stream::ServerStream).to receive(:new).and_return(server_stream)
         dispatcher.schedule([stream, control_queue])
+        sleep 1
         dispatcher.shutdown
         until dispatcher.instance_variable_get(:@workers).empty?
           sleep 1
