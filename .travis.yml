@@ -4,6 +4,7 @@ cache:
 dist: trusty
 rvm:
   - ruby-head
+  - 2.6.1
   - 2.5.3
   - 2.4.5
 before_install:

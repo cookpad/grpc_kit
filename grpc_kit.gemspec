@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'ds9', '>= 1.3.3'
-  spec.add_dependency 'google-protobuf', '>= 3.6.1'
+  spec.add_dependency 'google-protobuf', '>= 3.7.0'
   spec.add_dependency 'googleapis-common-protos-types', '>= 1.0.2'
 
   spec.add_development_dependency 'bundler'
