@@ -16,7 +16,13 @@ module GrpcKit
       # @param io [GrpcKit::Session::IO]
       # @param pool [GrpcKit::RcpDispatcher]
       def initialize(io, dispatcher)
-        super() # initialize DS9::Session
+        opt = DS9::Option.new.tap do |o|
+          # https://github.com/nghttp2/nghttp2/issues/810
+          # grpc_kit doesn't need to retain closed stream.
+          # This would derease the memory usage.
+          o.set_no_closed_streams
+        end
+        super(option: opt) # initialize DS9::Session
 
         @io = io
         @streams = {}
