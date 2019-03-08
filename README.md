@@ -3,8 +3,6 @@
 [![Build Status](https://travis-ci.org/ganmacs/grpc_kit.svg?branch=master)](https://travis-ci.org/ganmacs/grpc_kit)
 [![Gem Version](https://badge.fury.io/rb/grpc_kit.svg)](https://badge.fury.io/rb/grpc_kit)
 
-__UNDER DEVELOPMENT__
-
 A kit for creating [gRPC](https://grpc.io/) server/client in Ruby.
 
 ## Installation
