@@ -82,7 +82,7 @@ RSpec.describe 'bidi_streamer' do
       expect(call).not_to receive(:call)
       stub = Hello2::Greeter::Stub.new(ServerHelper.connect)
       stream = stub.hello_bidi_streamer({})
-      stream.send_msg(Hello2::Request.new(msg: 'message'))
+      stream.send_msg(Hello2::Request.new(msg: 'message'), last: true)
       expect { stream.recv }.to raise_error(GrpcKit::Errors::Unimplemented)
     end
   end

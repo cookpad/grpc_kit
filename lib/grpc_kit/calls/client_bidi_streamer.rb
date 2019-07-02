@@ -18,13 +18,13 @@ module GrpcKit
 
       # @param data [Object] request message
       # @return [void]
-      def send_msg(data)
+      def send_msg(data, last: false)
         if @reason
           raise "Upstream returns an error status: #{@reason}"
         end
 
         @mutex.synchronize do
-          @stream.send_msg(data, metadata: outgoing_metadata)
+          @stream.send_msg(data, metadata: outgoing_metadata, last: last)
         end
 
         @send = true

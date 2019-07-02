@@ -176,7 +176,7 @@ module GrpcKit
             stream.close_remote
           end
 
-          unless stream.inflight
+          if frame.end_stream? && !stream.inflight
             stream.inflight = true
             @dispatcher.schedule([stream, @control_queue])
           end
