@@ -15,10 +15,10 @@ module GrpcKit
       def invoke(rpc)
         rpc.invoke(self, metadata: @transport.recv_headers.metadata)
       rescue GrpcKit::Errors::BadStatus => e
-        GrpcKit.logger.debug(e)
+        GrpcKit.logger.warn(e)
         send_status(status: e.code, msg: e.reason, metadata: {}) # TODO: metadata should be set
       rescue StandardError => e
-        GrpcKit.logger.debug(e)
+        GrpcKit.logger.warn(e)
         send_status(status: GrpcKit::StatusCodes::UNKNOWN, msg: e.message, metadata: {})
       end
 
