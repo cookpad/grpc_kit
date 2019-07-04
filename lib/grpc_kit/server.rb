@@ -19,7 +19,7 @@ module GrpcKit
       @rpc_descs = {}
       @mutex = Mutex.new
       @stopping = false
-      @settings = []
+      @settings = settings
 
       GrpcKit.logger.debug("Launched grpc_kit(v#{GrpcKit::VERSION})")
     end
