@@ -10,7 +10,7 @@ module GrpcKit
     # @param shutdown_timeout [Integer] Number of seconds to wait for the server shutdown
     # @param min_pool_size [Integer] A mininum thread pool size
     # @param max_pool_size [Integer] A maximum thread pool size
-    def initialize(interceptors: [], shutdown_timeout: 30, min_pool_size: nil, max_pool_size: nil)
+    def initialize(interceptors: [], shutdown_timeout: 30, min_pool_size: nil, max_pool_size: nil, settings: [])
       @interceptors = interceptors
       @shutdown_timeout = shutdown_timeout
       @min_pool_size = min_pool_size || GrpcKit::RpcDispatcher::DEFAULT_MIN
@@ -19,6 +19,7 @@ module GrpcKit
       @rpc_descs = {}
       @mutex = Mutex.new
       @stopping = false
+      @settings = []
 
       GrpcKit.logger.debug("Launched grpc_kit(v#{GrpcKit::VERSION})")
     end
@@ -47,7 +48,7 @@ module GrpcKit
       raise 'Stopping server' if @stopping
 
       establish_session(conn) do |s|
-        s.submit_settings([])
+        s.submit_settings(@settings)
         s.start
       end
     end
