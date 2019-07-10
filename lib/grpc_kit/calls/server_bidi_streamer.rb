@@ -20,11 +20,10 @@ module GrpcKit
 
       # @param data [Object] request message
       # @return [void]
-      def send_msg(data, last: false)
+      def send_msg(data)
         @stream.send_msg(
           data,
           @codec,
-          last: last,
           initial_metadata: @outgoing_initial_metadata,
           trailing_metadata: @outgoing_trailing_metadata,
           limit_size: @config.max_send_message_size,
