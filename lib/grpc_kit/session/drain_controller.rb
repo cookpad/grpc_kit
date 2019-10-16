@@ -53,7 +53,7 @@ module GrpcKit
             return
           end
 
-          session.submit_goaway(DS9::NO_ERROR, session.last_proc_stream_id)
+          session.submit_goaway(session.last_proc_stream_id, DS9::NO_ERROR)
           next_step
         when Status::SENT_GOAWAY
           # session.shutdown
