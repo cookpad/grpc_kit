@@ -1,6 +1,6 @@
 # GrpcKit
 
-[![Build Status](https://travis-ci.org/ganmacs/grpc_kit.svg?branch=master)](https://travis-ci.org/ganmacs/grpc_kit)
+[![Build Status](https://travis-ci.org/cookpad/grpc_kit.svg?branch=master)](https://travis-ci.org/cookpad/grpc_kit)
 [![Gem Version](https://badge.fury.io/rb/grpc_kit.svg)](https://badge.fury.io/rb/grpc_kit)
 
 A kit for creating [gRPC](https://grpc.io/) server/client in Ruby.
@@ -27,7 +27,7 @@ $ gem install grpc_kit
 
 ## Usage
 
-More Details in [examples directory](https://github.com/ganmacs/grpc_kit/tree/master/examples).
+More Details in [examples directory](https://github.com/cookpad/grpc_kit/tree/master/examples).
 
 ##### Server
 
@@ -59,11 +59,11 @@ $ bundle install
 
 ## Projects using grpc_kit
 
-* [griffin](https://github.com/ganmacs/griffin) Multi process gRPC server in Ruby
+* [griffin](https://github.com/cookpad/griffin) Multi process gRPC server in Ruby
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/ganmacs/grpc_kit.
+Bug reports and pull requests are welcome on GitHub at https://github.com/cookpad/grpc_kit.
 
 ## License
 
