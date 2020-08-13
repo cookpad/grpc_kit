@@ -32,14 +32,14 @@ module GrpcKit
     # @param opts [Hash]
     def request_response(rpc, request, opts = {})
       GrpcKit.logger.debug('Calling request_respose')
-      do_request(rpc, request, opts)
+      do_request(rpc, request, **opts)
     end
 
     # @param rpc [GrpcKit::Rpcs::Client::ClientStreamer]
     # @param opts [Hash]
     def client_streamer(rpc, opts = {})
       GrpcKit.logger.debug('Calling client_streamer')
-      do_request(rpc, nil, opts)
+      do_request(rpc, nil, **opts)
     end
 
     # @param rpc [GrpcKit::Rpcs::Client::ServerStreamer]
@@ -47,7 +47,7 @@ module GrpcKit
     # @param opts [Hash]
     def server_streamer(rpc, request, opts = {})
       GrpcKit.logger.debug('Calling server_streamer')
-      do_request(rpc, request, opts)
+      do_request(rpc, request, **opts)
     end
 
     # @param rpc [GrpcKit::Rpcs::Client::ServerStreamer]
@@ -55,7 +55,7 @@ module GrpcKit
     # @param opts [Hash]
     def bidi_streamer(rpc, _requests, opts = {})
       GrpcKit.logger.debug('Calling bidi_streamer')
-      do_request(rpc, nil, opts)
+      do_request(rpc, nil, **opts)
     end
 
     private

@@ -10,7 +10,7 @@ module GrpcKit
 
       alias outgoing_metadata metadata
 
-      def initialize(*)
+      def initialize(**)
         super
         @mutex = Mutex.new
         @send = false

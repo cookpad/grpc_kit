@@ -68,7 +68,7 @@ module GrpcKit
         end
 
         Class.new(GrpcKit::Client) do
-          def initialize(*)
+          def initialize(*, **)
             @rpcs = {}
             super
           end
