@@ -42,16 +42,8 @@ module GrpcKit
       def recv
         @send_mutex.synchronize { @send_cv.wait(@send_mutex) until @send } unless @send
 
-        loop do
-          msg = @mutex.synchronize do
-            @stream.recv_msg(blocking: false)
-          end
-
-          unless msg == :wait_readable
-            return msg
-          end
-        end
-
+        msg = @stream.recv_msg(blocking: true)
+        return msg if msg
         raise StopIteration
       rescue GrpcKit::Errors::BadStatus => e
         @reason = e

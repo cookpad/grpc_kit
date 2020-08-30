@@ -13,7 +13,6 @@ module GrpcKit
 
       delegate %i[end_write?] => :@pending_send_data
       delegate %i[end_read?] => :@pending_recv_data
-      delegate %i[close close_remote close_local close? close_remote? close_local?] => :@status
 
       attr_reader :headers, :pending_send_data, :pending_recv_data, :trailer_data, :status
       attr_accessor :inflight, :stream_id
@@ -59,9 +58,10 @@ module GrpcKit
       end
 
       # @param last [Boolean]
+      # @param blocking [Boolean]
       # @return [void]
-      def read_recv_data(last: false)
-        @pending_recv_data.read(last: last)
+      def read_recv_data(last: false, blocking:)
+        @pending_recv_data.read(last: last, blocking: blocking)
       end
 
       # @param name [String]
@@ -69,6 +69,18 @@ module GrpcKit
       # @return [void]
       def add_header(name, value)
         @headers.add(name, value)
+      end
+
+      delegate %i[close_local close? close_remote? close_local?] => :@status
+
+      def close
+        status.close
+        pending_recv_data.close
+      end
+
+      def close_remote
+        status.close_remote
+        pending_recv_data.close
       end
     end
   end
