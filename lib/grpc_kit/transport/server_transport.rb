@@ -38,6 +38,8 @@ module GrpcKit
       # @param last [Boolean]
       # @return [nil,String]
       def read_data(last: false)
+        data_in_buffer = unpack(nil)
+        return data_in_buffer if data_in_buffer
         unpack(recv_data(last: last))
       end
 
@@ -61,17 +63,7 @@ module GrpcKit
       private
 
       def recv_data(last: false)
-        loop do
-          data = @stream.read_recv_data(last: last)
-          return data if data
-
-          if @stream.close_remote?
-            # Call @stream.read_recv_data after checking @stream.close_remote?
-            # because of the order of nghttp2 callbacks which calls a callback receiving data before a callback receiving END_STREAM flag
-            data = @stream.read_recv_data(last: last)
-            return data
-          end
-        end
+        @stream.read_recv_data(last: last, blocking: true)
       end
 
       def send_data

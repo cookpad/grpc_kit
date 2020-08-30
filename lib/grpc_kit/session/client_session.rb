@@ -71,7 +71,7 @@ module GrpcKit
             raise 'trasport is closing'
           end
 
-          if @no_write_data
+          if @no_write_data && !@streams.empty?
             @io.wait_readable
 
             if want_read?
@@ -158,8 +158,10 @@ module GrpcKit
       def on_stream_close(stream_id, error_code)
         GrpcKit.logger.debug("on_stream_close stream_id=#{stream_id}, error_code=#{error_code}")
         stream = @streams.delete(stream_id)
-        return unless stream
-
+        unless stream
+          GrpcKit.logger.warn("on_stream_close stream_id=#{stream_id} not remain on ClientSession")
+          return
+        end
         stream.close
       end
 

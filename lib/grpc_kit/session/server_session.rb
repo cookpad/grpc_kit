@@ -180,6 +180,7 @@ module GrpcKit
             stream.inflight = true
             @dispatcher.schedule([stream, @control_queue])
           end
+
         when DS9::Frames::Headers
           if frame.end_stream?
             stream = @streams[frame.stream_id]
