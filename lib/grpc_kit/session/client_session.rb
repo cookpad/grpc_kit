@@ -27,6 +27,7 @@ module GrpcKit
         @draining = false
         @stop = false
         @no_write_data = false
+        @mutex = Mutex.new
       end
 
       # @param headers [Hash<String,String>]
@@ -63,26 +64,28 @@ module GrpcKit
 
       # @return [void]
       def run_once
-        return if @stop
+        @mutex.synchronize do
+          return if @stop
 
-        if @draining && @drain_time < Time.now
-          raise 'trasport is closing'
-        end
-
-        if @no_write_data
-          @io.wait_readable
-
-          if want_read?
-            do_read
-          end
-        else
-          rs, ws = @io.select
-          if !rs.empty? && want_read?
-            do_read
+          if @draining && @drain_time < Time.now
+            raise 'trasport is closing'
           end
 
-          if !ws.empty? && want_write?
-            send
+          if @no_write_data
+            @io.wait_readable
+
+            if want_read?
+              do_read
+            end
+          else
+            rs, ws = @io.select
+            if !rs.empty? && want_read?
+              do_read
+            end
+
+            if !ws.empty? && want_write?
+              send
+            end
           end
         end
       end
