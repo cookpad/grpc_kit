@@ -36,8 +36,7 @@ module GrpcKit
         end
       end
 
-      # This method not is expected to be call in the main thread where #send_msg is called
-      #
+      # This method is not thread safe, never call from multiple threads at once.
       # @return [Object] response object
       def recv
         @send_mutex.synchronize { @send_cv.wait(@send_mutex) until @send } unless @send
