@@ -50,6 +50,7 @@ module GrpcKit
         end
       end
 
+      # This method is not thread safe, never call from multiple threads at once.
       # @raise [StopIteration] when recving message finished
       # @param codec [GrpcKit::Codec]
       # @param last [Boolean]
