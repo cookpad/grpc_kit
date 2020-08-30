@@ -48,7 +48,8 @@ module GrpcKit
       # @param stream_id [Integer]
       # @return [void]
       def start(stream_id)
-        stream = @streams.fetch(stream_id)
+        stream = @streams[stream_id]
+        return unless stream # stream might have already close
 
         loop do
           if (!want_read? && !want_write?) || stream.close?
