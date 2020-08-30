@@ -13,7 +13,10 @@ module GrpcKit
       def initialize(*)
         super
         @mutex = Mutex.new
+
         @send = false
+        @send_cv = Thread::ConditionVariable.new
+        @send_mutex = Mutex.new
       end
 
       # @param data [Object] request message
@@ -27,14 +30,17 @@ module GrpcKit
           @stream.send_msg(data, metadata: outgoing_metadata)
         end
 
-        @send = true
+        @send_mutex.synchronize do
+          @send = true
+          @send_cv.broadcast
+        end
       end
 
       # This method not is expected to be call in the main thread where #send_msg is called
       #
       # @return [Object] response object
       def recv
-        sleep 0.1 until @send
+        @send_mutex.synchronize { @send_cv.wait(@send_mutex) until @send } unless @send
 
         loop do
           msg = @mutex.synchronize do
