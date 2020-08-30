@@ -12,7 +12,7 @@ module GrpcKit
 
       def initialize(*)
         super
-        @mutex = Mutex.new
+        @recv_mutex = Mutex.new
 
         @send = false
         @send_cv = Thread::ConditionVariable.new
@@ -26,18 +26,16 @@ module GrpcKit
           raise "Upstream returns an error status: #{@reason}"
         end
 
-        @mutex.synchronize do
-          @stream.send_msg(data, metadata: outgoing_metadata)
-        end
-
         @send_mutex.synchronize do
+          @stream.send_msg(data, metadata: outgoing_metadata)
           @send = true
           @send_cv.broadcast
         end
       end
 
-      # This method is not thread safe, never call from multiple threads at once.
+      # Receive a message from peer. This method is not thread safe, never call from multiple threads at once.
       # @return [Object] response object
+      # @raise [StopIteration]
       def recv
         @send_mutex.synchronize { @send_cv.wait(@send_mutex) until @send } unless @send
 
@@ -50,14 +48,16 @@ module GrpcKit
       end
 
       def close_and_send
-        @mutex.synchronize do
+        @send_mutex.synchronize do
           @stream.close_and_send
         end
       end
 
       # @yieldparam response [Object] each response object of bidi streaming RPC
       def each
-        loop { yield(recv) }
+        @recv_mutex.synchronize do
+          loop { yield(recv) }
+        end
       end
     end
   end
