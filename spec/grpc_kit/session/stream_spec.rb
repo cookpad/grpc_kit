@@ -19,7 +19,7 @@ RSpec.describe GrpcKit::Session::Stream do
     end
   end
 
-  describe '#read_recv-data' do
+  describe '#read_recv_data' do
     it 'call read method of @pending_recv_data' do
       expect(recv_data).to receive(:read).with(last: false, blocking: false)
 
