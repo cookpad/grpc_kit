@@ -90,15 +90,17 @@ module GrpcKit
         t = build_trailers(status, msg, metadata)
         @transport.write_data(data, last: true) if data
 
-        if @started
-          @transport.write_trailers(t)
-          @transport.end_write
-        elsif data
+        if @started # Complete stream
           @transport.write_trailers(t)
           @transport.end_write
 
-          start_response
-        else
+        elsif data # Complete stream with a data
+          @transport.write_trailers(t)
+          @transport.end_write
+
+          start_response # will send queued data and trailer.
+
+        else # return status (likely non-200) and immediately complete stream.
           @transport.end_write
           send_headers(trailers: t)
         end
