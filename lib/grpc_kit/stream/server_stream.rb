@@ -89,13 +89,16 @@ module GrpcKit
         t = build_trailers(status, msg, metadata)
         @transport.write_data(data, last: true) if data
 
-        @transport.end_write
         if @started
           @transport.write_trailers(t)
+          @transport.end_write
         elsif data
           @transport.write_trailers(t)
+          @transport.end_write
+
           start_response
         else
+          @transport.end_write
           send_headers(trailers: t)
         end
       end
