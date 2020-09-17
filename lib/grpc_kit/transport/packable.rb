@@ -24,8 +24,8 @@ module GrpcKit
       end
 
       class Unpacker
-        # Compressed bytes(1 Byte) + length bytes(4 Bytes)
-        METADATA_SIZE = 5
+        # Compressed-Flag (1 byte) + Message-Length (4 Bytes)
+        PREFIX_SIZE = 5
 
         def initialize
           @data = +''.b
@@ -44,14 +44,17 @@ module GrpcKit
 
         # @return [nil, Array<Boolean, Integer, String>]
         def read
-          return nil if @data.empty?
+          return nil if @data.bytesize < PREFIX_SIZE
+
+          prefix = @data.byteslice(0, PREFIX_SIZE)
+          compressed, length = prefix.unpack('CN')
+
+          return nil if (@data.bytesize-PREFIX_SIZE) < length
 
           d = @data.freeze
-          metadata = d.byteslice(0, METADATA_SIZE)
-          c, size = metadata.unpack('CN')
-          data = @data.byteslice(METADATA_SIZE, size)
-          @data = @data.byteslice(METADATA_SIZE + size, @data.bytesize)
-          [c != 0, size, data]
+          data = d.byteslice(PREFIX_SIZE, length)
+          @data = d.byteslice(PREFIX_SIZE + length, d.bytesize)
+          [compressed == 1, length, data]
         end
       end
     end
