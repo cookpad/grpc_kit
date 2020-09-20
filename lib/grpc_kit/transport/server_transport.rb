@@ -36,11 +36,16 @@ module GrpcKit
       end
 
       # @param last [Boolean]
-      # @return [nil,String]
+      # @return [nil,Array<Boolean,Integer,String>] nil when closed, tuple of Length-Prefixed-Message
       def read_data(last: false)
         data_in_buffer = unpack(nil)
         return data_in_buffer if data_in_buffer
-        unpack(recv_data(last: last))
+        loop do
+          data = recv_data(last: last)
+          return unpack(nil) unless data
+          message = unpack(data)
+          return message if message
+        end
       end
 
       # @param trailer [Hash<String, String>]
