@@ -41,16 +41,20 @@ module GrpcKit
       end
 
       # @param last [Boolean]
-      # @return [nil,String]
+      # @return [nil,Array<Boolean,Integer,String>] nil when closed, tuple of Length-Prefixed-Message
       def read_data(last: false)
-        data_in_buffer = unpack(nil) 
+        data_in_buffer = unpack(nil)
         return data_in_buffer if data_in_buffer
-
-        unpack(recv_data(last: last))
+        loop do
+          data = recv_data(last: last)
+          return unpack(nil) unless data
+          message = unpack(data)
+          return message if message
+        end
       end
 
       # @param last [Boolean]
-      # @return [nil,String]
+      # @return [nil,Array<Boolean,Integer,String>,Symbol] nil when closed, tuple of Length-Prefixed-Message, or :wait_readable
       def read_data_nonblock(last: false)
         data_in_buffer = unpack(nil) 
         return data_in_buffer if data_in_buffer
@@ -58,8 +62,10 @@ module GrpcKit
         data = nonblock_recv_data(last: last)
         if data == :wait_readable
           :wait_readable
+        elsif data == nil
+          return unpack(nil)
         else
-          unpack(data)
+          unpack(data) || :wait_readable
         end
       end
 
