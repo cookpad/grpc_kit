@@ -42,7 +42,7 @@ module GrpcKit
         return data_in_buffer if data_in_buffer
         loop do
           data = recv_data(last: last)
-          return unpack(nil) unless data
+          return nil unless data
           message = unpack(data)
           return message if message
         end
