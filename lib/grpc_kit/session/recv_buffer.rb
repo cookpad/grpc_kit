@@ -49,7 +49,7 @@ module GrpcKit
             begin
               data = @queue.shift(!blocking)
               @buffer << data if data
-            rescue ThreadError, ClosedQueueError
+            rescue ThreadError
               break
             end
 
