@@ -68,9 +68,9 @@ module GrpcKit
         end
 
         Class.new(GrpcKit::Client) do
-          def initialize(*)
+          def initialize(*args, **kwargs)
             @rpcs = {}
-            super
+            super(*args, **kwargs)
           end
 
           define_method(:build_rpcs) do |interceptors|
@@ -83,19 +83,19 @@ module GrpcKit
           rpc_descs_.each do |method_name, rpc_desc|
             if rpc_desc.request_response?
               define_method(method_name) do |request, opts = {}|
-                request_response(@rpcs.fetch(method_name), request, opts)
+                request_response(@rpcs.fetch(method_name), request, **opts)
               end
             elsif rpc_desc.client_streamer?
               define_method(method_name) do |opts = {}|
-                client_streamer(@rpcs.fetch(method_name), opts)
+                client_streamer(@rpcs.fetch(method_name), **opts)
               end
             elsif rpc_desc.server_streamer?
               define_method(method_name) do |request, opts = {}|
-                server_streamer(@rpcs.fetch(method_name), request, opts)
+                server_streamer(@rpcs.fetch(method_name), request, **opts)
               end
             elsif rpc_desc.bidi_streamer?
               define_method(method_name) do |requests, opts = {}, &blk|
-                bidi_streamer(@rpcs.fetch(method_name), requests, opts, &blk)
+                bidi_streamer(@rpcs.fetch(method_name), requests, **opts, &blk)
               end
             else
               raise "unknown #{rpc_desc}"
