@@ -46,15 +46,16 @@ module GrpcKit
           end
 
           continue = run_once
-          break unless continue
+          unless continue
+            break
+          end
         end
-      ensure
-        GrpcKit.logger.debug('Finish server session')
       end
 
       # @return [bool] return session can continue
       def run_once
         if @stop || !(want_read? || want_write?)
+          GrpcKit.logger.debug("Closing sessions to stop")
           # it could be called twice
           @streams.each_value(&:close)
           return false
@@ -88,6 +89,7 @@ module GrpcKit
 
       # @return [void]
       def shutdown
+        GrpcKit.logger.debug("Shutdown")
         stop
         @io.close
       rescue StandardError => e

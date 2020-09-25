@@ -9,7 +9,7 @@ module GrpcKit
       attr_reader :outgoing_initial_metadata, :outgoing_trailing_metadata
       alias incoming_metadata metadata
 
-      def initialize(*)
+      def initialize(*_args, **_kwargs)
         super
 
         @outgoing_initial_metadata = {}
