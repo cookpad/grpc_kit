@@ -150,7 +150,7 @@ module GrpcKit
         data = @streams[stream_id].pending_send_data.read(length)
         if data.nil?
           submit_trailer(stream_id, stream.trailer_data)
-          @io.wake!
+          @io.wake!(:submit_trailer)
 
           # trailer header
           false

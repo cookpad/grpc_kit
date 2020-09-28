@@ -62,7 +62,7 @@ module GrpcKit
       end
 
       # Wake thread blocked at #select method
-      def wake!
+      def wake!(memo = nil)
         @wake_i.write_nonblock(?\0, exception: false)
       rescue Errno::EPIPE
       rescue IOError
