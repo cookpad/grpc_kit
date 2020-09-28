@@ -29,7 +29,7 @@ module GrpcKit
         @stop = false
         @inflights = []
         @drain_controller = GrpcKit::Session::DrainController.new
-        @control_queue = GrpcKit::Session::ControlQueue.new
+        @control_queue = GrpcKit::Session::ControlQueue.new(waker: @io.method(:wake!))
         @dispatcher = dispatcher
       end
 
@@ -64,7 +64,7 @@ module GrpcKit
           @drain_controller.next(self)
         end
 
-        rs, ws = @io.select
+        rs, ws = @io.select(timeout: 5, write: want_write?)
 
         if !rs.empty? && want_read?
           do_read
@@ -148,6 +148,8 @@ module GrpcKit
         data = @streams[stream_id].pending_send_data.read(length)
         if data.nil?
           submit_trailer(stream_id, stream.trailer_data)
+          @io.wake!
+
           # trailer header
           false
         else
