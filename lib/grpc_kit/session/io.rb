@@ -62,6 +62,7 @@ module GrpcKit
       end
 
       # Wake thread blocked at #select method
+      # @param [Symbol] Indicate what event needed to invoke blocking thread. This argument is for debugging purpose.
       def wake!(memo = nil)
         @wake_i.write_nonblock(?\0, exception: false)
       rescue Errno::EPIPE
