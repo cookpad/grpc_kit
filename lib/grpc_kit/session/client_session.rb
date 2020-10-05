@@ -18,7 +18,7 @@ module GrpcKit
 
       # @param io [GrpcKit::Session::IO]
       # @param opts [Hash]
-      def initialize(io, opts = {})
+      def initialize(io, **opts)
         super() # initialize DS9::Session
 
         @io = io
