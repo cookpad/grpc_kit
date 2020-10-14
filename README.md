@@ -1,6 +1,6 @@
 # GrpcKit
 
-[![Build Status](https://travis-ci.org/cookpad/grpc_kit.svg?branch=master)](https://travis-ci.org/cookpad/grpc_kit)
+[![Build Sttaus](https://github.com/cookpad/grpc_kit/workflows/ci/badge.svg)](https://github.com/cookpad/grpc_kit/actions)
 [![Gem Version](https://badge.fury.io/rb/grpc_kit.svg)](https://badge.fury.io/rb/grpc_kit)
 
 A kit for creating [gRPC](https://grpc.io/) server/client in Ruby.
