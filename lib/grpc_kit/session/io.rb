@@ -7,9 +7,12 @@ module GrpcKit
     class IO
       def initialize(io)
         @io = io
+        @wake_o, @wake_i = ::IO.pipe
       end
 
       def close
+        @wake_i.close
+        @wake_o.close
         @io.close
       end
 
@@ -52,8 +55,19 @@ module GrpcKit
 
       # Blocking until io object is readable or writable
       # @return [void]
-      def select(timeout = 1)
-        ::IO.select([@io], [@io], [], timeout)
+      def select(timeout: 1, write: true)
+        rs, ws = ::IO.select([@io, @wake_o], write ? [@io] : [], [], timeout)
+        @wake_o.read(@wake_o.stat.size) if rs&.delete(@wake_o) && !@wake_o.closed?
+        [rs || [], ws || []]
+      end
+
+      # Wake thread blocked at #select method
+      # @param [Symbol] Indicate what event needed to invoke blocking thread. This argument is for debugging purpose.
+      def wake!(memo = nil)
+        @wake_i.write_nonblock(?\0, exception: false)
+      rescue Errno::EPIPE
+      rescue IOError
+        raise unless @wake_i.closed?
       end
 
       # @return [void]
