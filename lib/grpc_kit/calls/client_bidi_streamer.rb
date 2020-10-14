@@ -12,8 +12,11 @@ module GrpcKit
 
       def initialize(*)
         super
-        @mutex = Mutex.new
+        @recv_mutex = Mutex.new
+
         @send = false
+        @send_cv = Thread::ConditionVariable.new
+        @send_mutex = Mutex.new
       end
 
       # @param data [Object] request message
@@ -23,29 +26,21 @@ module GrpcKit
           raise "Upstream returns an error status: #{@reason}"
         end
 
-        @mutex.synchronize do
+        @send_mutex.synchronize do
           @stream.send_msg(data, metadata: outgoing_metadata)
+          @send = true
+          @send_cv.broadcast
         end
-
-        @send = true
       end
 
-      # This method not is expected to be call in the main thread where #send_msg is called
-      #
+      # Receive a message from peer. This method is not thread safe, never call from multiple threads at once.
       # @return [Object] response object
+      # @raise [StopIteration]
       def recv
-        sleep 0.1 until @send
+        @send_mutex.synchronize { @send_cv.wait(@send_mutex) until @send } unless @send
 
-        loop do
-          msg = @mutex.synchronize do
-            @stream.recv_msg(blocking: false)
-          end
-
-          unless msg == :wait_readable
-            return msg
-          end
-        end
-
+        msg = @stream.recv_msg(blocking: true)
+        return msg if msg
         raise StopIteration
       rescue GrpcKit::Errors::BadStatus => e
         @reason = e
@@ -53,14 +48,16 @@ module GrpcKit
       end
 
       def close_and_send
-        @mutex.synchronize do
+        @send_mutex.synchronize do
           @stream.close_and_send
         end
       end
 
       # @yieldparam response [Object] each response object of bidi streaming RPC
       def each
-        loop { yield(recv) }
+        @recv_mutex.synchronize do
+          loop { yield(recv) }
+        end
       end
     end
   end

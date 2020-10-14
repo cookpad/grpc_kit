@@ -27,6 +27,7 @@ module GrpcKit
         @draining = false
         @stop = false
         @no_write_data = false
+        @mutex = Mutex.new
       end
 
       # @param headers [Hash<String,String>]
@@ -47,7 +48,8 @@ module GrpcKit
       # @param stream_id [Integer]
       # @return [void]
       def start(stream_id)
-        stream = @streams.fetch(stream_id)
+        stream = @streams[stream_id]
+        return unless stream # stream might have already close
 
         loop do
           if (!want_read? && !want_write?) || stream.close?
@@ -63,26 +65,28 @@ module GrpcKit
 
       # @return [void]
       def run_once
-        return if @stop
+        @mutex.synchronize do
+          return if @stop
 
-        if @draining && @drain_time < Time.now
-          raise 'trasport is closing'
-        end
-
-        if @no_write_data
-          @io.wait_readable
-
-          if want_read?
-            do_read
-          end
-        else
-          rs, ws = @io.select
-          if !rs.empty? && want_read?
-            do_read
+          if @draining && @drain_time < Time.now
+            raise 'trasport is closing'
           end
 
-          if !ws.empty? && want_write?
-            send
+          if @no_write_data && !@streams.empty?
+            @io.wait_readable
+
+            if want_read?
+              do_read
+            end
+          else
+            rs, ws = @io.select
+            if !rs.empty? && want_read?
+              do_read
+            end
+
+            if !ws.empty? && want_write?
+              send
+            end
           end
         end
       end
@@ -155,8 +159,10 @@ module GrpcKit
       def on_stream_close(stream_id, error_code)
         GrpcKit.logger.debug("on_stream_close stream_id=#{stream_id}, error_code=#{error_code}")
         stream = @streams.delete(stream_id)
-        return unless stream
-
+        unless stream
+          GrpcKit.logger.warn("on_stream_close stream_id=#{stream_id} not remain on ClientSession")
+          return
+        end
         stream.close
       end
 

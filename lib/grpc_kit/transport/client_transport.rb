@@ -41,20 +41,31 @@ module GrpcKit
       end
 
       # @param last [Boolean]
-      # @return [nil,String]
+      # @return [nil,Array<Boolean,Integer,String>] nil when closed, tuple of Length-Prefixed-Message
       def read_data(last: false)
-        unpack(recv_data(last: last))
+        data_in_buffer = unpack(nil)
+        return data_in_buffer if data_in_buffer
+        loop do
+          data = recv_data(last: last)
+          return unpack(nil) unless data
+          message = unpack(data)
+          return message if message
+        end
       end
 
       # @param last [Boolean]
-      # @return [nil,String]
+      # @return [nil,Array<Boolean,Integer,String>,Symbol] nil when closed, tuple of Length-Prefixed-Message, or :wait_readable
       def read_data_nonblock(last: false)
+        data_in_buffer = unpack(nil) 
+        return data_in_buffer if data_in_buffer
+
         data = nonblock_recv_data(last: last)
         if data == :wait_readable
-          unpack(nil) # nil is needed read buffered data
           :wait_readable
+        elsif data == nil
+          return unpack(nil)
         else
-          unpack(data)
+          unpack(data) || :wait_readable
         end
       end
 
@@ -78,33 +89,26 @@ module GrpcKit
       end
 
       def nonblock_recv_data(last: false)
-        data = @stream.read_recv_data(last: last)
-        return data unless data.nil?
-
-        if @stream.close_remote?
-          return nil
-        end
-
-        @session.run_once
+        data = @stream.read_recv_data(last: last, blocking: false)
+        return data if data.is_a?(String)
+        return nil unless data
 
         :wait_readable
       end
 
       def recv_data(last: false)
         loop do
-          data = @stream.read_recv_data(last: last)
-          return data unless data.nil?
-
-          if @stream.close_remote?
-            # it do not receive data which we need, it may receive invalid grpc-status
-            unless @stream.end_read?
-              return nil
-            end
-
+          # FIXME: GrpcKit::Client isn't threaded, this cannot be blocked to trigger ClientSession#run_once appropriately
+          #        but run_once would block while no outbound requests. Could be problematic on BiDi calls.
+          data = @stream.read_recv_data(last: last, blocking: false)
+          case data
+          when :wait_readable
+            @session.run_once
+          when String
+            return data
+          when nil
             return nil
           end
-
-          @session.run_once
         end
       end
 

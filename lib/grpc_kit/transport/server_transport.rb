@@ -36,9 +36,16 @@ module GrpcKit
       end
 
       # @param last [Boolean]
-      # @return [nil,String]
+      # @return [nil,Array<Boolean,Integer,String>] nil when closed, tuple of Length-Prefixed-Message
       def read_data(last: false)
-        unpack(recv_data(last: last))
+        data_in_buffer = unpack(nil)
+        return data_in_buffer if data_in_buffer
+        loop do
+          data = recv_data(last: last)
+          return nil unless data
+          message = unpack(data)
+          return message if message
+        end
       end
 
       # @param trailer [Hash<String, String>]
@@ -61,17 +68,7 @@ module GrpcKit
       private
 
       def recv_data(last: false)
-        loop do
-          data = @stream.read_recv_data(last: last)
-          return data if data
-
-          if @stream.close_remote?
-            # Call @stream.read_recv_data after checking @stream.close_remote?
-            # because of the order of nghttp2 callbacks which calls a callback receiving data before a callback receiving END_STREAM flag
-            data = @stream.read_recv_data(last: last)
-            return data
-          end
-        end
+        @stream.read_recv_data(last: last, blocking: true)
       end
 
       def send_data

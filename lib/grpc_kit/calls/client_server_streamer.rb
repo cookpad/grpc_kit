@@ -16,6 +16,7 @@ module GrpcKit
         @stream.send_msg(data, last: true, metadata: outgoing_metadata)
       end
 
+      # This method is not thread safe, never call from multiple threads at once.
       # @return [Object] response object
       def recv
         @stream.recv_msg
