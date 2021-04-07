@@ -38,6 +38,15 @@ module GrpcKit
       @service_name = service_name
     end
 
+    # @return [String]
+    attr_reader :name, :service_name
+
+    # @return [Class, GrpcKit::Grpc::Stream]
+    attr_reader :marshal, :unmarshal
+
+    # @return [Symbol]
+    attr_reader :marshal_method, :unmarshal_method
+
     # @param handler [GrpcKit::Grpc::GenericService]
     # @param interceptors [Array<GrpcKit::Grpc::ServerInterceptor>]
     # @return [#invoke] Server version of rpc class
