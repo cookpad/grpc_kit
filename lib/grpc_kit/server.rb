@@ -10,11 +10,15 @@ module GrpcKit
     # @param shutdown_timeout [Integer] Number of seconds to wait for the server shutdown
     # @param min_pool_size [Integer] A mininum thread pool size
     # @param max_pool_size [Integer] A maximum thread pool size
-    def initialize(interceptors: [], shutdown_timeout: 30, min_pool_size: nil, max_pool_size: nil, settings: [])
+    # @param default_max_receive_message_size [Integer, nil] Specify the default maximum size of inbound message in bytes. Default to 4MB. A value specified on RpcDesc take precedence over this configuration.
+    # @param default_max_send_message_size [Integer, nil] Specify the default maximum size of outbound message in bytes. Default to 4MB. A value specified on RpcDesc take precedence over this configuration.
+    def initialize(interceptors: [], shutdown_timeout: 30, min_pool_size: nil, max_pool_size: nil, settings: [], default_max_receive_message_size: nil, default_max_send_message_size: nil)
       @interceptors = interceptors
       @shutdown_timeout = shutdown_timeout
       @min_pool_size = min_pool_size || GrpcKit::RpcDispatcher::DEFAULT_MIN
       @max_pool_size = max_pool_size || GrpcKit::RpcDispatcher::DEFAULT_MAX
+      @default_max_receive_message_size = default_max_receive_message_size
+      @default_max_send_message_size = default_max_send_message_size
       @sessions = []
       @rpc_descs = {}
       @mutex = Mutex.new
@@ -37,8 +41,12 @@ module GrpcKit
           raise "Duplicated method registered #{path}, class: #{klass}"
         end
 
-        s = handler.is_a?(Class) ? handler.new : handler
-        @rpc_descs[path] = rpc_desc.build_server(s, interceptors: @interceptors)
+        @rpc_descs[path] = rpc_desc.build_server(
+          handler.is_a?(Class) ? handler.new : handler,
+          interceptors: @interceptors,
+          max_receive_message_size: @default_max_receive_message_size,
+          max_send_message_size: @default_max_send_message_size,
+        )
       end
     end
 

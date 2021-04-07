@@ -7,6 +7,8 @@ require 'grpc_kit/grpc/stream'
 
 module GrpcKit
   module Grpc
+    # Methods under GrpcKit::Grpc::Dsl is available for classes include GRPC::GenericService.
+    # See also: GrpcKit::Grpc::GenericService
     module Dsl
       # @param value [String]
       attr_accessor :service_name
@@ -73,9 +75,9 @@ module GrpcKit
             super
           end
 
-          define_method(:build_rpcs) do |interceptors|
+          define_method(:build_rpcs) do |interceptors, **options|
             rpc_descs_.each do |method_name, rpc_desc|
-              @rpcs[method_name] = rpc_desc.build_client(interceptors: interceptors)
+              @rpcs[method_name] = rpc_desc.build_client(interceptors: interceptors, **options)
             end
           end
           private :build_rpcs
@@ -107,6 +109,15 @@ module GrpcKit
       # @return [Hash<String,GrpcKit::RpcDesc>]
       def rpc_descs
         @rpc_descs ||= {}
+      end
+
+      # @param method_name [Symbol] Ruby method name to find a RpcDesc
+      # @yield [GrpcKit::RpcDesc] Corresponding RpcDesc object for the specified method_name
+      def configure_rpc(method_name)
+        rpc_desc = rpc_descs.each_value.find { |rd| rd.ruby_style_name == method_name }
+        raise "No RPC found for the method: #{method_name.inspect}" unless rpc_desc
+
+        yield rpc_desc
       end
     end
   end
