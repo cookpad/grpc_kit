@@ -29,17 +29,13 @@ module GrpcKit
     # @param marshal_method [Symbol] method name of marshaling which marshal is called this method
     # @param unmarshal_method [Symbol] method name of unmarshaling which unmarshal is called this method
     # @param service_name [String]
-    # @param max_server_message_size [Integer, nil] Specify maximum size of server outbound message in bytes. Default to 4MB. Takes precedence over the value specified to GrpcKit::Server and GrpcKit::Client instance.
-    # @param max_client_message_size [Integer, nil] Specify maximum size of client outbound message in bytes. Default to 4MB. Takes precedence over the value specified to GrpcKit::Server and GrpcKit::Client instance.
-    def initialize(name:, marshal:, unmarshal:, marshal_method:, unmarshal_method:, service_name:, max_receive_message_size: nil, max_send_message_size: nil)
+    def initialize(name:, marshal:, unmarshal:, marshal_method:, unmarshal_method:, service_name:)
       @name = name
       @marshal = marshal
       @unmarshal = unmarshal
       @marshal_method = marshal_method
       @unmarshal_method = unmarshal_method
       @service_name = service_name
-      @max_server_message_size = max_receive_message_size
-      @max_client_message_size = max_send_message_size
     end
 
     # @return [String]
@@ -50,9 +46,6 @@ module GrpcKit
 
     # @return [Symbol]
     attr_reader :marshal_method, :unmarshal_method
-
-    # @return [Integer, nil]
-    attr_accessor :max_server_message_size, :max_client_message_size
 
     # @param handler [GrpcKit::Grpc::GenericService]
     # @param interceptors [Array<GrpcKit::Grpc::ServerInterceptor>]
@@ -69,8 +62,8 @@ module GrpcKit
         service_name: @service_name,
         method_name: @name,
         interceptor: inter,
-        max_receive_message_size: @max_client_message_size || max_receive_message_size || GrpcKit::MAX_SERVER_RECEIVE_MESSAGE_SIZE,
-        max_send_message_size: @max_server_message_size || max_send_message_size || GrpcKit::MAX_SERVER_SEND_MESSAGE_SIZE,
+        max_receive_message_size: max_receive_message_size || GrpcKit::MAX_SERVER_RECEIVE_MESSAGE_SIZE,
+        max_send_message_size: max_send_message_size || GrpcKit::MAX_SERVER_SEND_MESSAGE_SIZE,
       )
       server.new(handler, config)
     end
@@ -89,8 +82,8 @@ module GrpcKit
         service_name: @service_name,
         method_name: @name,
         interceptor: inter,
-        max_receive_message_size: @max_server_message_size || max_receive_message_size || GrpcKit::MAX_CLIENT_RECEIVE_MESSAGE_SIZE,
-        max_send_message_size: @max_client_message_size || max_send_message_size || GrpcKit::MAX_CLIENT_SEND_MESSAGE_SIZE,
+        max_receive_message_size: max_receive_message_size || GrpcKit::MAX_CLIENT_RECEIVE_MESSAGE_SIZE,
+        max_send_message_size: max_send_message_size || GrpcKit::MAX_CLIENT_SEND_MESSAGE_SIZE,
       )
       client.new(config)
     end

@@ -110,15 +110,6 @@ module GrpcKit
       def rpc_descs
         @rpc_descs ||= {}
       end
-
-      # @param method_name [Symbol] Ruby method name to find a RpcDesc
-      # @yield [GrpcKit::RpcDesc] Corresponding RpcDesc object for the specified method_name
-      def configure_rpc(method_name)
-        rpc_desc = rpc_descs.each_value.find { |rd| rd.ruby_style_name == method_name }
-        raise "No RPC found for the method: #{method_name.inspect}" unless rpc_desc
-
-        yield rpc_desc
-      end
     end
   end
 end

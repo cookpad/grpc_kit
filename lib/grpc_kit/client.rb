@@ -12,9 +12,9 @@ module GrpcKit
     # @param authority [nil, String]
     # @param interceptors [Array<GrpcKit::Grpc::ClientInterceptor>] list of interceptors
     # @param timeout [nil, Integer, String]
-    # @param default_max_receive_message_size [Integer, nil] Specify the default maximum size of inbound message in bytes. Default to 4MB. A value specified on RpcDesc take precedence over this configuration.
-    # @param default_max_send_message_size [Integer, nil] Specify the default maximum size of outbound message in bytes. Default to 4MB. A value specified on RpcDesc take precedence over this configuration.
-    def initialize(sock, authority: nil, interceptors: [], timeout: nil, default_max_receive_message_size: nil, default_max_send_message_size: nil)
+    # @param max_receive_message_size [Integer, nil] Specify the default maximum size of inbound message in bytes. Default to 4MB.
+    # @param max_send_message_size [Integer, nil] Specify the default maximum size of outbound message in bytes. Default to 4MB.
+    def initialize(sock, authority: nil, interceptors: [], timeout: nil, max_receive_message_size: nil, max_send_message_size: nil)
       @sock = sock
       @authority =
         if authority
@@ -29,8 +29,8 @@ module GrpcKit
       # Defined at GrpcKit::Grpc::Dsl#.rpc_stub_class
       build_rpcs(
         interceptors,
-        max_receive_message_size: default_max_receive_message_size,
-        max_send_message_size: default_max_send_message_size,
+        max_receive_message_size: max_receive_message_size,
+        max_send_message_size: max_send_message_size,
       )
     end
 
