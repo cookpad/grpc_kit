@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.0 (2021-04-22)
+
+- improve: Configurable max_receive_message_size and max_send_message_size ([#33](https://github.com/cookpad/grpc_kit/pull/33))
+
 ## v0.4.0 (2020-10-23)
 
 - bug: Fix Ruby 2.7 keyword argument separation warnings ([#27](https://github.com/cookpad/grpc_kit/pull/27))
