@@ -19,6 +19,9 @@ module GrpcKit
     end
 
     class ServerRpc
+      # @return [GrpcKit::MethodConfig]
+      attr_reader :config
+
       # @param handler [GrpcKit::Grpc::GenericService]
       # @param config [GrpcKit::MethodConfig]
       def initialize(handler, config)

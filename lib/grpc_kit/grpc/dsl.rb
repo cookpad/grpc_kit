@@ -7,6 +7,8 @@ require 'grpc_kit/grpc/stream'
 
 module GrpcKit
   module Grpc
+    # Methods under GrpcKit::Grpc::Dsl is available for classes include GRPC::GenericService.
+    # See also: GrpcKit::Grpc::GenericService
     module Dsl
       # @param value [String]
       attr_accessor :service_name
@@ -73,9 +75,9 @@ module GrpcKit
             super
           end
 
-          define_method(:build_rpcs) do |interceptors|
+          define_method(:build_rpcs) do |interceptors, **options|
             rpc_descs_.each do |method_name, rpc_desc|
-              @rpcs[method_name] = rpc_desc.build_client(interceptors: interceptors)
+              @rpcs[method_name] = rpc_desc.build_client(interceptors: interceptors, **options)
             end
           end
           private :build_rpcs

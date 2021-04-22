@@ -1,6 +1,11 @@
 # frozen_string_literal: true
 
 module GrpcKit
+  MAX_SERVER_RECEIVE_MESSAGE_SIZE = 1024 * 1024 * 4
+  MAX_SERVER_SEND_MESSAGE_SIZE = 1024 * 1024 * 4
+  MAX_CLIENT_RECEIVE_MESSAGE_SIZE = 1024 * 1024 * 4
+  MAX_CLIENT_SEND_MESSAGE_SIZE = 1024 * 1024 * 4
+
   MethodConfig = Struct.new(
     :path,
     :ruby_style_method_name,
@@ -12,11 +17,6 @@ module GrpcKit
     :max_send_message_size,
     :compressor_type,
   ) do
-    MAX_SERVER_RECEIVE_MESSAGE_SIZE = 1024 * 1024 * 4
-    MAX_SERVER_SEND_MESSAGE_SIZE = 1024 * 1024 * 4
-    MAX_CLIENT_RECEIVE_MESSAGE_SIZE = 1024 * 1024 * 4
-    MAX_CLIENT_SEND_MESSAGE_SIZE = 1024 * 1024 * 4
-
     def self.build_for_server(
           path:, ruby_style_method_name:, codec:, service_name:, method_name:, interceptor:,
           max_receive_message_size: MAX_SERVER_RECEIVE_MESSAGE_SIZE, max_send_message_size: MAX_SERVER_SEND_MESSAGE_SIZE, compressor_type: ''

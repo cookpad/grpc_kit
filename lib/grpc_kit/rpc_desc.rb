@@ -38,10 +38,21 @@ module GrpcKit
       @service_name = service_name
     end
 
+    # @return [String]
+    attr_reader :name, :service_name
+
+    # @return [Class, GrpcKit::Grpc::Stream]
+    attr_reader :marshal, :unmarshal
+
+    # @return [Symbol]
+    attr_reader :marshal_method, :unmarshal_method
+
     # @param handler [GrpcKit::Grpc::GenericService]
     # @param interceptors [Array<GrpcKit::Grpc::ServerInterceptor>]
+    # @param max_receive_message_size [Integer, nil]
+    # @param max_send_message_size [Integer, nil]
     # @return [#invoke] Server version of rpc class
-    def build_server(handler, interceptors: [])
+    def build_server(handler, interceptors: [], max_send_message_size: nil, max_receive_message_size: nil)
       inter = interceptors.empty? ? nil : server_interceptor.new(interceptors)
 
       config = GrpcKit::MethodConfig.build_for_server(
@@ -51,13 +62,17 @@ module GrpcKit
         service_name: @service_name,
         method_name: @name,
         interceptor: inter,
+        max_receive_message_size: max_receive_message_size || GrpcKit::MAX_SERVER_RECEIVE_MESSAGE_SIZE,
+        max_send_message_size: max_send_message_size || GrpcKit::MAX_SERVER_SEND_MESSAGE_SIZE,
       )
       server.new(handler, config)
     end
 
     # @param interceptors [Array<GrpcKit::Grpc::ClientInterceptor>]
+    # @param max_receive_message_size [Integer, nil]
+    # @param max_send_message_size [Integer, nil]
     # @return [#invoke] Client version of rpc class
-    def build_client(interceptors: [])
+    def build_client(interceptors: [], max_send_message_size: nil, max_receive_message_size: nil)
       inter = interceptors.empty? ? nil : client_interceptor.new(interceptors)
 
       config = GrpcKit::MethodConfig.build_for_client(
@@ -67,6 +82,8 @@ module GrpcKit
         service_name: @service_name,
         method_name: @name,
         interceptor: inter,
+        max_receive_message_size: max_receive_message_size || GrpcKit::MAX_CLIENT_RECEIVE_MESSAGE_SIZE,
+        max_send_message_size: max_send_message_size || GrpcKit::MAX_CLIENT_SEND_MESSAGE_SIZE,
       )
       client.new(config)
     end
