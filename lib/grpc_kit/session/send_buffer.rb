@@ -65,6 +65,10 @@ module GrpcKit
         DS9::ERR_DEFERRED
       end
 
+      def eof?
+        end_write? && @mutex.synchronize { @buffer.empty? }
+      end
+
       private
 
       def do_read(size = nil)
