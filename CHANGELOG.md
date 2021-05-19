@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.1 (2021-05-19)
+
+- improve: Set END_STREAM flag on the last DATA frame on request stream ([#34](https://github.com/cookpad/grpc_kit/pull/34))
+
 ## v0.5.0 (2021-04-22)
 
 - improve: Configurable max_receive_message_size and max_send_message_size ([#33](https://github.com/cookpad/grpc_kit/pull/33))
