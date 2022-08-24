@@ -29,7 +29,7 @@ RSpec.describe 'client_streamer' do
   it 'returns valid response' do
     expect(call).to receive(:call).once.and_call_original
     stub = Hello::Greeter::Stub.new(ServerHelper.connect)
-    stream = stub.hello_client_streamer({})
+    stream = stub.hello_client_streamer
     3.times do |i|
       stream.send_msg(Hello::Request.new(msg: "message #{i}"))
     end
@@ -48,7 +48,7 @@ RSpec.describe 'client_streamer' do
       expect(call).to receive(:call).once.and_call_original
       expect(client_streamer_interceptor).to receive(:call).once.and_call_original
       stub = Hello::Greeter::Stub.new(ServerHelper.connect)
-      stream = stub.hello_client_streamer({})
+      stream = stub.hello_client_streamer
       3.times do |i|
         stream.send_msg(Hello::Request.new(msg: "message #{i}"))
       end
@@ -60,7 +60,7 @@ RSpec.describe 'client_streamer' do
   context 'when timeout is set' do
     it 'raise DeadlineExceeded' do
       stub = Hello::Greeter::Stub.new(ServerHelper.connect, timeout: 1)
-      stream = stub.hello_client_streamer({})
+      stream = stub.hello_client_streamer
 
       sleep 0.5
       stream.send_msg(Hello::Request.new(msg: 'message 0'))
@@ -82,7 +82,7 @@ RSpec.describe 'client_streamer' do
 
       it 'raise DeadlineExceeded' do
         stub = Hello::Greeter::Stub.new(ServerHelper.connect, timeout: 1)
-        stream = stub.hello_client_streamer({})
+        stream = stub.hello_client_streamer
 
         3.times do |i|
           stream.send_msg(Hello::Request.new(msg: "message #{i}"))
@@ -97,7 +97,7 @@ RSpec.describe 'client_streamer' do
     it 'raises and unimplmented error' do
       expect(call).not_to receive(:call)
       stub = Hello2::Greeter::Stub.new(ServerHelper.connect)
-      stream = stub.hello_client_streamer({})
+      stream = stub.hello_client_streamer
       stream.send_msg(Hello2::Request.new(msg: 'message'))
       expect { stream.recv }.to raise_error(GrpcKit::Errors::Unimplemented)
     end
@@ -107,7 +107,7 @@ RSpec.describe 'client_streamer' do
     it 'raises and internal error' do
       expect(call).not_to receive(:call)
       stub = Hello::Greeter::Stub.new(ServerHelper.connect)
-      stream = stub.hello_client_streamer({})
+      stream = stub.hello_client_streamer
       expect { stream.send_msg(Hello2::Request.new(msg: 'message')) }.to raise_error(GrpcKit::Errors::Internal)
     end
   end
