@@ -11,12 +11,22 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ruby_version:
-          - 2.5
-          - 2.6
-          - 2.7
-          - 3.0
-          - 3.1
+        ruby_version: ['2.5', '2.6', '2.7', '3.0', '3.1']
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '${{ matrix.ruby_version }}'
+          bundler-cache: true
+
+      - run: 'bundle exec rake'
+
+  truffleruby:
+    name: truffleruby
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby_version: [truffleruby-head]
     steps:
       - uses: actions/checkout@v2
       - uses: ruby/setup-ruby@v1
