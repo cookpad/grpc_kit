@@ -17,9 +17,6 @@ module GrpcKit
       @rpcs = rpcs
       @max_pool_size = max
       @min_pool_size = min
-      unless max == min
-        @auto_trimmer = AutoTrimmer.new(self, interval: interval).tap(&:start!)
-      end
 
       @shutdown = false
       @tasks = Queue.new
@@ -28,6 +25,10 @@ module GrpcKit
       @mutex = Mutex.new
 
       @min_pool_size.times { spawn_thread }
+
+      unless max == min
+        @auto_trimmer = AutoTrimmer.new(self, interval: interval).tap(&:start!)
+      end
     end
 
     # @param task [Object] task to dispatch
