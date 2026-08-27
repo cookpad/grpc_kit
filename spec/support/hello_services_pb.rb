@@ -8,16 +8,16 @@ module Hello
   module Greeter
     class Service
 
-      include GRPC::GenericService
+      include ::GRPC::GenericService
 
       self.marshal_class_method = :encode
       self.unmarshal_class_method = :decode
       self.service_name = 'hello.Greeter'
 
-      rpc :HelloRequestResponse, Request, Response
-      rpc :HelloServerStreamer, Request, stream(Response)
-      rpc :HelloClientStreamer, stream(Request), Response
-      rpc :HelloBidiStreamer, stream(Request), stream(Response)
+      rpc :HelloRequestResponse, ::Hello::Request, ::Hello::Response
+      rpc :HelloServerStreamer, ::Hello::Request, stream(::Hello::Response)
+      rpc :HelloClientStreamer, stream(::Hello::Request), ::Hello::Response
+      rpc :HelloBidiStreamer, stream(::Hello::Request), stream(::Hello::Response)
     end
 
     Stub = Service.rpc_stub_class

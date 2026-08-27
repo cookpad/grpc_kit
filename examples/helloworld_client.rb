@@ -4,7 +4,6 @@ $LOAD_PATH.unshift File.expand_path('./examples/helloworld')
 
 require 'grpc_kit'
 require 'socket'
-require 'pry'
 require 'helloworld_services_pb'
 
 HOST = 'localhost'
