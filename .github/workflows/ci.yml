@@ -1,5 +1,5 @@
 name: ci
-on: 
+on:
   push:
     branches:
       - master
@@ -11,9 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ruby_version: ['2.7', '3.0', '3.1']
+        ruby_version: ['3.3', '3.4', '4.0']
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v7
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '${{ matrix.ruby_version }}'
@@ -28,7 +28,7 @@ jobs:
       matrix:
         ruby_version: [truffleruby-head]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v7
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '${{ matrix.ruby_version }}'

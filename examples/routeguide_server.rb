@@ -3,8 +3,8 @@
 $LOAD_PATH.unshift File.expand_path('./examples/routeguide')
 
 require 'grpc_kit'
-require 'pry'
 require 'json'
+require 'socket'
 require 'routeguide_services_pb'
 
 class Server < Routeguide::RouteGuide::Service
