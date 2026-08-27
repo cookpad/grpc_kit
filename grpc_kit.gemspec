@@ -25,10 +25,11 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'ds9', '>= 1.4.0'
   spec.add_dependency 'google-protobuf', '>= 3.7.0'
   spec.add_dependency 'googleapis-common-protos-types', '>= 1.0.2'
+  spec.add_dependency 'logger'
 
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'grpc-tools', '~> 1.18.0'
-  spec.add_development_dependency 'pry-byebug'
+  spec.add_development_dependency 'irb'
   spec.add_development_dependency 'rake'
   spec.add_development_dependency 'rspec'
   spec.add_development_dependency 'rubocop'

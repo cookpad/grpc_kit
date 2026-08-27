@@ -3,8 +3,8 @@
 $LOAD_PATH.unshift File.expand_path('./examples/routeguide')
 
 require 'grpc_kit'
-require 'pry'
 require 'json'
+require 'socket'
 require 'routeguide_services_pb'
 
 RESOURCE_PATH = './examples/routeguide/routeguide.json'
@@ -48,7 +48,7 @@ def record_route(stub, size)
     JSON.parse(f.read)
   end
 
-  stream = stub.record_route({})
+  stream = stub.record_route
 
   size.times do
     location = features.sample['location']
