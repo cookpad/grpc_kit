@@ -45,7 +45,7 @@ module GrpcKit
       end
 
       # Blocking until io object is readable
-      # @return [void]
+      # @return [Boolean] false when the io object is already closed
       def wait_readable
         ::IO.select([@io], [], [])
         true
@@ -54,10 +54,12 @@ module GrpcKit
       end
 
       # Blocking until io object is readable or writable
-      # @return [void]
+      # @param timeout [Integer, Float, nil] seconds to wait, or nil to block forever
+      # @param write [Boolean] whether to wait for writability as well
+      # @return [Array(Array<::IO>, Array<::IO>)] readable ios and writable ios, both empty on timeout.
       def select(timeout: 1, write: true)
         rs, ws = ::IO.select([@io, @wake_o], write ? [@io] : [], [], timeout)
-        @wake_o.read(@wake_o.stat.size) if rs&.delete(@wake_o) && !@wake_o.closed?
+        drain_waker if rs&.delete(@wake_o)
         [rs || [], ws || []]
       end
 
@@ -73,6 +75,18 @@ module GrpcKit
       # @return [void]
       def flush
         @io.flush
+      end
+
+      private
+
+      # @return [void]
+      def drain_waker
+        return if @wake_o.closed?
+
+        loop do
+          data = @wake_o.read_nonblock(4096, exception: false)
+          break if [:wait_readable, nil].include?(data) # EAGAIN, EWOULDBLOCK, or EOF
+        end
       end
     end
   end
